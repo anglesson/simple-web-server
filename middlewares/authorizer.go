@@ -1,0 +1,97 @@
+package middlewares
+
+import (
+	"context"
+	"errors"
+	"log"
+	"net/http"
+
+	"github.com/anglesson/simple-web-server/models"
+	"github.com/anglesson/simple-web-server/repositories"
+	"github.com/anglesson/simple-web-server/templates"
+)
+
+// First, define a custom type for context keys (typically at package level)
+type contextKey string
+
+// Define a constant for your key
+const UserEmailKey contextKey = "user_email"
+const CSRFTokenKey contextKey = "csrf_token"
+
+var ErrUnauthorized = errors.New("Unauthorized")
+
+func authorizer(r *http.Request) (string, error) {
+	// Get session token from the cookie
+	cookie, err := r.Cookie("session_token")
+	if err != nil || cookie.Value == "" {
+		log.Println("Session token not found in cookie:", err)
+		return "", ErrUnauthorized
+	}
+
+	// Find user by session token
+	var foundUser models.Login
+	var foundEmail string
+	var userFound bool
+
+	for email, user := range repositories.Users {
+		if user.SessionToken == cookie.Value {
+			foundUser = user
+			foundEmail = email
+			userFound = true
+			break
+		}
+	}
+
+	if !userFound {
+		log.Println("User not found for session token:", cookie.Value)
+		return "", ErrUnauthorized
+	}
+
+	// Get CSRF token from the cookie or header
+	csrfCookie, _ := r.Cookie("csrf_token")
+	csrfHeader := r.Header.Get("X-CSRF-Token")
+
+	// Try both cookie and header for CSRF
+	csrfToken := csrfCookie.Value
+	if csrfHeader != "" {
+		csrfToken = csrfHeader
+	}
+
+	if csrfToken != foundUser.CSRFToken || csrfToken == "" {
+		log.Println("CSRF token mismatch or empty for user:", foundEmail)
+		return "", ErrUnauthorized
+	}
+
+	// Store the email and CSRF token in request context
+	ctx := context.WithValue(r.Context(), UserEmailKey, foundEmail)
+	ctx = context.WithValue(ctx, CSRFTokenKey, foundUser.CSRFToken)
+	*r = *r.WithContext(ctx)
+
+	return foundUser.CSRFToken, nil
+}
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Authentication logic
+		csrfToken, err := authorizer(r)
+		if err != nil {
+			templates.View(w, "401-error", nil)
+			log.Println("Unauthorized access attempt:", err)
+			return
+		}
+
+		// Store CSRF token in a header that your templates can access
+		w.Header().Set("X-CSRF-Token", csrfToken)
+
+		// Call the next handler
+		next.ServeHTTP(w, r)
+	})
+}
+
+// GetCSRFToken retrieves the CSRF token from the request context
+func GetCSRFToken(r *http.Request) string {
+	if token, ok := r.Context().Value(CSRFTokenKey).(string); ok {
+		return token
+	}
+	return ""
+}
