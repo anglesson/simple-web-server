@@ -1,0 +1,11 @@
+package dashboard
+
+import (
+	"net/http"
+
+	"github.com/anglesson/simple-web-server/internal/shared/template"
+)
+
+func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	template.View(w, "dashboard", nil)
+}

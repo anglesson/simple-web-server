@@ -1,4 +1,4 @@
-package templates
+package template
 
 import (
 	"html/template"
@@ -12,16 +12,15 @@ type PageData struct {
 
 func View(w http.ResponseWriter, templateName string, data any) {
 	tmpl := template.Must(template.ParseFiles(
-		"templates/layouts/base.html",
-		"templates/pages/"+templateName+".html",
+		"web/templates/layouts/base.html",
+		"web/templates/pages/"+templateName+".html",
 	))
 	log.Printf("Data: %v", data)
 	err := tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Println("Error executing template:", err)
-		// Set the status code to 500 Internal Server Error
-		w.WriteHeader(http.StatusInternalServerError)
-		tmplError := template.Must(template.ParseFiles("templates/pages/500-error.html"))
+		// Set the status code to 500 Internal Server
+		tmplError := template.Must(template.ParseFiles("web/templates/pages/500-error.html"))
 		err = tmplError.Execute(w, PageData{ErrorMessage: "Internal Server Error"})
 		if err != nil {
 			log.Println("Error executing error template:", err)

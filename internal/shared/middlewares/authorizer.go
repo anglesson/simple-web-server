@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/models"
-	"github.com/anglesson/simple-web-server/repositories"
-	"github.com/anglesson/simple-web-server/templates"
+	"github.com/anglesson/simple-web-server/internal/auth/models"
+	"github.com/anglesson/simple-web-server/internal/auth/repositories"
+	"github.com/anglesson/simple-web-server/internal/shared/template"
 )
 
 // First, define a custom type for context keys (typically at package level)
@@ -75,7 +75,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Authentication logic
 		csrfToken, err := authorizer(r)
 		if err != nil {
-			templates.View(w, "401-error", nil)
+			template.View(w, "401-error", nil)
 			log.Println("Unauthorized access attempt:", err)
 			return
 		}

@@ -15,23 +15,19 @@
           </div>
           <!-- Form -->
           <form method="post" action="/login">
-            <!-- Username -->
+            <!-- Email -->
             <div class="mb-3">
               <label for="email" class="form-label">Username or email</label>
               <input type="email" id="email" class="form-control" name="email" placeholder="Email address here"
-                required="" value="anglesson@hotmail.com">
-              {{with .errors.email}}
-              <p class="text-danger">{{.}}</p>
-              {{end}}
+                required="" value="{{.Form.Email}}">
+              {{with .Errors.email}}<p class="text-danger">{{.}}</p>{{end}}
             </div>
             <!-- Password -->
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
               <input type="password" id="password" class="form-control" name="password" placeholder="**************"
-                value="123456" required="">
-              {{with .errors.password}}
-              <p class="text-danger">{{.}}</p>
-              {{end}}
+                required="">
+              {{with .Errors.password}}<p class="text-danger">{{.}}</p>{{end}}
             </div>
             <!-- Checkbox -->
             <div class="d-lg-flex justify-content-between align-items-center
