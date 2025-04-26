@@ -97,7 +97,6 @@ func processLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// sessionLogin(w, form.Email)
 	sessionService.InitSession(w, form.Email)
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
