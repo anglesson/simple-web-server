@@ -6,17 +6,13 @@ import (
 	"os"
 
 	auth "github.com/anglesson/simple-web-server/internal/auth/handlers"
-	"github.com/anglesson/simple-web-server/internal/dashboard"
-	"github.com/anglesson/simple-web-server/internal/home"
-	"github.com/anglesson/simple-web-server/internal/shared/template"
+	dashboard "github.com/anglesson/simple-web-server/internal/dashboard/handlers"
+	home "github.com/anglesson/simple-web-server/internal/home/handlers"
 )
-
-func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	template.View(w, "404-error", nil)
-}
 
 func main() {
 	mux := http.NewServeMux()
+
 	fs := http.FileServer(http.Dir("web/templates/assets"))
 	mux.Handle("GET /assets/", http.StripPrefix("/assets/", fs))
 
@@ -27,13 +23,7 @@ func main() {
 	mux.HandleFunc("GET /forget-password", auth.ForgetPasswordHandler)
 	mux.Handle("GET /dashboard", http.HandlerFunc(dashboard.DashboardHandler))
 
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			notFoundHandler(w, r)
-			return
-		}
-		home.HomeGetHandler(w, r)
-	})
+	mux.HandleFunc("GET /", home.HomeHandler) // Home page deve ser a ultima rota
 
 	port := os.Getenv("PORT")
 	if port == "" {
