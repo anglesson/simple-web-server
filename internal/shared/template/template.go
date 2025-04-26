@@ -15,7 +15,7 @@ func View(w http.ResponseWriter, templateName string, data any) {
 		"web/templates/layouts/base.html",
 		"web/templates/pages/"+templateName+".html",
 	))
-	log.Printf("Data: %v", data)
+
 	err := tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Println("Error executing template:", err)
@@ -24,7 +24,6 @@ func View(w http.ResponseWriter, templateName string, data any) {
 		err = tmplError.Execute(w, PageData{ErrorMessage: "Internal Server Error"})
 		if err != nil {
 			log.Println("Error executing error template:", err)
-			// If we can't even render the error page, we just write a plain text response
 			w.Write([]byte("Internal Server Error"))
 		}
 		return

@@ -24,7 +24,7 @@ func main() {
 	mux.HandleFunc("POST /login", auth.LoginHandler)
 	mux.HandleFunc("GET /register", auth.RegisterHandler)
 	mux.HandleFunc("POST /register", auth.RegisterHandler)
-	mux.HandleFunc("GET /forget-password", auth.ForgetPasswordGetHandler)
+	mux.HandleFunc("GET /forget-password", auth.ForgetPasswordHandler)
 	mux.Handle("GET /dashboard", http.HandlerFunc(dashboard.DashboardHandler))
 
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
