@@ -44,17 +44,19 @@ func renderRegisterPage(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{Name: "errors", MaxAge: -1})
 	}
 	template.View(w, "register", map[string]any{
-		"username": form.Name,
-		"email":    form.Email,
-		"errors":   errors,
+		"Form":   form,
+		"Errors": errors,
 	})
 }
 
 func processRegisterPage(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		return
+	}
 
 	form := models.RegisterForm{
-		Name:                 r.FormValue("username"),
+		Username:             r.FormValue("username"),
 		Email:                r.FormValue("email"),
 		Password:             r.FormValue("password"),
 		PasswordConfirmation: r.FormValue("password_confirmation"),
@@ -63,8 +65,8 @@ func processRegisterPage(w http.ResponseWriter, r *http.Request) {
 	errors := make(map[string]string)
 
 	// Validate the input
-	if form.Name == "" {
-		errors["name"] = "Username é obrigatório."
+	if form.Username == "" {
+		errors["username"] = "Username é obrigatório."
 	}
 
 	if form.Email == "" {
@@ -82,27 +84,37 @@ func processRegisterPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user already exists
-	if _, exists := repositories.Users[form.Email]; exists {
-		errors["email"] = "User already exists"
+	foundedUser := repositories.FindByEmail(form.Email)
+	if foundedUser.ID != 0 {
+		errors["email"] = "Email já cadastrado"
 	}
 
 	if len(errors) > 0 {
+		formJSON, _ := json.Marshal(form)
+		errorsJSON, _ := json.Marshal(errors)
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "form",
+			Value: url.QueryEscape(string(formJSON)),
+			Path:  "/",
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:  "errors",
+			Value: url.QueryEscape(string(errorsJSON)),
+			Path:  "/",
+		})
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 
 	hashedPassword := utils.HashPassword(form.Password)
 
-	// Create a new user
-	repositories.Users[form.Email] = models.Login{
-		HashedPassword: hashedPassword,
-		SessionToken:   "", // This should be generated securely
-		CSRFToken:      "", // This should be generated securely
-	}
+	user := models.NewUser(form.Username, hashedPassword, form.Email)
+	repositories.Save(user)
 
 	sessionService.InitSession(w, form.Email)
 
-	log.Printf("User registered: %s", form.Email)
+	log.Printf("User registered ID: %d, EMAIL: %s", user.ID, user.Email)
 
 	// Redirect to the protected area
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)

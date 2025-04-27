@@ -8,9 +8,13 @@ import (
 	auth "github.com/anglesson/simple-web-server/internal/auth/handlers"
 	dashboard "github.com/anglesson/simple-web-server/internal/dashboard/handlers"
 	home "github.com/anglesson/simple-web-server/internal/home/handlers"
+	"github.com/anglesson/simple-web-server/internal/shared/database"
 )
 
 func main() {
+	database.Connect()
+	database.Migrate()
+
 	mux := http.NewServeMux()
 
 	fs := http.FileServer(http.Dir("web/templates/assets"))
