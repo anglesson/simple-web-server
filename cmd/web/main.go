@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/anglesson/simple-web-server/config"
 	auth "github.com/anglesson/simple-web-server/internal/auth/handlers"
 	dashboard "github.com/anglesson/simple-web-server/internal/dashboard/handlers"
 	home "github.com/anglesson/simple-web-server/internal/home/handlers"
@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	config.LoadConfigs()
 	database.Connect()
 	database.Migrate()
 
@@ -29,10 +30,7 @@ func main() {
 
 	mux.HandleFunc("GET /", home.HomeHandler) // Home page deve ser a ultima rota
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	port := config.AppConfig.Port
 
 	server := &http.Server{
 		Addr:    ":" + port,

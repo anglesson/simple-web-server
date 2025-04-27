@@ -5,9 +5,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
+	"github.com/anglesson/simple-web-server/config"
 	"github.com/anglesson/simple-web-server/internal/auth/models"
 	"github.com/anglesson/simple-web-server/internal/auth/repositories"
+	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
 )
@@ -115,6 +118,14 @@ func processRegisterPage(w http.ResponseWriter, r *http.Request) {
 	sessionService.InitSession(w, form.Email)
 
 	log.Printf("User registered ID: %d, EMAIL: %s", user.ID, user.Email)
+	mailPort, _ := strconv.Atoi(config.AppConfig.MailPort)
+	s := mail.NewEmailService(mail.NewGoMailer(
+		config.AppConfig.MailHost,
+		mailPort,
+		config.AppConfig.MailUsername,
+		config.AppConfig.MailPassword))
+
+	go s.SendAccountConfirmation(user.Username, user.Email, "any")
 
 	// Redirect to the protected area
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
