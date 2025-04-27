@@ -7,6 +7,8 @@ import (
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 )
 
+var selectStmt string = `SELECT id, username, email FROM users`
+
 func Save(user *models.User) {
 	db := database.GetDB()
 
@@ -30,8 +32,8 @@ func Save(user *models.User) {
 func findByID(id int64, user *models.User) {
 	db := database.GetDB()
 
-	selectStmt := `SELECT id, username, email FROM users WHERE id = ?`
-	row := db.QueryRow(selectStmt, id)
+	selectById := selectStmt + ` WHERE id = ?`
+	row := db.QueryRow(selectById, id)
 	err := row.Scan(&user.ID, &user.Username, &user.Email)
 	if err != nil {
 		log.Fatalf("Error to scan user: %s", err)
@@ -43,8 +45,8 @@ func FindByEmail(emailUser string) *models.User {
 
 	user := &models.User{}
 
-	selectStmt := `SELECT id, username, email FROM users WHERE email = ?`
-	row := db.QueryRow(selectStmt, emailUser)
+	selectByEmail := selectStmt + ` WHERE email = ?`
+	row := db.QueryRow(selectByEmail, emailUser)
 
 	row.Scan(&user.ID, &user.Username, &user.Email)
 
