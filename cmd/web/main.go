@@ -14,7 +14,6 @@ import (
 func main() {
 	config.LoadConfigs()
 	database.Connect()
-	database.Migrate()
 
 	mux := http.NewServeMux()
 

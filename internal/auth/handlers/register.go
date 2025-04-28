@@ -88,7 +88,7 @@ func processRegisterPage(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the user already exists
 	foundedUser := repositories.FindByEmail(form.Email)
-	if foundedUser.ID != 0 {
+	if foundedUser == nil {
 		errors["email"] = "Email já cadastrado"
 	}
 

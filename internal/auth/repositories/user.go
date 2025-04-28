@@ -7,48 +7,14 @@ import (
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 )
 
-var selectStmt string = `SELECT id, username, email FROM users`
-
 func Save(user *models.User) {
-	db := database.GetDB()
-
-	insertStmt := `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`
-	result, err := db.Exec(insertStmt, user.Username, user.Email, user.Password)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Default().Printf("Created new user with %s", user.Email)
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("LAST ID: %d", id)
-	findByID(id, user)
-}
-
-func findByID(id int64, user *models.User) {
-	db := database.GetDB()
-
-	selectById := selectStmt + ` WHERE id = ?`
-	row := db.QueryRow(selectById, id)
-	err := row.Scan(&user.ID, &user.Username, &user.Email)
-	if err != nil {
-		log.Fatalf("Error to scan user: %s", err)
-	}
+	database.DB.Create(&user)
+	log.Default().Printf("Created new user with ID: %d, EMAIL: %s", user.ID, user.Email)
 }
 
 func FindByEmail(emailUser string) *models.User {
-	db := database.GetDB()
-
-	user := &models.User{}
-
-	selectByEmail := selectStmt + ` WHERE email = ?`
-	row := db.QueryRow(selectByEmail, emailUser)
-
-	row.Scan(&user.ID, &user.Username, &user.Email)
+	var user *models.User
+	database.DB.First(&user, "email = ?", emailUser)
 
 	return user
 }
