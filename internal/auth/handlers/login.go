@@ -74,8 +74,8 @@ func processLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user exists
-	user, exists := repositories.Users[form.Email]
-	if !exists || !utils.CheckPasswordHash(user.HashedPassword, form.Password) {
+	user := repositories.FindByEmail(form.Email)
+	if user == nil || !utils.CheckPasswordHash(user.Password, form.Password) {
 		errors["password"] = "Email ou senha inválidos"
 	}
 

@@ -9,31 +9,38 @@ import (
 	dashboard "github.com/anglesson/simple-web-server/internal/dashboard/handlers"
 	home "github.com/anglesson/simple-web-server/internal/home/handlers"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
+	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
 	config.LoadConfigs()
 	database.Connect()
 
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
 
 	fs := http.FileServer(http.Dir("web/templates/assets"))
-	mux.Handle("GET /assets/", http.StripPrefix("/assets/", fs))
+	r.Get("/assets/*", func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
+	})
 
-	mux.HandleFunc("GET /login", auth.LoginHandler)
-	mux.HandleFunc("POST /login", auth.LoginHandler)
-	mux.HandleFunc("GET /register", auth.RegisterHandler)
-	mux.HandleFunc("POST /register", auth.RegisterHandler)
-	mux.HandleFunc("GET /forget-password", auth.ForgetPasswordHandler)
-	mux.Handle("GET /dashboard", http.HandlerFunc(dashboard.DashboardHandler))
+	r.Group(func(r chi.Router) {
+		r.Use(middlewares.AuthMiddleware)
+		r.Get("/login", auth.LoginHandler)
+		r.Post("/login", auth.LoginHandler)
+		r.Get("/register", auth.RegisterHandler)
+		r.Post("/register", auth.RegisterHandler)
+		r.Get("/forget-password", auth.ForgetPasswordHandler)
+		r.Get("/dashboard", dashboard.DashboardHandler)
+	})
 
-	mux.HandleFunc("GET /", home.HomeHandler) // Home page deve ser a ultima rota
+	r.Get("/", home.HomeHandler) // Home page deve ser a ultima rota
 
 	port := config.AppConfig.Port
 
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: mux,
+		Handler: r,
 	}
 
 	log.Println("Starting server on :" + port)
