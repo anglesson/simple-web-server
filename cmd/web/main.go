@@ -33,7 +33,8 @@ func main() {
 		r.Post("/register", auth.RegisterHandler)
 		r.Get("/forget-password", auth.ForgetPasswordHandler)
 		r.Get("/dashboard", dashboard.DashboardHandler)
-		r.Get("/ebooks", ebook.IndexHandler)
+		r.Get("/ebook", ebook.IndexHandler)
+		r.Get("/ebook/create", ebook.CreateHandler)
 	})
 
 	r.Get("/", home.HomeHandler) // Home page deve ser a ultima rota
