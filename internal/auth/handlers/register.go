@@ -49,7 +49,7 @@ func renderRegisterPage(w http.ResponseWriter, r *http.Request) {
 	template.View(w, "register", map[string]any{
 		"Form":   form,
 		"Errors": errors,
-	})
+	}, "base_guest")
 }
 
 func processRegisterPage(w http.ResponseWriter, r *http.Request) {

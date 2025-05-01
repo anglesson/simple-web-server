@@ -1,8 +1,8 @@
 package template
 
 import (
+	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 )
 
@@ -10,22 +10,21 @@ type PageData struct {
 	ErrorMessage string
 }
 
-func View(w http.ResponseWriter, templateName string, data any) {
-	tmpl := template.Must(template.ParseFiles(
-		"web/templates/layouts/base.html",
-		"web/templates/pages/"+templateName+".html",
-	))
+func View(w http.ResponseWriter, templateName string, data any, layout string) {
+	files := []string{
+		fmt.Sprintf("web/templates/layouts/%s.html", layout),
+		fmt.Sprintf("web/templates/pages/%s.html", templateName),
+	}
 
-	err := tmpl.ExecuteTemplate(w, "base", data)
+	t, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println("Error executing template:", err)
-		// Set the status code to 500 Internal Server
-		tmplError := template.Must(template.ParseFiles("web/templates/pages/500-error.html"))
-		err = tmplError.Execute(w, PageData{ErrorMessage: "Internal Server Error"})
-		if err != nil {
-			log.Println("Error executing error template:", err)
-			w.Write([]byte("Internal Server Error"))
-		}
+		http.Error(w, "Erro ao carregar template", http.StatusInternalServerError)
+		return
+	}
+
+	err = t.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Erro ao renderizar template", http.StatusInternalServerError)
 		return
 	}
 }

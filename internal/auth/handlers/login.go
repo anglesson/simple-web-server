@@ -50,7 +50,7 @@ func renderLoginPage(w http.ResponseWriter, r *http.Request) {
 	template.View(w, "login", map[string]interface{}{
 		"Form":   form,
 		"Errors": errors,
-	})
+	}, "base_guest")
 }
 
 func processLogin(w http.ResponseWriter, r *http.Request) {
