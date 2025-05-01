@@ -2,11 +2,6 @@ package models
 
 import "gorm.io/gorm"
 
-type Login struct {
-	HashedPassword string
-	SessionToken   string
-	CSRFToken      string
-}
 type User struct {
 	*gorm.Model
 	Username string `json:"username" validate:"required"`
