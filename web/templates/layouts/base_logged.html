@@ -33,10 +33,9 @@
                 <!-- Navbar nav -->
                 <ul class="navbar-nav flex-column" id="sideNavbar">
                     <li class="nav-item">
-                        <a class="nav-link has-arrow  active " href="/dashboard">
+                        <a class="nav-link has-arrow" href="/dashboard">
                             <i data-feather="home" class="nav-icon icon-xs me-2"></i> Dashboard
                         </a>
-
                     </li>
                     <li class="nav-item">
                         <div class="navbar-heading">Administração</div>
@@ -230,6 +229,16 @@
 
     <!-- Theme JS -->
     <script src="/assets/js/theme.min.js"></script>
+    <script>
+        const currentPathname = "/" + window.location.pathname.split('/')[1]
+        links = Array.from(document.querySelectorAll('a.nav-link'))
+        const a = links.find(element => {
+            return element.pathname === currentPathname;
+        });
+        if (a) {
+            a.classList.add('active');
+        }
+    </script>
 </body>
 
 </html>
