@@ -29,7 +29,7 @@
             <div class="mb-3">
               <label for="email" class="form-label">Email</label>
               <input type="email" id="email" class="form-control" name="email" placeholder="Email address here"
-                required="" value="{{.Form.Email}}">
+                required="" value="{{with .Form.Email}}{{.}}{{end}}">
               {{with .Errors.email}}<p class="text-danger">{{.}}</p>{{end}}
             </div>
             <!-- Password -->

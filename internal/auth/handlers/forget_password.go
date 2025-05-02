@@ -15,11 +15,11 @@ func ForgetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
-	template.View(w, "forget-password", nil, "base_guest")
+	template.View(w, r, "forget-password", nil, "base_guest")
 }
 
 func renderForgetPasswordPage(w http.ResponseWriter, r *http.Request) {
-	template.View(w, "forget-password", nil, "base_guest")
+	template.View(w, r, "forget-password", nil, "base_guest")
 }
 
 func processForgetPasswordPage(w http.ResponseWriter, r *http.Request) {

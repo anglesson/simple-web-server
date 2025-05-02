@@ -27,29 +27,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderRegisterPage(w http.ResponseWriter, r *http.Request) {
-	var form models.RegisterForm
-	var errors models.FormErrors
-
-	if c, err := r.Cookie("form"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
-		}
-		_ = json.Unmarshal([]byte(decodedValue), &form)
-		http.SetCookie(w, &http.Cookie{Name: "form", MaxAge: -1})
-	}
-	if c, err := r.Cookie("errors"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
-		}
-		_ = json.Unmarshal([]byte(decodedValue), &errors)
-		http.SetCookie(w, &http.Cookie{Name: "errors", MaxAge: -1})
-	}
-	template.View(w, "register", map[string]any{
-		"Form":   form,
-		"Errors": errors,
-	}, "base_guest")
+	template.View(w, r, "register", nil, "base_guest")
 }
 
 func processRegisterPage(w http.ResponseWriter, r *http.Request) {

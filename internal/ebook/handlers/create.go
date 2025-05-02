@@ -3,11 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 
-	auth "github.com/anglesson/simple-web-server/internal/auth/models"
 	"github.com/anglesson/simple-web-server/internal/ebook/models"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/go-playground/validator/v10"
@@ -23,64 +21,47 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderCreatePage(w http.ResponseWriter, r *http.Request) {
-	var form models.EbookRequest
-	var errors auth.FormErrors
+	template.View(w, r, "create_ebook", nil, "base_logged")
+}
 
-	if c, err := r.Cookie("form"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
+// It is a middleware
+func EbookRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			http.Error(w, "Unable to parse form", http.StatusBadRequest)
+			return
 		}
-		_ = json.Unmarshal([]byte(decodedValue), &form)
-		http.SetCookie(w, &http.Cookie{Name: "form", MaxAge: -1})
-	}
-	if c, err := r.Cookie("errors"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
+		form := models.EbookRequest{
+			Title:       r.FormValue("title"),
+			Description: r.FormValue("description"),
+			Value:       r.FormValue("value"),
 		}
-		_ = json.Unmarshal([]byte(decodedValue), &errors)
-		http.SetCookie(w, &http.Cookie{Name: "errors", MaxAge: -1})
-	}
-	template.View(w, "create_ebook", map[string]any{
-		"Form":   form,
-		"Errors": errors,
-	}, "base_logged")
+
+		errors := validateForm(form)
+
+		if len(errors) > 0 {
+			formJSON, _ := json.Marshal(form)
+			errorsJSON, _ := json.Marshal(errors)
+
+			http.SetCookie(w, &http.Cookie{
+				Name:  "form",
+				Value: url.QueryEscape(string(formJSON)),
+				Path:  "/",
+			})
+			http.SetCookie(w, &http.Cookie{
+				Name:  "errors",
+				Value: url.QueryEscape(string(errorsJSON)),
+				Path:  "/",
+			})
+			http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func processCreateEbook(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		http.Error(w, "Unable to parse form", http.StatusBadRequest)
-		return
-	}
-
-	fmt.Println(r.FormValue("title"))
-
-	form := models.EbookRequest{
-		Title:       r.FormValue("title"),
-		Description: r.FormValue("description"),
-		Value:       r.FormValue("value"),
-	}
-
-	errors := validateForm(form)
-
-	if len(errors) > 0 {
-		formJSON, _ := json.Marshal(form)
-		errorsJSON, _ := json.Marshal(errors)
-
-		http.SetCookie(w, &http.Cookie{
-			Name:  "form",
-			Value: url.QueryEscape(string(formJSON)),
-			Path:  "/",
-		})
-		http.SetCookie(w, &http.Cookie{
-			Name:  "errors",
-			Value: url.QueryEscape(string(errorsJSON)),
-			Path:  "/",
-		})
-		http.Redirect(w, r, "/ebook/create", http.StatusSeeOther)
-		return
-	}
+	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
 }
 
 func validateForm(form interface{}) map[string]string {

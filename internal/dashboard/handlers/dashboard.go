@@ -7,5 +7,5 @@ import (
 )
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	template.View(w, "dashboard", nil, "base_logged")
+	template.View(w, r, "dashboard", nil, "base_logged")
 }

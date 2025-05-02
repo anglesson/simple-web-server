@@ -7,5 +7,5 @@ import (
 )
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	template.View(w, "404-error", nil, "base_logged")
+	template.View(w, r, "404-error", nil, "base_logged")
 }

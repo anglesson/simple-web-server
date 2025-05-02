@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -27,30 +26,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderLoginPage(w http.ResponseWriter, r *http.Request) {
-	var form models.LoginForm
-	var errors models.FormErrors
-
-	if c, err := r.Cookie("form"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
-		}
-		_ = json.Unmarshal([]byte(decodedValue), &form)
-		http.SetCookie(w, &http.Cookie{Name: "form", MaxAge: -1})
-	}
-	if c, err := r.Cookie("errors"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
-		}
-		_ = json.Unmarshal([]byte(decodedValue), &errors)
-		http.SetCookie(w, &http.Cookie{Name: "errors", MaxAge: -1})
-	}
-
-	template.View(w, "login", map[string]interface{}{
-		"Form":   form,
-		"Errors": errors,
-	}, "base_guest")
+	template.View(w, r, "login", nil, "base_guest")
 }
 
 func processLogin(w http.ResponseWriter, r *http.Request) {

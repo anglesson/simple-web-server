@@ -14,5 +14,5 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderIndexPage(w http.ResponseWriter, r *http.Request) {
-	template.View(w, "ebook", nil, "base_logged")
+	template.View(w, r, "ebook", nil, "base_logged")
 }
