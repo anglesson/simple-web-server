@@ -4,6 +4,8 @@ import "gorm.io/gorm"
 
 type Purchase struct {
 	*gorm.Model
-	Ebook  Ebook
-	Client Client
+	EbookID  uint   `json:"ebook_id"`
+	Ebook    Ebook  `gorm:"foreignKey:EbookID"`
+	ClientID uint   `json:"client_id"`
+	Client   Client `gorm:"foreignKey:ClientID"`
 }
