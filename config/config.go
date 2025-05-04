@@ -1,9 +1,15 @@
 package config
 
-import "os"
+import (
+	"log"
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 type AppConfiguration struct {
 	AppName            string
+	AppMode            string
 	Port               string
 	MailHost           string
 	MailPort           string
@@ -21,6 +27,12 @@ type AppConfiguration struct {
 var AppConfig AppConfiguration
 
 func LoadConfigs() {
+	if AppConfig.AppMode == "development" || AppConfig.AppMode == "" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Erro ao carregar o arquivo .env")
+		}
+	}
 	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Web App")
 	AppConfig.Port = GetEnv("PORT", "8080")
 	AppConfig.MailHost = GetEnv("MAIL_HOST", "sandbox.smtp.mailtrap.io")
