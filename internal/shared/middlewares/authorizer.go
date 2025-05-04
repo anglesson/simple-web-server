@@ -16,6 +16,7 @@ type contextKey string
 // Define a constant for your key
 const UserEmailKey contextKey = "user_email"
 const CSRFTokenKey contextKey = "csrf_token"
+const User contextKey = "user"
 
 var ErrUnauthorized = errors.New("Unauthorized")
 
@@ -31,6 +32,7 @@ func authorizer(r *http.Request) (string, error) {
 	var foundUser models.Login
 	var foundEmail string
 	var userFound bool
+	var user models.User
 
 	for email, user := range repositories.Users {
 		if user.SessionToken == cookie.Value {
@@ -64,6 +66,7 @@ func authorizer(r *http.Request) (string, error) {
 	// Store the email and CSRF token in request context
 	ctx := context.WithValue(r.Context(), UserEmailKey, foundEmail)
 	ctx = context.WithValue(ctx, CSRFTokenKey, foundUser.CSRFToken)
+	ctx = context.WithValue(ctx, User, user)
 	*r = *r.WithContext(ctx)
 
 	return foundUser.CSRFToken, nil
@@ -103,4 +106,18 @@ func GetCSRFToken(r *http.Request) string {
 		return token
 	}
 	return ""
+}
+
+func Auth(r *http.Request) *models.User {
+	var user *models.User
+
+	user_email, ok := r.Context().Value(UserEmailKey).(string)
+	if !ok {
+		log.Panic("Ocorreu erro ao recuperar as informações do usuário")
+		return &models.User{}
+	}
+
+	user = repositories.FindByEmail(user_email)
+
+	return user
 }

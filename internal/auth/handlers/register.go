@@ -10,7 +10,9 @@ import (
 	"github.com/anglesson/simple-web-server/config"
 	"github.com/anglesson/simple-web-server/internal/auth/models"
 	"github.com/anglesson/simple-web-server/internal/auth/repositories"
+	ebook_models "github.com/anglesson/simple-web-server/internal/ebook/models"
 	"github.com/anglesson/simple-web-server/internal/mail"
+	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
 )
@@ -92,6 +94,9 @@ func processRegisterPage(w http.ResponseWriter, r *http.Request) {
 
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
 	repositories.Save(user)
+	creator := ebook_models.NewCreator(user.Username, user.Email, "", user.ID)
+
+	database.DB.Save(&creator) // TODO: Create middleware
 
 	sessionService.InitSession(w, form.Email)
 

@@ -14,7 +14,7 @@
     <div class="col-lg-12 col-md-12 col-12">
       <div class="card">
         <div class="card-body">
-          <form action="/ebook/create" method="POST" enctype="multipart/form-data">
+          <form id="ebook-form" action="/ebook/create" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
               <label for="ebookTitle" class="form-label">Título do Ebook</label>
               <input type="text" class="form-control" id="ebookTitle" name="title"
@@ -40,6 +40,12 @@
                   value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                   priceInput.value = `R$ ${value}`;
                 });
+
+                const form = document.getElementById("ebook-form")
+                form.onsubmit(e => {
+                  e.preventDefault
+                  console.log("Prevent default")
+                })
               </script>
               {{with .Errors.Value}}<p class="text-danger">{{.}}</p>{{end}}
             </div>

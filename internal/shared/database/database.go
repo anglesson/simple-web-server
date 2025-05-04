@@ -3,7 +3,8 @@ package database
 import (
 	"log"
 
-	"github.com/anglesson/simple-web-server/internal/auth/models"
+	auth "github.com/anglesson/simple-web-server/internal/auth/models"
+	ebook "github.com/anglesson/simple-web-server/internal/ebook/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -21,5 +22,11 @@ func Connect() {
 }
 
 func migrate() {
-	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&auth.User{})
+	DB.AutoMigrate(&ebook.ClientCreator{})
+	DB.AutoMigrate(&ebook.Client{})
+	DB.AutoMigrate(&ebook.Contact{})
+	DB.AutoMigrate(&ebook.Creator{})
+	DB.AutoMigrate(&ebook.Ebook{})
+	DB.AutoMigrate(&ebook.Purchase{})
 }
