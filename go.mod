@@ -23,6 +23,7 @@ require (
 )
 
 require (
+	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/mattn/go-sqlite3 v1.14.28
 	golang.org/x/text v0.24.0 // indirect
 )

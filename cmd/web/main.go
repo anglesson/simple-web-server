@@ -8,6 +8,7 @@ import (
 	auth "github.com/anglesson/simple-web-server/internal/auth/handlers"
 	dashboard "github.com/anglesson/simple-web-server/internal/dashboard/handlers"
 	ebook "github.com/anglesson/simple-web-server/internal/ebook/handlers"
+	ebookMiddlewares "github.com/anglesson/simple-web-server/internal/ebook/middlewares"
 	home "github.com/anglesson/simple-web-server/internal/home/handlers"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
@@ -35,7 +36,7 @@ func main() {
 		r.Get("/dashboard", dashboard.DashboardHandler)
 		r.Get("/ebook", ebook.IndexHandler)
 		r.Get("/ebook/create", ebook.CreateHandler)
-		r.With(ebook.EbookRequest).Post("/ebook/create", ebook.CreateHandler)
+		r.With(ebookMiddlewares.EbookRequest).Post("/ebook/create", ebook.CreateHandler)
 	})
 
 	r.Get("/", home.HomeHandler) // Home page deve ser a ultima rota
