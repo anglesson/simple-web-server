@@ -13,11 +13,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func Upload(file io.Reader, filename string) error {
+func Upload(file io.Reader, filename string) (string, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
-			app_config.AppConfig.S3SecretKey,
 			app_config.AppConfig.S3AccessKey,
+			app_config.AppConfig.S3SecretKey,
 			"", // session token (deixe vazio se não estiver usando)
 		)),
 		config.WithRegion(app_config.AppConfig.S3Region), // ou sua região
@@ -32,8 +32,8 @@ func Upload(file io.Reader, filename string) error {
 
 	// Envia o arquivo
 	_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String("docffy-homolog"), // Substitua pelo nome do seu bucket
-		Key:    aws.String(filename),         // Caminho dentro do bucket
+		Bucket: aws.String(app_config.AppConfig.S3BucketName), // Substitua pelo nome do seu bucket
+		Key:    aws.String(filename),                          // Caminho dentro do bucket
 		Body:   file,
 	})
 	if err != nil {
@@ -41,5 +41,6 @@ func Upload(file io.Reader, filename string) error {
 	}
 
 	fmt.Println("Upload realizado com sucesso!")
-	return nil
+	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", app_config.AppConfig.S3BucketName, app_config.AppConfig.S3Region, filename)
+	return fileURL, nil
 }

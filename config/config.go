@@ -22,6 +22,7 @@ type AppConfiguration struct {
 	S3AccessKey        string
 	S3SecretKey        string
 	S3Region           string
+	S3BucketName       string
 }
 
 var AppConfig AppConfiguration
@@ -45,6 +46,7 @@ func LoadConfigs() {
 	AppConfig.S3AccessKey = GetEnv("S3_ACCESS_KEY", "")
 	AppConfig.S3SecretKey = GetEnv("S3_SECRET_KEY", "")
 	AppConfig.S3Region = GetEnv("S3_REGION", "sa-east-1")
+	AppConfig.S3BucketName = GetEnv("S3_BUCKET_NAME", "sa-east-1")
 }
 
 func GetEnv(key, fallback string) string {

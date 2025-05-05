@@ -98,9 +98,8 @@ func processCreateEbook(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// TODO: Add call to S3
-	storage.Upload(file, fileHeader.Filename)
-	ebook := models.NewEbook(form.Title, form.Description, "s3://local", form.Value, creator)
+	locationFile, _ := storage.Upload(file, fileHeader.Filename)
+	ebook := models.NewEbook(form.Title, form.Description, locationFile, form.Value, creator)
 
 	database.DB.Create(&ebook)
 

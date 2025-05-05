@@ -29,6 +29,7 @@
             </div>
           </div>
           <!-- table  -->
+          {{ if .Data.Ebooks }}
           <div class="table-responsive">
             <table class="table text-nowrap">
               <thead class="table-light">
@@ -109,6 +110,12 @@
               </ul>
             </nav>
           </div>
+          {{ else }}
+          <div class="d-flex flex-column justify-content-center p-10 align-items-center gap-4">
+            <img height="100" src="/assets/images/svg/empty-state.svg" />
+            <span>Nenhum ebook cadastrado</span>
+          </div>
+          {{ end }}
         </div>
       </div>
     </div>
