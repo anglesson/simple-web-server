@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/anglesson/simple-web-server/internal/auth/repositories"
+	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
 )
 

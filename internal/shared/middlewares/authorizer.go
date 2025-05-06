@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/auth/repositories"
 	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/repositories"
 )
 
 // First, define a custom type for context keys (typically at package level)

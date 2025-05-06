@@ -5,10 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/config"
-	auth "github.com/anglesson/simple-web-server/internal/auth/handlers"
-	dashboard "github.com/anglesson/simple-web-server/internal/dashboard/handlers"
-	ebook "github.com/anglesson/simple-web-server/internal/ebook/handlers"
-	home "github.com/anglesson/simple-web-server/internal/home/handlers"
+	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -27,20 +24,20 @@ func main() {
 
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware)
-		r.Get("/login", auth.LoginHandler)
-		r.Post("/login", auth.LoginHandler)
-		r.Get("/register", auth.RegisterHandler)
-		r.Post("/register", auth.RegisterHandler)
-		r.Get("/forget-password", auth.ForgetPasswordHandler)
-		r.Get("/dashboard", dashboard.DashboardHandler)
-		r.Get("/ebook", ebook.IndexHandler)
-		r.Get("/ebook/create", ebook.CreateHandler)
-		r.Post("/ebook/create", ebook.CreateHandler)
-		r.Get("/ebook/edit/{id}", ebook.EditEbookHandler)
-		r.Post("/ebook/update/{id}", ebook.EditEbookHandler)
+		r.Get("/login", handlers.LoginHandler)
+		r.Post("/login", handlers.LoginHandler)
+		r.Get("/register", handlers.RegisterHandler)
+		r.Post("/register", handlers.RegisterHandler)
+		r.Get("/forget-password", handlers.ForgetPasswordHandler)
+		r.Get("/dashboard", handlers.DashboardHandler)
+		r.Get("/ebook", handlers.IndexHandler)
+		r.Get("/ebook/create", handlers.CreateHandler)
+		r.Post("/ebook/create", handlers.CreateHandler)
+		r.Get("/ebook/edit/{id}", handlers.EditEbookHandler)
+		r.Post("/ebook/update/{id}", handlers.EditEbookHandler)
 	})
 
-	r.Get("/", home.HomeHandler) // Home page deve ser a ultima rota
+	r.Get("/", handlers.HomeHandler) // Home page deve ser a ultima rota
 
 	port := config.AppConfig.Port
 
