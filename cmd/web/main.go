@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/config"
+	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"

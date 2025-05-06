@@ -1,7 +1,7 @@
 package mail
 
 import (
-	"github.com/anglesson/simple-web-server/config"
+	"github.com/anglesson/simple-web-server/internal/config"
 )
 
 type EmailService struct {

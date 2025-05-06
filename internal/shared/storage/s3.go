@@ -7,21 +7,21 @@ import (
 	"log"
 	"time"
 
-	app_config "github.com/anglesson/simple-web-server/config"
+	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsCfg "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 func getConfig() aws.Config {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
-			app_config.AppConfig.S3AccessKey,
-			app_config.AppConfig.S3SecretKey,
+	cfg, err := awsCfg.LoadDefaultConfig(context.TODO(),
+		awsCfg.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			config.AppConfig.S3AccessKey,
+			config.AppConfig.S3SecretKey,
 			"", // session token (deixe vazio se não estiver usando)
 		)),
-		config.WithRegion(app_config.AppConfig.S3Region), // ou sua região
+		awsCfg.WithRegion(config.AppConfig.S3Region), // ou sua região
 	)
 	if err != nil {
 		log.Fatalf("erro ao carregar configuração: %v", err)
@@ -37,8 +37,8 @@ func Upload(file io.Reader, filename string) (string, error) {
 
 	// Envia o arquivo
 	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String(app_config.AppConfig.S3BucketName), // Substitua pelo nome do seu bucket
-		Key:    aws.String(filename),                          // Caminho dentro do bucket
+		Bucket: aws.String(config.AppConfig.S3BucketName), // Substitua pelo nome do seu bucket
+		Key:    aws.String(filename),                      // Caminho dentro do bucket
 		Body:   file,
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func Upload(file io.Reader, filename string) (string, error) {
 	}
 
 	fmt.Println("Upload realizado com sucesso!")
-	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", app_config.AppConfig.S3BucketName, app_config.AppConfig.S3Region, filename)
+	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", config.AppConfig.S3BucketName, config.AppConfig.S3Region, filename)
 	return fileURL, nil
 }
 
@@ -58,7 +58,7 @@ func GenerateDownloadLink(filename string) string {
 
 	// Cria o comando GetObject
 	params := &s3.GetObjectInput{
-		Bucket: aws.String(app_config.AppConfig.S3BucketName),
+		Bucket: aws.String(config.AppConfig.S3BucketName),
 		Key:    aws.String(filename),
 		// Opcional: Content-Disposition para forçar download com nome customizado
 		// ResponseContentDisposition: aws.String("attachment; filename=\"arquivo.txt\""),
