@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
-	auth_model "github.com/anglesson/simple-web-server/internal/auth/models"
 	"github.com/anglesson/simple-web-server/internal/auth/repositories"
-	"github.com/anglesson/simple-web-server/internal/ebook/models"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/storage"
@@ -152,7 +151,7 @@ func processUpdateEbook(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
 }
 
-func GetSessionUser(r *http.Request) *auth_model.User {
+func GetSessionUser(r *http.Request) *models.User {
 	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
 	if !ok {
 		log.Fatalf("Erro ao recuperar usuário da sessão: %s", user_email)

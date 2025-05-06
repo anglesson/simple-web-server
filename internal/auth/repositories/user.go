@@ -3,7 +3,7 @@ package repositories
 import (
 	"log"
 
-	"github.com/anglesson/simple-web-server/internal/auth/models"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 )
 

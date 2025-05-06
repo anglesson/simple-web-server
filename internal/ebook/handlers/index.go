@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/ebook/models"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
