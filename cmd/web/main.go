@@ -26,6 +26,7 @@ func main() {
 		r.Use(middlewares.AuthMiddleware)
 		r.Get("/login", handlers.LoginView)
 		r.Post("/login", handlers.LoginSubmit)
+		r.Post("/logout", handlers.LogoutSubmit)
 		r.Get("/register", handlers.RegisterView)
 		r.Post("/register", handlers.RegisterSubmit)
 		r.Get("/forget-password", handlers.ForgetPasswordView)
