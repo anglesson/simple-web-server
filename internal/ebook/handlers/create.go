@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 
@@ -48,9 +49,14 @@ func processCreateEbook(w http.ResponseWriter, r *http.Request) {
 		errors[key] = value
 	}
 
-	errFile := validateFile(r)
-	for key, value := range errFile {
-		errors[key] = value
+	file, _, err := r.FormFile("file")
+	if err == nil {
+		errors["file"] = "Arquivo é obrigatório"
+	} else {
+		errFile := validateFile(file)
+		for key, value := range errFile {
+			errors[key] = value
+		}
 	}
 
 	if len(errors) > 0 {
@@ -106,25 +112,21 @@ func processCreateEbook(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
 }
 
-func validateFile(r *http.Request) map[string]string {
+func validateFile(file multipart.File) map[string]string {
 	errors := make(map[string]string)
-	file, _, err := r.FormFile("file")
-	if err != nil {
-		errors["File"] = "Arquivo é obrigatório"
-	} else {
-		defer file.Close()
 
-		// Validar tamanho
-		fileBytes, _ := io.ReadAll(file)
-		if len(fileBytes) > 60*1024*1024 { // 60 MB
-			errors["File"] = "Arquivo deve ter no máximo 5 MB"
-		}
+	defer file.Close()
 
-		// Validar tipo MIME
-		contentType := http.DetectContentType(fileBytes)
-		if contentType != "application/pdf" {
-			errors["File"] = "Somente arquivos PDF são permitidos"
-		}
+	// Validar tamanho
+	fileBytes, _ := io.ReadAll(file)
+	if len(fileBytes) > 60*1024*1024 { // 60 MB
+		errors["File"] = "Arquivo deve ter no máximo 5 MB"
+	}
+
+	// Validar tipo MIME
+	contentType := http.DetectContentType(fileBytes)
+	if contentType != "application/pdf" {
+		errors["File"] = "Somente arquivos PDF são permitidos"
 	}
 
 	return errors

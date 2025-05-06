@@ -13,6 +13,7 @@ type Ebook struct {
 	Status      bool    `json:"status"`
 	Image       string  `json:"image"`
 	File        string  `json:"file"`
+	FileURL     string  `json:"file_url"`
 	CreatorID   uint    `json:"creator_id"`
 	Creator     Creator `gorm:"foreignKey:CreatorID"`
 }

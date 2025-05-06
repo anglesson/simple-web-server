@@ -1,0 +1,118 @@
+{{ define "title" }} Ebooks {{ end }}
+{{ define "content" }}
+<!-- Container fluid -->
+<div class="container-fluid p-6">
+  <div class="row">
+    <div class="col-lg-12 col-md-12 col-12">
+      <!-- Page header -->
+      <div class="border-bottom pb-4 mb-4 ">
+        <h3 class="mb-0 fw-bold">Atualização de Ebook</h3>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-md-12 col-12">
+      <div class="card">
+        <div class="card-body">
+          <form id="ebook-form" action="/ebook/update/{{.Data.ID}}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="ebookTitle" class="form-label">Título do Ebook</label>
+              <input type="text" class="form-control" id="ebookTitle" name="title"
+                placeholder="Digite o título do ebook" required
+                value="{{if .Form.Title}}{{.Form.Title}}{{else}}{{.Data.Title}}{{end}}">
+              {{with .Errors.Title}}<p class="text-danger">{{.}}</p>{{end}}
+            </div>
+            <div class="mb-3">
+              <label for="ebookDescription" class="form-label">Descrição</label>
+              <textarea class="form-control" id="ebookDescription" name="description" rows="3"
+                placeholder="Digite a descrição do ebook"
+                required>{{if .Form.Description}}{{.Form.Description}}{{else}}{{.Data.Description}}{{end}}</textarea>
+              {{with .Errors.Description}}<p class="text-danger">{{.}}</p>{{end}}
+            </div>
+            <div class="mb-3">
+              <label for="ebookPrice" class="form-label">Valor</label>
+              <input type="text" class="form-control" id="ebookPrice" name="value" placeholder="Digite o valor do ebook"
+                maxlength="15" max="100000" required
+                value="{{if .Form.Value}}{{.Form.Value}}{{else}}{{.Data.Value}}{{end}}">
+              {{with .Errors.Value}}<p class="text-danger">{{.}}</p>{{end}}
+            </div>
+            <div class="mb-3">
+              <label for="ebookFile" class="form-label">Arquivo do Ebook</label>
+
+              {{if .Data.File}}
+              <div class="mb-2 p-3 border rounded">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-file-earmark-pdf fs-4 me-2"></i>
+                    <span class="text-truncate" style="max-width: 300px;">{{.Data.File}}</span>
+                  </div>
+                  <div>
+                    <a href="{{.Data.FileURL}}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                      <i class="bi bi-download"></i> Download
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="changeFileBtn">
+                      <i class="bi bi-arrow-repeat"></i> Substituir
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="fileUploadContainer" style="display: none;">
+                <input id="ebookFile" type="file" class="form-control" name="file" accept=".pdf,.epub">
+                <div class="form-text">Deixe em branco para manter o arquivo atual</div>
+              </div>
+              {{else}}
+              <input id="ebookFile" type="file" class="form-control" name="file" accept=".pdf,.epub" required>
+              {{end}}
+
+              {{with .Errors.File}}<p class="text-danger">{{.}}</p>{{end}}
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="status" value="true" id="ebookStatus" {{if
+                  .Form.Status}}checked{{else}}{{if .Data.Status}}checked{{end}}{{end}}>
+                <label class="form-check-label" for="ebookStatus">
+                  Ativo
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Atualizar</button>
+            <a class="btn btn-secondary" href="/ebook" role="button">Cancelar</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const priceInput = document.getElementById('ebookPrice');
+
+  // Format the value on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    let value = priceInput.value.replace(/\D/g, '');
+    value = (value / 100).toFixed(2).replace('.', ',');
+    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    priceInput.value = `R$ ${value}`;
+  });
+
+  priceInput.addEventListener('input', () => {
+    let value = priceInput.value.replace(/\D/g, '');
+    value = (value / 100).toFixed(2).replace('.', ',');
+    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    priceInput.value = `R$ ${value}`;
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const changeFileBtn = document.getElementById('changeFileBtn');
+    const fileUploadContainer = document.getElementById('fileUploadContainer');
+
+    if (changeFileBtn) {
+      changeFileBtn.addEventListener('click', function () {
+        fileUploadContainer.style.display = 'block';
+        this.parentElement.parentElement.parentElement.style.display = 'none';
+      });
+    }
+  });
+</script>
+{{end}}
