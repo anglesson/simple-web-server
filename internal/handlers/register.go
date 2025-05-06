@@ -19,19 +19,19 @@ import (
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		renderRegisterPage(w, r)
+		RegisterView(w, r)
 	case http.MethodPost:
-		processRegisterPage(w, r)
+		RegisterSubmit(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
-func renderRegisterPage(w http.ResponseWriter, r *http.Request) {
+func RegisterView(w http.ResponseWriter, r *http.Request) {
 	template.View(w, r, "register", nil, "base_guest")
 }
 
-func processRegisterPage(w http.ResponseWriter, r *http.Request) {
+func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return

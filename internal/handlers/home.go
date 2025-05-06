@@ -6,7 +6,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 )
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
+func HomeView(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		notFoundHandler(w, r)
 		return

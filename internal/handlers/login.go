@@ -14,22 +14,11 @@ import (
 
 var sessionService = services.NewSessionService()
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		renderLoginPage(w, r)
-	case http.MethodPost:
-		processLogin(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func renderLoginPage(w http.ResponseWriter, r *http.Request) {
+func LoginView(w http.ResponseWriter, r *http.Request) {
 	template.View(w, r, "login", nil, "base_guest")
 }
 
-func processLogin(w http.ResponseWriter, r *http.Request) {
+func LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return

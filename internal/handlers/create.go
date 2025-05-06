@@ -17,20 +17,11 @@ import (
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
 )
 
-func CreateHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		renderCreatePage(w, r)
-	case http.MethodPost:
-		processCreateEbook(w, r)
-	}
-}
-
-func renderCreatePage(w http.ResponseWriter, r *http.Request) {
+func EbookCreateView(w http.ResponseWriter, r *http.Request) {
 	template.View(w, r, "create_ebook", nil, "base_logged")
 }
 
-func processCreateEbook(w http.ResponseWriter, r *http.Request) {
+func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	errors := make(map[string]string)
 
 	value, err := utils.BRLToFloat(r.FormValue("value"))

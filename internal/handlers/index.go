@@ -9,7 +9,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 )
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		renderIndexPage(w, r)

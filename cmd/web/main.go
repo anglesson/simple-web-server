@@ -24,20 +24,21 @@ func main() {
 
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware)
-		r.Get("/login", handlers.LoginHandler)
-		r.Post("/login", handlers.LoginHandler)
-		r.Get("/register", handlers.RegisterHandler)
-		r.Post("/register", handlers.RegisterHandler)
-		r.Get("/forget-password", handlers.ForgetPasswordHandler)
-		r.Get("/dashboard", handlers.DashboardHandler)
-		r.Get("/ebook", handlers.IndexHandler)
-		r.Get("/ebook/create", handlers.CreateHandler)
-		r.Post("/ebook/create", handlers.CreateHandler)
-		r.Get("/ebook/edit/{id}", handlers.EditEbookHandler)
-		r.Post("/ebook/update/{id}", handlers.EditEbookHandler)
+		r.Get("/login", handlers.LoginView)
+		r.Post("/login", handlers.LoginSubmit)
+		r.Get("/register", handlers.RegisterView)
+		r.Post("/register", handlers.RegisterSubmit)
+		r.Get("/forget-password", handlers.ForgetPasswordView)
+		r.Post("/forget-password", handlers.ForgetPasswordSubmit)
+		r.Get("/dashboard", handlers.DashboardView)
+		r.Get("/ebook", handlers.EbookIndexView)
+		r.Get("/ebook/create", handlers.EbookCreateView)
+		r.Post("/ebook/create", handlers.EbookCreateSubmit)
+		r.Get("/ebook/edit/{id}", handlers.EbookUpdateView)
+		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
 	})
 
-	r.Get("/", handlers.HomeHandler) // Home page deve ser a ultima rota
+	r.Get("/", handlers.HomeView) // Home page deve ser a ultima rota
 
 	port := config.AppConfig.Port
 

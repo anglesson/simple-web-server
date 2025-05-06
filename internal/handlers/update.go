@@ -16,15 +16,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func EditEbookHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		renderEditPage(w, r)
-	case http.MethodPost:
-		processUpdateEbook(w, r)
-	}
-}
-
 func GetEbookByID(w http.ResponseWriter, r *http.Request) *models.Ebook {
 	var ebook models.Ebook
 
@@ -41,7 +32,7 @@ func GetEbookByID(w http.ResponseWriter, r *http.Request) *models.Ebook {
 	return &ebook
 }
 
-func renderEditPage(w http.ResponseWriter, r *http.Request) {
+func EbookUpdateView(w http.ResponseWriter, r *http.Request) {
 	// Recupera o ebook
 	loggedUser := GetSessionUser(r)
 
@@ -61,7 +52,7 @@ func renderEditPage(w http.ResponseWriter, r *http.Request) {
 	template.View(w, r, "update_ebook", ebook, "base_logged")
 }
 
-func processUpdateEbook(w http.ResponseWriter, r *http.Request) {
+func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	errors := make(map[string]string)
 
 	value, err := utils.BRLToFloat(r.FormValue("value"))
