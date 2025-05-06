@@ -15,7 +15,7 @@ import (
 var sessionService = services.NewSessionService()
 
 func LoginView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "login", nil, "base_guest")
+	template.View(w, r, "login", nil, "guest")
 }
 
 func LoginSubmit(w http.ResponseWriter, r *http.Request) {

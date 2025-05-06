@@ -17,7 +17,7 @@ func main() {
 
 	r := chi.NewRouter()
 
-	fs := http.FileServer(http.Dir("web/templates/assets"))
+	fs := http.FileServer(http.Dir("web/assets"))
 	r.Get("/assets/*", func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 	})

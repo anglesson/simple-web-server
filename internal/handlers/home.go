@@ -11,5 +11,5 @@ func HomeView(w http.ResponseWriter, r *http.Request) {
 		notFoundHandler(w, r)
 		return
 	}
-	template.View(w, r, "home", nil, "base_guest")
+	template.View(w, r, "home", nil, "guest")
 }

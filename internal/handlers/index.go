@@ -38,5 +38,5 @@ func renderIndexPage(w http.ResponseWriter, r *http.Request) {
 	// Renderiza a página com os ebooks do criador
 	template.View(w, r, "ebook", map[string]any{
 		"Ebooks": creator.Ebooks,
-	}, "base_logged")
+	}, "admin")
 }

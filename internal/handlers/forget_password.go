@@ -7,7 +7,7 @@ import (
 )
 
 func ForgetPasswordView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "forget-password", nil, "base_guest")
+	template.View(w, r, "forget-password", nil, "guest")
 }
 
 func ForgetPasswordSubmit(w http.ResponseWriter, r *http.Request) {

@@ -18,7 +18,7 @@ import (
 )
 
 func EbookCreateView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "create_ebook", nil, "base_logged")
+	template.View(w, r, "create_ebook", nil, "admin")
 }
 
 func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {

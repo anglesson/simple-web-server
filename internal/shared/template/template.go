@@ -35,8 +35,8 @@ func View(w http.ResponseWriter, r *http.Request, templateName string, data any,
 	}
 
 	files := []string{
-		fmt.Sprintf("web/templates/layouts/%s.html", layout),
-		fmt.Sprintf("web/templates/pages/%s.html", templateName),
+		fmt.Sprintf("internal/templates/layouts/%s.html", layout),
+		fmt.Sprintf("internal/templates/pages/%s.html", templateName),
 	}
 
 	t, err := template.ParseFiles(files...)
