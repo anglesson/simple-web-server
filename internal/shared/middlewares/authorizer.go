@@ -82,12 +82,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Fluxo de autenticação logado
-		if r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/forget-password" {
-			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-			return
-		}
-
 		// Store CSRF token in a header that your templates can access
 		w.Header().Set("X-CSRF-Token", csrfToken)
 
