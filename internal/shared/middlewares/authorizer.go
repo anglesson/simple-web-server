@@ -77,10 +77,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Authentication logic
 		csrfToken, err := authorizer(r)
 		if err != nil {
-			if r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/forget-password" {
-				next.ServeHTTP(w, r)
-				return
-			}
 			log.Println("Unauthorized access attempt:", err)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return

@@ -22,15 +22,21 @@ func main() {
 		http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 	})
 
+	// Public routes
 	r.Group(func(r chi.Router) {
-		r.Use(middlewares.AuthMiddleware)
+		r.Use(middlewares.AuthGuard)
 		r.Get("/login", handlers.LoginView)
 		r.Post("/login", handlers.LoginSubmit)
-		r.Post("/logout", handlers.LogoutSubmit)
 		r.Get("/register", handlers.RegisterView)
 		r.Post("/register", handlers.RegisterSubmit)
 		r.Get("/forget-password", handlers.ForgetPasswordView)
 		r.Post("/forget-password", handlers.ForgetPasswordSubmit)
+	})
+
+	// Private routes
+	r.Group(func(r chi.Router) {
+		r.Use(middlewares.AuthMiddleware)
+		r.Post("/logout", handlers.LogoutSubmit)
 		r.Get("/dashboard", handlers.DashboardView)
 		r.Get("/ebook", handlers.EbookIndexView)
 		r.Get("/ebook/create", handlers.EbookCreateView)
