@@ -7,10 +7,21 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/anglesson/simple-web-server/internal/config"
 )
 
 type PageData struct {
 	ErrorMessage string
+}
+
+// TemplateFunctions returns a map of functions available to templates
+func TemplateFunctions() template.FuncMap {
+	return template.FuncMap{
+		"appName": func() string {
+			return config.AppConfig.AppName
+		},
+	}
 }
 
 func View(w http.ResponseWriter, r *http.Request, templateName string, data any, layout string) {
@@ -18,7 +29,7 @@ func View(w http.ResponseWriter, r *http.Request, templateName string, data any,
 	var errors map[string]string
 
 	if c, err := r.Cookie("form"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
+		decodedValue, decodeErr := url.QueryUnescape(c.Value)
 		if decodeErr != nil {
 			log.Println("Error decoding cookie value:", decodeErr)
 		}
@@ -26,7 +37,7 @@ func View(w http.ResponseWriter, r *http.Request, templateName string, data any,
 		http.SetCookie(w, &http.Cookie{Name: "form", MaxAge: -1})
 	}
 	if c, err := r.Cookie("errors"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value) // Decodifica o valor do cookie
+		decodedValue, decodeErr := url.QueryUnescape(c.Value)
 		if decodeErr != nil {
 			log.Println("Error decoding cookie value:", decodeErr)
 		}
@@ -39,7 +50,9 @@ func View(w http.ResponseWriter, r *http.Request, templateName string, data any,
 		fmt.Sprintf("internal/templates/pages/%s.html", templateName),
 	}
 
-	t, err := template.ParseFiles(files...)
+	t := template.New(layout + ".html").Funcs(TemplateFunctions())
+
+	t, err := t.ParseFiles(files...)
 	if err != nil {
 		http.Error(w, "Erro ao carregar template", http.StatusInternalServerError)
 		return
@@ -51,7 +64,7 @@ func View(w http.ResponseWriter, r *http.Request, templateName string, data any,
 		"Data":   data,
 	})
 	if err != nil {
-		log.Print("Erro ao renderizar template")
+		log.Printf("Erro ao renderizar template %s", err)
 		return
 	}
 }
