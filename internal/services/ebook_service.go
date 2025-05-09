@@ -13,9 +13,9 @@ func NewEbookService() *EbookService {
 	return &EbookService{}
 }
 
-func (s *EbookService) ListEbooksForUser(UserID uint, pagination *repositories.Pagination) (*[]models.Ebook, error) {
+func (s *EbookService) ListEbooksForUser(UserID uint, query repositories.EbookQuery) (*[]models.Ebook, error) {
 	ebookRepository := repositories.NewEbookRepository()
-	ebooks, err := ebookRepository.FindEbooksByUser(UserID, pagination)
+	ebooks, err := ebookRepository.FindEbooksByUser(UserID, query)
 	if err != nil {
 		return nil, errors.New("ebooks não encontrados")
 	}

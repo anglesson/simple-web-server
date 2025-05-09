@@ -24,7 +24,37 @@
                 <a href="/ebook/create" class="btn btn-primary">+ Cadastrar ebook</a>
               </div>
               <div class="col-md-7 col-lg-4">
-                <input type="search" class="form-control w-100" placeholder="Busque por Ebooks">
+                <form action="" method="get">
+                  <input id="searchForm" name="title" type="search" class="form-control w-100"
+                    placeholder="Busque por Ebooks">
+                  <script>
+                    window.onload = () => {
+                      const searchInput = document.getElementById("searchForm");
+
+                      const urlParams = new URLSearchParams(window.location.search);
+                      const searchTerm = urlParams.get('title');
+
+                      if (searchTerm) {
+                        searchInput.value = searchTerm;
+                      }
+
+                      searchInput.addEventListener("input", function () {
+                        if (searchInput.value === '') {
+                          history.replaceState(null, '', window.location.pathname);
+                          document.location.reload()
+                        }
+                      })
+
+                      if (window.location.hostname === "localhost") {
+                        const debug = false;
+                        if (debug) {
+                          console.log("URL search params:", window.location.search);
+                          console.log("Search term:", searchTerm);
+                        }
+                      }
+                    }
+                  </script>
+                </form>
               </div>
             </div>
           </div>
@@ -53,7 +83,6 @@
                       <path
                         d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0" />
                     </svg>
-                    <!-- <img src="path/to/image.jpg" alt="Imagem do Ebook" class="img-fluid" style="max-width: 50px;"> -->
                   </td>
                   <td class="align-middle">
                     <div class="d-flex align-items-center">

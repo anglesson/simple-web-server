@@ -29,10 +29,14 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	title := r.URL.Query().Get("title")
 	pagination := repositories.NewPagination(page, perPage)
 
 	ebookService := services.NewEbookService()
-	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, pagination)
+	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
+		Title:      title,
+		Pagination: pagination,
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
