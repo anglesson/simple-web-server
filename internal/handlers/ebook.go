@@ -7,9 +7,11 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/storage"
@@ -25,21 +27,20 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var creator models.Creator
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	pagination := repositories.NewPagination(page, perPage)
 
-	// Busca o criador com os ebooks associados
-	err := database.DB.
-		Preload("Ebooks").
-		Where("user_id = ?", loggedUser.ID).
-		First(&creator).Error
+	ebookService := services.NewEbookService()
+	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, pagination)
 	if err != nil {
-		http.Error(w, "Erro ao buscar dados", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Renderiza a página com os ebooks do criador
 	template.View(w, r, "ebook", map[string]any{
-		"Ebooks": creator.Ebooks,
+		"Ebooks":     ebooks,
+		"Pagination": pagination,
 	}, "admin")
 }
 

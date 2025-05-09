@@ -7,8 +7,11 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path/filepath"
 
 	"github.com/anglesson/simple-web-server/internal/config"
+	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 )
 
 type PageData struct {
@@ -16,10 +19,13 @@ type PageData struct {
 }
 
 // TemplateFunctions returns a map of functions available to templates
-func TemplateFunctions() template.FuncMap {
+func TemplateFunctions(r *http.Request) template.FuncMap {
 	return template.FuncMap{
 		"appName": func() string {
 			return config.AppConfig.AppName
+		},
+		"user": func() *models.User {
+			return middlewares.Auth(r)
 		},
 	}
 }
@@ -49,22 +55,23 @@ func View(w http.ResponseWriter, r *http.Request, templateName string, data any,
 		fmt.Sprintf("internal/templates/layouts/%s.html", layout),
 		fmt.Sprintf("internal/templates/pages/%s.html", templateName),
 	}
+	partials, _ := filepath.Glob("internal/templates/partials/*.html")
+	files = append(files, partials...)
 
-	t := template.New(layout + ".html").Funcs(TemplateFunctions())
-
+	t := template.New(layout + ".html").Funcs(TemplateFunctions(r))
 	t, err := t.ParseFiles(files...)
 	if err != nil {
 		http.Error(w, "Erro ao carregar template", http.StatusInternalServerError)
+		log.Println("Template parse error:", err)
 		return
 	}
 
-	err = t.Execute(w, map[string]any{
+	err = t.ExecuteTemplate(w, layout+".html", map[string]any{
 		"Form":   form,
 		"Errors": errors,
 		"Data":   data,
 	})
 	if err != nil {
-		log.Printf("Erro ao renderizar template %s", err)
-		return
+		log.Printf("Erro ao renderizar template: %s", err)
 	}
 }

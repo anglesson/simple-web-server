@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"strings"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
 	*gorm.Model
@@ -15,4 +19,15 @@ func NewUser(username, password, email string) *User {
 		Password: password,
 		Email:    email,
 	}
+}
+
+func (u *User) GetInitials() string {
+	words := strings.Fields(u.Username)
+	initials := ""
+	for _, word := range words {
+		if len(word) > 0 {
+			initials += strings.ToUpper(string(word[0]))
+		}
+	}
+	return initials
 }
