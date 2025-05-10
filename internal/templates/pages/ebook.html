@@ -61,7 +61,7 @@
           <!-- table  -->
           {{ if .Data.Ebooks }}
           <div class="table-responsive">
-            <table class="table text-nowrap">
+            <table class="table text-truncate">
               <thead class="table-light">
                 <tr>
                   <th>Imagem</th>
@@ -84,14 +84,14 @@
                         d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0" />
                     </svg>
                   </td>
-                  <td class="align-middle">
+                  <td class="align-middle text-truncate" style="max-width: 200px;">
                     <div class="d-flex align-items-center">
                       <div class="lh-1">
                         <h5 class="mb-1">{{.Title}}</h5>
                       </div>
                     </div>
                   </td>
-                  <td class="align-middle">{{ .Description }}</td>
+                  <td class="align-middle text-truncate" style="max-width: 200px;">{{ .Description }}</td>
                   <td class="align-middle">{{ .GetValue }}</td>
                   <td class="align-middle">
                     {{ if .Status }}
