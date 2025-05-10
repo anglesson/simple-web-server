@@ -21,6 +21,20 @@
 </head>
 
 <body class="bg-light">
+    {{ if .Flash}}
+    <div class="toast-container position-absolute top-0 end-0 p-3 z-3">
+        <div class="toast align-items-center text-white bg-{{.Flash.Type}} border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{.Flash.Message}}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    {{ end }}
     <div id="db-wrapper">
         <!-- navbar vertical -->
         <!-- Sidebar -->
@@ -105,6 +119,7 @@
     <!-- Theme JS -->
     <script src="/assets/js/theme.min.js"></script>
     <script>
+        // Active link
         const currentPathname = "/" + window.location.pathname.split('/')[1]
         links = Array.from(document.querySelectorAll('a.nav-link'))
         const a = links.find(element => {
@@ -113,6 +128,15 @@
         if (a) {
             a.classList.add('active');
         }
+
+        // Initialize all toasts on the page
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        var toastList = toastElList.map(function (toastEl) {
+            return new bootstrap.Toast(toastEl)
+        });
+
+        // Show all toasts
+        toastList.forEach(toast => toast.show());
     </script>
 </body>
 

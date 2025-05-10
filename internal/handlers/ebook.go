@@ -12,6 +12,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
+	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/storage"
@@ -279,6 +280,7 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	database.DB.Save(&ebook)
 
+	cookies.NotifySuccess(w, "Dados do ebook foram atualizados!")
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
 }
 
