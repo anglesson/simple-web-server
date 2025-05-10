@@ -54,10 +54,10 @@
         <form action="" method="get">
             <input type="hidden" name="page" value="{{.Data.Pagination.Page}}">
             <select class="form-select" name="page_size" id="page_size" onchange="this.form.submit()">
-                <option value="10" {{if eq .Data.Pagination.PageSize 10}}selected{{end}}>10 Per page</option>
-                <option value="20" {{if eq .Data.Pagination.PageSize 20}}selected{{end}}>20 Per page</option>
-                <option value="50" {{if eq .Data.Pagination.PageSize 50}}selected{{end}}>50 Per page</option>
-                <option value="100" {{if eq .Data.Pagination.PageSize 100}}selected{{end}}>100 Per page</option>
+                <option value="10" {{if eq .Data.Pagination.PageSize 10}}selected{{end}}>10</option>
+                <option value="20" {{if eq .Data.Pagination.PageSize 20}}selected{{end}}>20</option>
+                <option value="50" {{if eq .Data.Pagination.PageSize 50}}selected{{end}}>50</option>
+                <option value="100" {{if eq .Data.Pagination.PageSize 100}}selected{{end}}>100</option>
             </select>
         </form>
     </div>

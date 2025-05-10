@@ -1,0 +1,127 @@
+{{ define "title" }} Clientes {{ end }}
+{{ define "content" }}
+<!-- Container fluid -->
+<div class="container-fluid p-6">
+  <div class="row">
+    <div class="col-lg-12 col-md-12 col-12">
+      <!-- Page header -->
+      <div class="border-bottom pb-4 mb-4">
+        <h3 class="mb-0 fw-bold">Clientes</h3>
+      </div>
+    </div>
+  </div>
+  <!-- content -->
+  <div class="py-6">
+    <!-- row  -->
+    <div class="row">
+      <!-- card  -->
+      <div class="col-xl-12 col-lg-12 col-md-12 col-12">
+        <div class="card h-100">
+          <!-- card header  -->
+          <div class="card-header bg-white py-4">
+            <div class="row g-2">
+              <div class="col-lg-8 col-md-5 d-grid d-lg-block">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clientModal" data-bs-title="Novo Cliente">
+                  + Cadastrar Cliente
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importClientModal" data-bs-title="Importar Clientes">
+                  + Importar Clientes
+                </button>
+              </div>
+              <div class="col-md-7 col-lg-4">
+                <form action="" method="get">
+                  <input id="searchForm" name="term" type="search" class="form-control w-100" placeholder="Busque por Clientes" />
+                  <script>
+                    window.onload = () => {
+                      const searchInput = document.getElementById("searchForm");
+
+                      const urlParams = new URLSearchParams(
+                        window.location.search
+                      );
+                      const searchTerm = urlParams.get("term");
+
+                      if (searchTerm) {
+                        searchInput.value = searchTerm;
+                      }
+
+                      searchInput.addEventListener("input", function () {
+                        if (searchInput.value === "") {
+                          history.replaceState(
+                            null,
+                            "",
+                            window.location.pathname
+                          );
+                          document.location.reload();
+                        }
+                      });
+
+                      if (window.location.hostname === "localhost") {
+                        const debug = false;
+                        if (debug) {
+                          console.log(
+                            "URL search params:",
+                            window.location.search
+                          );
+                          console.log("Search term:", searchTerm);
+                        }
+                      }
+                    };
+                  </script>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- table  -->
+          {{ if .Data.Clients }}
+          <div class="table-responsive">
+            <table class="table text-truncate">
+              <thead class="table-light">
+                <tr>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Telefone</th>
+                  <th>CPF</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {{ range .Data.Clients }}
+                <tr>
+                  <td class="align-middle text-truncate" style="max-width: 200px">
+                    <div class="d-flex align-items-center">
+                      <div class="lh-1">
+                        <h5 class="mb-1">{{.Name}}</h5>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="align-middle text-truncate">
+                    {{ .Contact.Email }}
+                  </td>
+                  <td class="align-middle">{{ .Contact.Phone }}</td>
+                  <td class="align-middle">{{ .CPF }}</td>
+                  <td class="align-middle">
+                    <div class="dropdown dropstart">
+                      <a class="text-muted text-primary-hover" href="#" role="button" id="dropdownClientActions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="icon-xxs" data-feather="more-vertical"></i>
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownClientActions">
+                        <a class="dropdown-item btn" data-bs-toggle="modal" data-bs-target="#clientModal" data-bs-title="Editar Cliente" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}" data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">Editar</a>
+                        <a class="dropdown-item" href="#">Excluir</a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {{ end }}
+              </tbody>
+            </table>
+          </div>
+          {{ else }} {{ template "empty-table" . }} {{ end }} {{ template
+          "table-footer" . }}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ template "client-import-form" .}}
+  {{ template "client-form" .}}
+</div>
+{{end}}

@@ -9,3 +9,12 @@ type Client struct {
 	ContactID uint    `json:"contact_id"`
 	Contact   Contact `gorm:"foreignKey:ContactID"`
 }
+
+func NewClient(name, cpf, email, phone string) *Client {
+	contact := NewContact(email, phone)
+	return &Client{
+		Name:    name,
+		CPF:     cpf,
+		Contact: contact,
+	}
+}
