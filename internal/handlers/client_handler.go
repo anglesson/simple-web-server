@@ -24,12 +24,17 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
-	// term := r.URL.Query().Get("term")
+	term := r.URL.Query().Get("term")
 	pagination := repositories.NewPagination(page, perPage)
 
-	client1 := models.NewClient("Jose Arimatéia", "000.000.000-00", "jose.arimateia@test.com", "+55996265197", &models.Creator{})
-	clients := []*models.Client{
-		client1,
+	clients, err := repositories.NewClientRepository().FindClientsByCreator(loggedUser.Creator, repositories.ClientQuery{
+		Term:       term,
+		Pagination: pagination,
+	})
+	if err != nil {
+		cookies.NotifyError(w, err.Error())
+		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+		return
 	}
 
 	template.View(w, r, "client", map[string]any{

@@ -8,9 +8,11 @@ import (
 
 type User struct {
 	*gorm.Model
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
+	Username  string   `json:"username" validate:"required"`
+	Password  string   `json:"password" validate:"required"`
+	Email     string   `json:"email" validate:"required,email"`
+	CreatorID uint     `json:"creator_id"`
+	Creator   *Creator `gorm:"foreignKey:CreatorID"`
 }
 
 func NewUser(username, password, email string) *User {

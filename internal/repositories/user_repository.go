@@ -21,7 +21,7 @@ func (ur *UserRepository) Save(user *models.User) {
 
 func (ur *UserRepository) FindByEmail(emailUser string) *models.User {
 	var user *models.User
-	database.DB.First(&user, "email = ?", emailUser)
+	database.DB.Preload("Creator").First(&user, "email = ?", emailUser)
 
 	return user
 }
