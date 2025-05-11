@@ -7,7 +7,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="client-form" action="/client" method="post">
+        <form id="client-form" action="/client/update/{{.ID}}" method="post">
           <div class="mb-3">
             <label for="name" class="col-form-label">Nome</label>
             <input type="text" class="form-control" id="name" name="name" value="{{ .Form.Name }}" />
@@ -44,7 +44,7 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-
+    const clientForm = document.getElementById("client-form")
     const urlParams = new URLSearchParams(window.location.search);
 
     var clientModal = document.getElementById("clientModal");
@@ -84,6 +84,7 @@
       cpf.value = cpf_data
       email.value = email_data
       phone.value = phone_data;
+      clientForm.setAttribute("action", `/client/update/${id_data}`)
 
       history.replaceState(null, '', '?' + "modal=" + "clientModal");
     });

@@ -3,12 +3,12 @@ package models
 import "gorm.io/gorm"
 
 type Client struct {
-	*gorm.Model
+	gorm.Model
 	Name      string     `json:"name"`
 	CPF       string     `gorm:"unique" json:"cpf"`
 	ContactID uint       `json:"contact_id"`
 	Contact   Contact    `gorm:"foreignKey:ContactID"`
-	Creators  []*Creator `gorm:"many2many:client_creator"`
+	Creators  []*Creator `gorm:"many2many:client_creators"`
 }
 
 func NewClient(name, cpf, email, phone string, creator *Creator) *Client {
@@ -21,4 +21,11 @@ func NewClient(name, cpf, email, phone string, creator *Creator) *Client {
 			creator,
 		},
 	}
+}
+
+func (c *Client) Update(name, cpf, email, phone string) {
+	c.Name = name
+	c.CPF = cpf
+	c.Contact.Email = email
+	c.Contact.Phone = phone
 }

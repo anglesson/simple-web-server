@@ -24,7 +24,7 @@ func NewClientRepository() *ClientRepository {
 func (cr *ClientRepository) Save(client *models.Client) error {
 	result := database.DB.Save(&client)
 	if result.Error != nil {
-		log.Panic("Erro ao salvar client")
+		log.Printf("Erro ao salvar client %s", result.Error)
 		return errors.New("erro ao salvar cliente")
 	}
 
@@ -39,6 +39,8 @@ func (cr *ClientRepository) FindClientsByCreator(creator *models.Creator, query 
 		Limit(query.Pagination.GetLimit()).
 		Preload("Contact").
 		Preload("Creators").
+
+		// TODO: To Able
 		// Scopes(ContainsNameCpfEmailOrPhoneWith(query.Term)).
 		Find(&clients).
 		Error
@@ -59,4 +61,17 @@ func ContainsNameCpfEmailOrPhoneWith(term string) func(db *gorm.DB) *gorm.DB {
 			Where("clients.name LIKE ? OR clients.cpf LIKE ? OR contacts.email LIKE ? OR contacts.phone LIKE ?",
 				searchTerm, searchTerm, searchTerm, searchTerm)
 	}
+}
+
+func (cr *ClientRepository) FindByIDAndCreators(client *models.Client, clientID, creatorID uint) error {
+	err := database.DB.
+		Preload("Contact").
+		Preload("Creators").
+		First(&client).
+		Error
+	if err != nil {
+		log.Printf("Erro na busca do client: %s", err)
+		return errors.New("não foi possível recuperar as informações do cliente")
+	}
+	return nil
 }

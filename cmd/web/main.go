@@ -45,6 +45,7 @@ func main() {
 		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
 		r.Get("/client", handlers.ClientIndexView)
 		r.Post("/client", handlers.ClientCreateSubmit)
+		r.Post("/client/update/{id}", handlers.ClientUpdateSubmit)
 	})
 
 	r.Get("/", handlers.HomeView) // Home page deve ser a ultima rota

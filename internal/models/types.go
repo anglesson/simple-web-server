@@ -22,6 +22,7 @@ type RegisterForm struct {
 }
 
 type ClientRequest struct {
+	ID    uint   `json:"id"`
 	Name  string `validate:"required,min=5,max=120" json:"name"`
 	CPF   string `validate:"required,max=120" json:"cpf"`
 	Email string `validate:"required,email" json:"email"`
