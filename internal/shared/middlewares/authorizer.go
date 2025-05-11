@@ -107,7 +107,8 @@ func Auth(r *http.Request) *models.User {
 		return &models.User{}
 	}
 
-	user = repositories.FindByEmail(user_email)
+	userRepository := repositories.NewUserRepository()
+	user = userRepository.FindByEmail(user_email)
 
 	return user
 }

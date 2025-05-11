@@ -1,5 +1,5 @@
 {{ define "client-form" }}
-<div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+<div class="modal" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -7,36 +7,55 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="client-form" action="/create" method="post">
+        <form id="client-form" action="/client" method="post">
           <div class="mb-3">
             <label for="name" class="col-form-label">Nome</label>
-            <input type="text" class="form-control" id="name" name="name" />
+            <input type="text" class="form-control" id="name" name="name" value="{{ .Form.Name }}" />
+            {{with .Errors.Name}}
+            <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
             <label for="cpf" class="col-form-label">CPF</label>
-            <input type="text" class="form-control" id="cpf" name="cpf" />
+            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ .Form.CPF }}" />
+            {{with .Errors.CPF}}
+            <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
             <label for="Email" class="col-form-label">Email</label>
-            <input type="text" class="form-control" id="email" name="email" />
+            <input type="text" class="form-control" id="email" name="email" value="{{ .Form.Email }}" />
+            {{with .Errors.Email}}
+            <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
             <label for="phone" class="col-form-label">Telefone</label>
-            <input type="text" class="form-control" id="phone" name="phone" />
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ .Form.Phone }}" />
+            {{with .Errors.Phone}}
+            <p class="text-danger">{{.}}</p>{{end}}
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary">Salvar</button>
+        <button form="client-form" type="submit" class="btn btn-primary">Salvar</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  window.onload = () => {
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const urlParams = new URLSearchParams(window.location.search);
+
     var clientModal = document.getElementById("clientModal");
+
+    var myModal = new bootstrap.Modal(document.getElementById('clientModal'));
+
+    if (urlParams.has('modal') && urlParams.get('modal') === 'clientModal') {
+      myModal.show()
+      console.log("Abrindo Modal")
+    }
+
     clientModal.addEventListener("show.bs.modal", function (event) {
       // Button that triggered the modal
       var button = event.relatedTarget;
@@ -65,7 +84,15 @@
       cpf.value = cpf_data
       email.value = email_data
       phone.value = phone_data;
+
+      history.replaceState(null, '', '?' + "modal=" + "clientModal");
     });
-  };
+
+    clientModal.addEventListener("hide.bs.modal", function (event) {
+      history.replaceState(null, '', window.location.pathname);
+      var validationMessage = document.querySelectorAll("p.text-danger")
+      validationMessage.forEach(el => el.remove())
+    });
+  });
 </script>
 {{ end }}

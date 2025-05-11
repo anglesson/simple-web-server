@@ -106,7 +106,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := repositories.FindByEmail(user_email)
+	user := repositories.NewUserRepository().FindByEmail(user_email)
 	creator := models.Creator{
 		UserID: user.ID,
 	}
@@ -291,6 +291,5 @@ func GetSessionUser(r *http.Request) *models.User {
 		log.Fatalf("Erro ao recuperar usuário da sessão: %s", user_email)
 		return nil
 	}
-
-	return repositories.FindByEmail(user_email)
+	return repositories.NewUserRepository().FindByEmail(user_email)
 }

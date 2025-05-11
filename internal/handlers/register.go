@@ -66,7 +66,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user already exists
-	foundedUser := repositories.FindByEmail(form.Email)
+	foundedUser := repositories.NewUserRepository().FindByEmail(form.Email)
 	if foundedUser == nil {
 		errors["email"] = "Email já cadastrado"
 	}
@@ -92,7 +92,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	hashedPassword := utils.HashPassword(form.Password)
 
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
-	repositories.Save(user)
+	repositories.NewUserRepository().Save(user)
 	creator := models.NewCreator(user.Username, user.Email, "", user.ID)
 
 	database.DB.Save(&creator) // TODO: Create middleware

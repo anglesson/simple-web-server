@@ -7,12 +7,19 @@ import (
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 )
 
-func Save(user *models.User) {
+type UserRepository struct {
+}
+
+func NewUserRepository() *UserRepository {
+	return &UserRepository{}
+}
+
+func (ur *UserRepository) Save(user *models.User) {
 	database.DB.Create(&user)
 	log.Default().Printf("Created new user with ID: %d, EMAIL: %s", user.ID, user.Email)
 }
 
-func FindByEmail(emailUser string) *models.User {
+func (ur *UserRepository) FindByEmail(emailUser string) *models.User {
 	var user *models.User
 	database.DB.First(&user, "email = ?", emailUser)
 

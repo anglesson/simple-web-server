@@ -59,3 +59,15 @@ func NotifySuccess(w http.ResponseWriter, message string) {
 		Path:  "/",
 	})
 }
+
+func NotifyError(w http.ResponseWriter, message string) {
+	b, _ := json.Marshal(FlashMessage{
+		Message: message,
+		Type:    "danger",
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "flash",
+		Value: url.QueryEscape(string(b)),
+		Path:  "/",
+	})
+}

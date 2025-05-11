@@ -12,6 +12,7 @@ type Creator struct {
 	UserID    uint `json:"user_id"`
 	User      User `gorm:"foreignKey:UserID"`
 	Ebooks    []Ebook
+	Clients   []*Client `gorm:"many2many:client_creator"`
 }
 
 func NewCreator(name, email, phone string, user_id uint) *Creator {
@@ -27,4 +28,8 @@ func NewCreator(name, email, phone string, user_id uint) *Creator {
 
 func (e *Creator) GetEbooks() []Ebook {
 	return e.Ebooks
+}
+
+func (e *Creator) AddClient(client *Client) {
+	e.Clients = append(e.Clients, client)
 }

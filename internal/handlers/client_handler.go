@@ -1,13 +1,18 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/services"
+	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
+	"github.com/anglesson/simple-web-server/internal/shared/utils"
 )
 
 func ClientIndexView(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +27,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	// term := r.URL.Query().Get("term")
 	pagination := repositories.NewPagination(page, perPage)
 
-	client1 := models.NewClient("Jose Arimatéia", "000.000.000-00", "jose.arimateia@test.com", "+55996265197")
+	client1 := models.NewClient("Jose Arimatéia", "000.000.000-00", "jose.arimateia@test.com", "+55996265197", &models.Creator{})
 	clients := []*models.Client{
 		client1,
 	}
@@ -31,4 +36,61 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 		"Clients":    clients,
 		"Pagination": pagination,
 	}, "admin")
+}
+
+func ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
+	errors := make(map[string]string)
+
+	form := models.ClientRequest{
+		Name:  r.FormValue("name"),
+		CPF:   r.FormValue("cpf"),
+		Email: r.FormValue("email"),
+		Phone: r.FormValue("phone"),
+	}
+
+	errForm := utils.ValidateForm(form)
+	for key, value := range errForm {
+		errors[key] = value
+	}
+
+	if len(errors) > 0 {
+		formJSON, _ := json.Marshal(form)
+		errorsJSON, _ := json.Marshal(errors)
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "form",
+			Value: url.QueryEscape(string(formJSON)),
+			Path:  "/",
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:  "errors",
+			Value: url.QueryEscape(string(errorsJSON)),
+			Path:  "/",
+		})
+		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+		return
+	}
+
+	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
+	if !ok {
+		http.Error(w, "Invalid user email", http.StatusInternalServerError)
+		return
+	}
+
+	creatorService := services.NewCreatorService()
+	creator, err := creatorService.FindCreatorByEmail(user_email)
+	if err != nil {
+		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
+		return
+	}
+
+	clientService := services.NewClientService()
+	_, err = clientService.CreateClient(form.Name, form.CPF, form.Email, form.Phone, creator)
+	if err != nil {
+		cookies.NotifyError(w, err.Error())
+		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
+	}
+	cookies.NotifySuccess(w, "Cliente foi cadastrado!")
+
+	http.Redirect(w, r, "/client", http.StatusSeeOther)
 }
