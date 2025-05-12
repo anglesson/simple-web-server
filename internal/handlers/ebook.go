@@ -76,7 +76,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		errors["file"] = "Arquivo é obrigatório"
 	} else {
-		errFile := validateFile(file)
+		errFile := validateFile(file, "application/pdf")
 		for key, value := range errFile {
 			errors[key] = value
 		}
@@ -136,7 +136,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO: Move to a service
-func validateFile(file multipart.File) map[string]string {
+func validateFile(file multipart.File, expectedContentType string) map[string]string {
 	errors := make(map[string]string)
 
 	defer file.Close()
@@ -149,7 +149,8 @@ func validateFile(file multipart.File) map[string]string {
 
 	// Validar tipo MIME
 	contentType := http.DetectContentType(fileBytes)
-	if contentType != "application/pdf" {
+	log.Printf("content type: %s", contentType)
+	if contentType != expectedContentType {
 		errors["File"] = "Somente arquivos PDF são permitidos"
 	}
 
@@ -221,7 +222,7 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	file, _, err := r.FormFile("file")
 	if err == nil {
-		errFile := validateFile(file)
+		errFile := validateFile(file, "application/pdf")
 		for key, value := range errFile {
 			errors[key] = value
 		}

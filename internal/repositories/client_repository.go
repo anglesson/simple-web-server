@@ -76,3 +76,12 @@ func (cr *ClientRepository) FindByIDAndCreators(client *models.Client, clientID,
 	}
 	return nil
 }
+
+func (cr *ClientRepository) InsertBatch(clients []*models.Client) error {
+	err := database.DB.CreateInBatches(clients, 1000).Error
+	if err != nil {
+		log.Printf("[CLIENT-REPOSITORY] ERROR: %s", err)
+		return errors.New("falha no processamento dos clientes")
+	}
+	return nil
+}

@@ -7,7 +7,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="import-client-form" action="/import-client" method="POST" enctype="multipart/form-data">
+        <form id="import-client-form" action="/client/import" method="POST" enctype="multipart/form-data">
           <div class="mb-3">
             <label for="name" class="col-form-label">Arquivo de importação</label>
             <input type="file" class="form-control" id="file" name="file" />
@@ -16,7 +16,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary">Importar</button>
+        <button form="import-client-form" type="submit" class="btn btn-primary">Importar</button>
       </div>
     </div>
   </div>

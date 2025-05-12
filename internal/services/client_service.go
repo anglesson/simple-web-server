@@ -49,3 +49,11 @@ func (cs *ClientService) Update(client *models.Client, input models.ClientReques
 	}
 	return nil
 }
+
+func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
+	err := cs.clientRepository.InsertBatch(clients)
+	if err != nil {
+		return err
+	}
+	return nil
+}

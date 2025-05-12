@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -180,6 +182,68 @@ func ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 	cookies.NotifySuccess(w, "Cliente foi atualizado!")
 
+	http.Redirect(w, r, "/client", http.StatusSeeOther)
+}
+
+func ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
+	log.Println("Iniciando processamento de CSV")
+	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
+	if !ok {
+		http.Error(w, "Invalid user email", http.StatusInternalServerError)
+		return
+	}
+
+	creatorService := services.NewCreatorService()
+	creator, err := creatorService.FindCreatorByEmail(user_email)
+	if err != nil {
+		log.Println("Nao autorizado")
+		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
+		return
+	}
+
+	err = r.ParseMultipartForm(10 << 20) // 10MB
+	if err != nil {
+		http.Error(w, "Erro ao processar o formulário", http.StatusBadRequest)
+		return
+	}
+
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		redirectBackWithErrors(w, r, "Erro ao ler o arquivo")
+	}
+	defer file.Close()
+
+	// Verifica a extensão do arquivo (opcional)
+	if !strings.HasSuffix(handler.Filename, ".csv") {
+		redirectBackWithErrors(w, r, "Arquivo não é CSV")
+	}
+
+	log.Println("Arquivo validado!")
+
+	reader := csv.NewReader(file)
+	rows, err := reader.ReadAll()
+	if err != nil {
+		log.Printf("Erro na leitura do CSV: %s", err.Error())
+		redirectBackWithErrors(w, r, "Erro na leitura do CSV")
+	}
+
+	// Validate header
+	var clients []*models.Client
+
+	for i, linha := range rows {
+		log.Printf("linha: %s", linha)
+		if i > 0 {
+			client := models.NewClient(linha[0], linha[1], linha[2], linha[3], creator)
+			clients = append(clients, client)
+		}
+	}
+
+	clientService := services.NewClientService()
+	if err = clientService.CreateBatchClient(clients); err != nil {
+		redirectBackWithErrors(w, r, err.Error())
+	}
+
+	cookies.NotifySuccess(w, "Clientes foram importados!")
 	http.Redirect(w, r, "/client", http.StatusSeeOther)
 }
 
