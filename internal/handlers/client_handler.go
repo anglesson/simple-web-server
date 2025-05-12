@@ -29,14 +29,20 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	term := r.URL.Query().Get("term")
 	pagination := repositories.NewPagination(page, perPage)
 
-	clients, err := repositories.NewClientRepository().FindClientsByCreator(loggedUser.Creator, repositories.ClientQuery{
+	log.Printf("User Logado: %v", loggedUser.Email)
+
+	creatorRepository := repositories.NewCreatorRepository()
+	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
+	if err != nil {
+		redirectBackWithErrors(w, r, err.Error())
+	}
+
+	clients, err := repositories.NewClientRepository().FindClientsByCreator(creator, repositories.ClientQuery{
 		Term:       term,
 		Pagination: pagination,
 	})
 	if err != nil {
-		cookies.NotifyError(w, err.Error())
-		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
-		return
+		redirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "client", map[string]any{
@@ -87,16 +93,14 @@ func ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	creatorService := services.NewCreatorService()
 	creator, err := creatorService.FindCreatorByEmail(user_email)
 	if err != nil {
-		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
-		return
+		redirectBackWithErrors(w, r, err.Error())
 	}
 
 	// TODO: Validar se o cliente existe
 	clientService := services.NewClientService()
 	_, err = clientService.CreateClient(form.Name, form.CPF, form.Email, form.Phone, creator)
 	if err != nil {
-		cookies.NotifyError(w, err.Error())
-		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
+		redirectBackWithErrors(w, r, err.Error())
 	}
 	cookies.NotifySuccess(w, "Cliente foi cadastrado!")
 
@@ -177,4 +181,10 @@ func ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	cookies.NotifySuccess(w, "Cliente foi atualizado!")
 
 	http.Redirect(w, r, "/client", http.StatusSeeOther)
+}
+
+func redirectBackWithErrors(w http.ResponseWriter, r *http.Request, erroMessage string) {
+	cookies.NotifyError(w, erroMessage)
+	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+	return
 }

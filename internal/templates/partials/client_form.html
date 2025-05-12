@@ -59,34 +59,39 @@
     clientModal.addEventListener("show.bs.modal", function (event) {
       // Button that triggered the modal
       var button = event.relatedTarget;
-      // Extract info from data-bs-* attributes
-      var title = button.hasAttribute("data-bs-title")
-        ? button.getAttribute("data-bs-title")
-        : "Default Title";
-      var id_data = button.getAttribute("data-bs-id");
-      var name_data = button.getAttribute("data-bs-name");
-      var cpf_data = button.getAttribute("data-bs-cpf");
-      var email_data = button.getAttribute("data-bs-email");
-      var phone_data = button.getAttribute("data-bs-phone");
+      if (button.getAttribute('id') == "btn-create-client") {
+        clientForm.setAttribute("action", "/client")
+      } else {
 
-      var modalTitle = clientModal.querySelector(".modal-title");
-      // Removed modalBodyInput as there is no input element inside the modal body
-      // var id = document.getElementById("id");
-      var name = document.getElementById("name");
-      var cpf = document.getElementById("cpf");
-      var email = document.getElementById("email");
-      var phone = document.getElementById("phone");
+        // Extract info from data-bs-* attributes
+        var title = button.hasAttribute("data-bs-title")
+          ? button.getAttribute("data-bs-title")
+          : "Default Title";
+        var id_data = button.getAttribute("data-bs-id");
+        var name_data = button.getAttribute("data-bs-name");
+        var cpf_data = button.getAttribute("data-bs-cpf");
+        var email_data = button.getAttribute("data-bs-email");
+        var phone_data = button.getAttribute("data-bs-phone");
 
-      modalTitle.textContent = title || "Default Title";
-      // Removed modalBodyInput assignment as it is not applicable
-      // id.value = id_data
-      name.value = name_data
-      cpf.value = cpf_data
-      email.value = email_data
-      phone.value = phone_data;
-      clientForm.setAttribute("action", `/client/update/${id_data}`)
+        var modalTitle = clientModal.querySelector(".modal-title");
+        // Removed modalBodyInput as there is no input element inside the modal body
+        // var id = document.getElementById("id");
+        var name = document.getElementById("name");
+        var cpf = document.getElementById("cpf");
+        var email = document.getElementById("email");
+        var phone = document.getElementById("phone");
 
-      history.replaceState(null, '', '?' + "modal=" + "clientModal");
+        modalTitle.textContent = title || "Default Title";
+        // Removed modalBodyInput assignment as it is not applicable
+        // id.value = id_data
+        name.value = name_data
+        cpf.value = cpf_data
+        email.value = email_data
+        phone.value = phone_data;
+        clientForm.setAttribute("action", `/client/update/${id_data}`)
+
+        history.replaceState(null, '', '?' + "modal=" + "clientModal");
+      }
     });
 
     clientModal.addEventListener("hide.bs.modal", function (event) {

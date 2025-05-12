@@ -37,16 +37,17 @@ func (cr *ClientRepository) FindClientsByCreator(creator *models.Creator, query 
 	err := database.DB.
 		Offset(query.Pagination.GetOffset()).
 		Limit(query.Pagination.GetLimit()).
+		Model(&models.Client{}).
+		Joins("JOIN client_creators ON client_creators.client_id = clients.id").
+		Where("client_creators.creator_id = ?", creator.ID).
 		Preload("Contact").
 		Preload("Creators").
-
-		// TODO: To Able
-		// Scopes(ContainsNameCpfEmailOrPhoneWith(query.Term)).
+		Scopes(ContainsNameCpfEmailOrPhoneWith(query.Term)).
 		Find(&clients).
 		Error
 	if err != nil {
 		log.Printf("Erro na busca de ebooks: %s", err)
-		return nil, errors.New("erro na busca de dados")
+		return nil, errors.New("erro na busca de ebooks")
 	}
 
 	query.Pagination.Total = int64(len(clients))

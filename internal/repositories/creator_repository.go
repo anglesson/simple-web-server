@@ -17,7 +17,7 @@ func NewCreatorRepository() *CreatorRepository {
 
 func (cr *CreatorRepository) FindCreatorByUserID(userID uint) (*models.Creator, error) {
 	var creator models.Creator
-	err := database.DB.First(&creator, userID).Error
+	err := database.DB.First(&creator, "user_id = ?", userID).Error
 	if err != nil {
 		log.Printf("creator isn't recovery. error: %s", err.Error())
 		return nil, errors.New("creator not found")
