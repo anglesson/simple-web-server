@@ -1,6 +1,7 @@
 package services
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -109,4 +110,6 @@ func (s *SessionService) InitSession(w http.ResponseWriter, email string) {
 	userFound.SessionToken = s.SessionToken
 	userFound.CSRFToken = s.CSRFToken
 	repositories.Users[email] = userFound
+
+	log.Printf("Initialized session with EMAIL: %s", email)
 }

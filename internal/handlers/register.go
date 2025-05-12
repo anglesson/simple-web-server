@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
-	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
 )
@@ -92,14 +90,18 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	hashedPassword := utils.HashPassword(form.Password)
 
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
-	repositories.NewUserRepository().Save(user)
+	if err := repositories.NewUserRepository().Save(user); err != nil {
+		redirectBackWithErrors(w, r, err.Error())
+	}
+
+	creatorRepository := repositories.NewCreatorRepository()
 	creator := models.NewCreator(user.Username, user.Email, "", user.ID)
+	if err := creatorRepository.Create(creator); err != nil {
+		redirectBackWithErrors(w, r, err.Error())
+	}
 
-	database.DB.Save(&creator) // TODO: Create middleware
+	sessionService.InitSession(w, user.Email)
 
-	sessionService.InitSession(w, form.Email)
-
-	log.Printf("User registered ID: %d, EMAIL: %s", user.ID, user.Email)
 	mailPort, _ := strconv.Atoi(config.AppConfig.MailPort)
 	s := mail.NewEmailService(mail.NewGoMailer(
 		config.AppConfig.MailHost,

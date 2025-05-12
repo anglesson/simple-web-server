@@ -1,0 +1,35 @@
+package repositories
+
+import (
+	"errors"
+	"log"
+
+	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/shared/database"
+)
+
+type CreatorRepository struct {
+}
+
+func NewCreatorRepository() *CreatorRepository {
+	return &CreatorRepository{}
+}
+
+func (cr *CreatorRepository) FindCreatorByUserID(userID uint) (*models.Creator, error) {
+	var creator models.Creator
+	err := database.DB.First(&creator, userID).Error
+	if err != nil {
+		log.Printf("creator isn't recovery. error: %s", err.Error())
+		return nil, errors.New("creator not found")
+	}
+	return &creator, nil
+}
+
+func (cr *CreatorRepository) Create(creator *models.Creator) error {
+	err := database.DB.Create(&creator).Error
+	if err != nil {
+		log.Printf("fail on create 'creator': %s", err.Error())
+		return errors.New("creator not found")
+	}
+	return nil
+}
