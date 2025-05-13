@@ -54,10 +54,12 @@ func EbookCreateView(w http.ResponseWriter, r *http.Request) {
 }
 
 func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
+	log.Println("Criando ebook")
 	errors := make(map[string]string)
 
 	value, err := utils.BRLToFloat(r.FormValue("value"))
 	if err != nil {
+		log.Println("Falha na conversão do ebook")
 		http.Error(w, "erro na conversão", http.StatusInternalServerError)
 	}
 	form := models.EbookRequest{
@@ -74,8 +76,6 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	file, _, err := r.FormFile("file")
 	if err == nil {
-		errors["file"] = "Arquivo é obrigatório"
-	} else {
 		errFile := validateFile(file, "application/pdf")
 		for key, value := range errFile {
 			errors[key] = value
@@ -102,6 +102,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
 	if !ok {
+		log.Println("Invalid user email")
 		http.Error(w, "Invalid user email", http.StatusInternalServerError)
 		return
 	}
@@ -128,10 +129,11 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	locationFile, _ := storage.Upload(file, fileHeader.Filename)
+	log.Println("Upload realizado")
 	ebook := models.NewEbook(form.Title, form.Description, locationFile, form.Value, creator)
 
 	database.DB.Create(&ebook)
-
+	log.Println("Ebook criado")
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
 }
 
@@ -144,7 +146,7 @@ func validateFile(file multipart.File, expectedContentType string) map[string]st
 	// Validar tamanho
 	fileBytes, _ := io.ReadAll(file)
 	if len(fileBytes) > 60*1024*1024 { // 60 MB
-		errors["File"] = "Arquivo deve ter no máximo 5 MB"
+		errors["File"] = "Arquivo deve ter no máximo 60 MB"
 	}
 
 	// Validar tipo MIME

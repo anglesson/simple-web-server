@@ -241,6 +241,7 @@ func ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 	clientService := services.NewClientService()
 	if err = clientService.CreateBatchClient(clients); err != nil {
 		redirectBackWithErrors(w, r, err.Error())
+		return
 	}
 
 	cookies.NotifySuccess(w, "Clientes foram importados!")
@@ -250,5 +251,4 @@ func ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 func redirectBackWithErrors(w http.ResponseWriter, r *http.Request, erroMessage string) {
 	cookies.NotifyError(w, erroMessage)
 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
-	return
 }
