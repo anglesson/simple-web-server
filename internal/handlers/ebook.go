@@ -298,7 +298,6 @@ func GetSessionUser(r *http.Request) *models.User {
 }
 
 func EbookShowView(w http.ResponseWriter, r *http.Request) {
-	// Recupera o ebook
 	loggedUser := middlewares.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)

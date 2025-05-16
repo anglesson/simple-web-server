@@ -40,7 +40,7 @@
           <div class="d-md-flex justify-content-md-end
               align-items-center">
             <div class="text-center text-md-end">
-              <a href="#" class="btn btn-primary">Enviar</a>
+              <button id="buttonSend" type="submit" form="sendForm" class="btn btn-primary">Enviar</button>
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@
             <table class="table text-truncate">
               <thead class="table-light">
                 <tr>
-                  <th><input id="checkSelectAll" class="form-check-input" type="checkbox"><label for="checkSelectAll">&nbsp; Selecionar tudo</label></th>
+                  <th><input id="checkSelectAll" class="form-check-input" type="checkbox"></th>
                   <th>Nome</th>
                   <th>Email</th>
                   <th>CPF</th>
@@ -113,39 +113,41 @@
                 </tr>
               </thead>
               <tbody>
-                {{ range .Data.Clients }}
-                <tr>
-                  <td class="align-middle text-truncate" style="max-width: 200px">
-                    <div class="d-flex align-items-center">
-                      <div class="lh-1">
-                        <input class="form-check-input" type="checkbox" name="clients" value="{{.ID}}" />
+                <form id="sendForm" action="/purchase/ebook/{{.Data.Ebook.ID}}" method="post">
+                  {{ range .Data.Clients }}
+                  <tr>
+                    <td class="align-middle text-truncate" style="max-width: 200px">
+                      <div class="d-flex align-items-center">
+                        <div class="lh-1">
+                          <input class="form-check-input" type="checkbox" name="clients[]" value="{{.ID}}" />
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="align-middle text-truncate" style="max-width: 200px">
-                    <div class="d-flex align-items-center">
-                      <div class="lh-1">
-                        <h5 class="mb-1">{{.Name}}</h5>
+                    </td>
+                    <td class="align-middle text-truncate" style="max-width: 200px">
+                      <div class="d-flex align-items-center">
+                        <div class="lh-1">
+                          <h5 class="mb-1">{{.Name}}</h5>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="align-middle text-truncate">
-                    {{ .Contact.Email }}
-                  </td>
-                  <td class="align-middle">{{ .CPF }}</td>
-                  <td class="align-middle">
-                    <div class="dropdown dropstart">
-                      <a class="text-muted text-primary-hover" href="#" role="button" id="dropdownClientActions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="icon-xxs" data-feather="more-vertical"></i>
-                      </a>
-                      <div class="dropdown-menu" aria-labelledby="dropdownClientActions">
-                        <a class="dropdown-item btn" data-bs-toggle="modal" data-bs-target="#clientModal" data-bs-title="Editar Cliente" data-bs-id="{{.ID}}" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}" data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">Editar</a>
-                        <a class="dropdown-item" href="#">Excluir</a>
+                    </td>
+                    <td class="align-middle text-truncate">
+                      {{ .Contact.Email }}
+                    </td>
+                    <td class="align-middle">{{ .CPF }}</td>
+                    <td class="align-middle">
+                      <div class="dropdown dropstart">
+                        <a class="text-muted text-primary-hover" href="#" role="button" id="dropdownClientActions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <i class="icon-xxs" data-feather="more-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownClientActions">
+                          <a class="dropdown-item btn" data-bs-toggle="modal" data-bs-target="#clientModal" data-bs-title="Editar Cliente" data-bs-id="{{.ID}}" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}" data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">Editar</a>
+                          <a class="dropdown-item" href="#">Excluir</a>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                </tr>
-                {{ end }}
+                    </td>
+                  </tr>
+                  {{ end }}
+                </form>
               </tbody>
             </table>
           </div>
@@ -159,21 +161,27 @@
 <script>
   window.addEventListener('DOMContentLoaded', () => {
     let checkSelectAll = document.getElementById("checkSelectAll")
+    let buttonSend = document.getElementById("buttonSend")
+    let checkClients = Array.from(document.getElementsByName('clients[]'))
+    let sendForm = document.getElementById("sendForm")
 
     checkSelectAll.addEventListener("click", function () {
-      checkClients = Array.from(document.getElementsByName('clients'))
-
-
-      if (!checkSelectAll.checked) {
+      console.log(checkSelectAll.checked)
+      if (checkSelectAll.checked) {
         checkClients.forEach(element => {
-          element.checked = false;
+          element.checked = true;
         });
         return;
       }
 
       checkClients.forEach(element => {
-        element.checked = true;
+        element.checked = false;
       });
+    })
+
+    sendForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      event.target.submit();
     })
   })
 </script>

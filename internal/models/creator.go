@@ -5,7 +5,7 @@ import (
 )
 
 type Creator struct {
-	*gorm.Model
+	gorm.Model
 	Name      string `json:"name"`
 	ContactID uint   `json:"contact_id"` // Foreign key
 	Contact   Contact

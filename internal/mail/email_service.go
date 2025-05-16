@@ -1,7 +1,10 @@
 package mail
 
 import (
+	"fmt"
+
 	"github.com/anglesson/simple-web-server/internal/config"
+	"github.com/anglesson/simple-web-server/internal/models"
 )
 
 type EmailService struct {
@@ -42,4 +45,22 @@ func (s *EmailService) SendAccountConfirmation(name, email, token string) {
 	s.mailer.Subject("Confirm your account")
 	s.mailer.Body(NewEmail("account_confirmation", data))
 	s.mailer.Send()
+}
+
+func (s *EmailService) SendLinkToDownload(purchases []*models.Purchase) {
+	for _, purchase := range purchases {
+		data := map[string]interface{}{
+			"Name":               purchase.Client.Name,
+			"Title":              "Seu ebook chegou!",
+			"AppName":            config.AppConfig.AppName,
+			"Contact":            config.AppConfig.MailFromAddress,
+			"ConfirmAccountLink": fmt.Sprintf("/download/ebook/%d", purchase.EbookID),
+		}
+
+		s.mailer.From(config.AppConfig.MailFromAddress)
+		s.mailer.To(purchase.Client.Contact.Email)
+		s.mailer.Subject("Seu ebook chegou!")
+		s.mailer.Body(NewEmail("ebook_download", data))
+		s.mailer.Send()
+	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type Ebook struct {
-	*gorm.Model
+	gorm.Model
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	Value       float64 `json:"value"`

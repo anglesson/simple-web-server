@@ -74,12 +74,17 @@ func View(w http.ResponseWriter, r *http.Request, templateName string, data any,
 		return
 	}
 
-	err = t.ExecuteTemplate(w, layout+".html", map[string]any{
+	tmplData := map[string]any{
 		"Form":   form,
 		"Errors": errors,
-		"Flash":  flash,
 		"Data":   data,
-	})
+	}
+
+	if flash.Message != "" {
+		tmplData["Flash"] = flash
+	}
+
+	err = t.ExecuteTemplate(w, layout+".html", tmplData)
 	if err != nil {
 		log.Printf("Erro ao renderizar template: %s", err)
 	}
