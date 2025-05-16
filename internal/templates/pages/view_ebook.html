@@ -1,0 +1,180 @@
+{{ define "title" }} Ebooks {{ end }}
+{{ define "content" }}
+<!-- Container fluid -->
+<div class="container-fluid p-6 gap-2">
+  <div class="row">
+    <div class="col-lg-12 col-md-12 col-12">
+      <div class="card">
+        <!-- card header  -->
+        <div class="card-header p-4 bg-white">
+          <h4 class="mb-0">Detalhes do Ebook</h4>
+        </div>
+        <!-- card body  -->
+        <div class="card-body">
+          <!-- row  -->
+          <div class="row">
+            <!-- col  -->
+            <div class="col-xl-1 col-lg-6 col-md-12 col-12 d-flex justify-content-center d-flex align-items-center">
+              <div class="mb-2">
+                <!-- content  -->
+                <div>
+                  <img src="/assets/images/svg/ebook.svg" width="100" />
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-8 col-lg-6 col-md-12 col-12">
+              <div class="mb-2">
+                <!-- content  -->
+                <h3 class="mt-2 mb-3 fw-bold">{{.Data.Ebook.Title}} </h3>
+                <p>{{.Data.Ebook.Description}}
+                </p>
+                <h3 class="fw-bold text-primary">{{.Data.Ebook.GetValue}}</h3>
+                <p><i>Última atualização: {{.Data.Ebook.GetLastUpdate}}</i></p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <!-- card footer  -->
+        <div class="card-footer bg-white">
+          <div class="d-md-flex justify-content-md-end
+              align-items-center">
+            <div class="text-center text-md-end">
+              <a href="#" class="btn btn-primary">Enviar</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="py-6">
+    <div class="row">
+      <!-- card  -->
+      <div class="col-xl-12 col-lg-12 col-md-12 col-12">
+        <div class="card h-100">
+          <!-- card header  -->
+          <div class="card-header bg-white py-4">
+            <div class="row g-2 justify-content-md-end">
+              <div class="col-md-7 col-lg-4">
+                <form action="" method="get">
+                  <input id="searchForm" name="term" type="search" class="form-control w-100" placeholder="Busque por Clientes" />
+                  <script>
+                    window.onload = () => {
+                      const searchInput = document.getElementById("searchForm");
+
+                      const urlParams = new URLSearchParams(
+                        window.location.search
+                      );
+                      const searchTerm = urlParams.get("term");
+
+                      if (searchTerm) {
+                        searchInput.value = searchTerm;
+                      }
+
+                      searchInput.addEventListener("input", function () {
+                        if (searchInput.value === "") {
+                          history.replaceState(
+                            null,
+                            "",
+                            window.location.pathname
+                          );
+                          document.location.reload();
+                        }
+                      });
+
+                      if (window.location.hostname === "localhost") {
+                        const debug = false;
+                        if (debug) {
+                          console.log(
+                            "URL search params:",
+                            window.location.search
+                          );
+                          console.log("Search term:", searchTerm);
+                        }
+                      }
+                    };
+                  </script>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- table  -->
+          {{ if .Data.Clients }}
+          <div class="table-responsive">
+            <table class="table text-truncate">
+              <thead class="table-light">
+                <tr>
+                  <th><input id="checkSelectAll" class="form-check-input" type="checkbox"><label for="checkSelectAll">&nbsp; Selecionar tudo</label></th>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>CPF</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {{ range .Data.Clients }}
+                <tr>
+                  <td class="align-middle text-truncate" style="max-width: 200px">
+                    <div class="d-flex align-items-center">
+                      <div class="lh-1">
+                        <input class="form-check-input" type="checkbox" name="clients" value="{{.ID}}" />
+                      </div>
+                    </div>
+                  </td>
+                  <td class="align-middle text-truncate" style="max-width: 200px">
+                    <div class="d-flex align-items-center">
+                      <div class="lh-1">
+                        <h5 class="mb-1">{{.Name}}</h5>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="align-middle text-truncate">
+                    {{ .Contact.Email }}
+                  </td>
+                  <td class="align-middle">{{ .CPF }}</td>
+                  <td class="align-middle">
+                    <div class="dropdown dropstart">
+                      <a class="text-muted text-primary-hover" href="#" role="button" id="dropdownClientActions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="icon-xxs" data-feather="more-vertical"></i>
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownClientActions">
+                        <a class="dropdown-item btn" data-bs-toggle="modal" data-bs-target="#clientModal" data-bs-title="Editar Cliente" data-bs-id="{{.ID}}" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}" data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">Editar</a>
+                        <a class="dropdown-item" href="#">Excluir</a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {{ end }}
+              </tbody>
+            </table>
+          </div>
+          {{ else }} {{ template "empty-table" . }} {{ end }} {{ template
+          "table-footer" . }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    let checkSelectAll = document.getElementById("checkSelectAll")
+
+    checkSelectAll.addEventListener("click", function () {
+      checkClients = Array.from(document.getElementsByName('clients'))
+
+
+      if (!checkSelectAll.checked) {
+        checkClients.forEach(element => {
+          element.checked = false;
+        });
+        return;
+      }
+
+      checkClients.forEach(element => {
+        element.checked = true;
+      });
+    })
+  })
+</script>
+{{ end }}

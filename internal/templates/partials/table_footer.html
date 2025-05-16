@@ -5,8 +5,7 @@
     <nav class="mt-2 mt-md-0">
         <ul class="pagination mb-0">
             <li class="page-item {{if le .Data.Pagination.Page 1 }}disabled{{end}}">
-                <a class="page-link"
-                    href="?page={{.Data.Pagination.PrevPage}}&page_size={{.Data.Pagination.PageSize}}">Previous</a>
+                <a class="page-link" href="?page={{.Data.Pagination.PrevPage}}&page_size={{.Data.Pagination.PageSize}}">Previous</a>
             </li>
 
             {{ $page := .Data.Pagination.Page }}
@@ -19,35 +18,34 @@
                 <a class="page-link" href="?page={{$prev}}&page_size={{$size}}">{{$prev}}</a>
             </li>
             {{else }}
-            <li class="page-item {{if eq $page $prev}}active{{end}}">
-                <a class="page-link" href="?page={{$prev}}&page_size={{$size}}">{{$prev}}</a>
-            </li>
-            {{end}}
+                <li class="page-item {{if eq $page $prev}}active{{end}}">
+                    <a class="page-link" href="?page={{$prev}}&page_size={{$size}}">{{$prev}}</a>
+                </li>
+                {{end}}
 
-            {{if eq $page $prev}}
-            <li class="page-item">
-                <a class="page-link" href="?page={{$next}}&page_size={{$size}}">{{$next}}</a>
-            </li>
-            {{else }}
-            <li class="page-item {{if ne $page $prev}}{{if ne $page $next}}active{{end}}{{end}}">
-                <a class="page-link" href="#">{{$page}}</a>
-            </li>
-            {{end}}
+                {{if eq $page $prev}}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{$next}}&page_size={{$size}}">{{$next}}</a>
+                </li>
+                {{else }}
+                    <li class="page-item {{if ne $page $prev}}{{if ne $page $next}}active{{end}}{{end}}">
+                        <a class="page-link" href="#">{{$page}}</a>
+                    </li>
+                    {{end}}
 
-            {{if eq $page $prev}}
-            <li class="page-item">
-                <a class="page-link" href="?page=3&page_size={{$size}}">3</a>
-            </li>
-            {{else }}
-            <li class="page-item">
-                <a class="page-link" href="?page={{$next}}&page_size={{$size}}">{{$next}}</a>
-            </li>
-            {{end}}
+                    {{if eq $page $prev}}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=3&page_size={{$size}}">3</a>
+                    </li>
+                    {{else }}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{$next}}&page_size={{$size}}">{{$next}}</a>
+                        </li>
+                        {{end}}
 
-            <li class="page-item {{if lt .Data.Pagination.NextPage .Data.Pagination.TotalPages }}disabled{{end}}">
-                <a class="page-link"
-                    href="?page={{.Data.Pagination.NextPage}}&page_size={{.Data.Pagination.PageSize}}">Next</a>
-            </li>
+                        <li class="page-item {{if lt .Data.Pagination.NextPage .Data.Pagination.TotalPages }}disabled{{end}}">
+                            <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&page_size={{.Data.Pagination.PageSize}}">Next</a>
+                        </li>
         </ul>
     </nav>
     <div class="page-item">
@@ -57,7 +55,8 @@
                 <option value="10" {{if eq .Data.Pagination.PageSize 10}}selected{{end}}>10</option>
                 <option value="20" {{if eq .Data.Pagination.PageSize 20}}selected{{end}}>20</option>
                 <option value="50" {{if eq .Data.Pagination.PageSize 50}}selected{{end}}>50</option>
-                <option value="100" {{if eq .Data.Pagination.PageSize 100}}selected{{end}}>100</option>
+                <option value="500" {{if eq .Data.Pagination.PageSize 500}}selected{{end}}>500</option>
+                <option value="1000" {{if eq .Data.Pagination.PageSize 1000}}selected{{end}}>1000</option>
             </select>
         </form>
     </div>

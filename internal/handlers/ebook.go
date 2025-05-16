@@ -296,3 +296,52 @@ func GetSessionUser(r *http.Request) *models.User {
 	}
 	return repositories.NewUserRepository().FindByEmail(user_email)
 }
+
+func EbookShowView(w http.ResponseWriter, r *http.Request) {
+	// Recupera o ebook
+	loggedUser := middlewares.Auth(r)
+	if loggedUser.ID == 0 {
+		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
+		return
+	}
+
+	ebook := GetEbookByID(w, r)
+	if ebook == nil {
+		http.Error(w, "Erro ao buscar ebook", http.StatusNotFound)
+		return
+	}
+
+	if loggedUser.ID != ebook.Creator.UserID {
+		http.Redirect(w, r, "/", http.StatusUnauthorized)
+		return
+	}
+
+	ebook.FileURL = storage.GenerateDownloadLink(ebook.File)
+
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	term := r.URL.Query().Get("term")
+	pagination := repositories.NewPagination(page, perPage)
+
+	log.Printf("User Logado: %v", loggedUser.Email)
+
+	creatorRepository := repositories.NewCreatorRepository()
+	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
+	if err != nil {
+		redirectBackWithErrors(w, r, err.Error())
+	}
+
+	clients, err := repositories.NewClientRepository().FindClientsByCreator(creator, repositories.ClientQuery{
+		Term:       term,
+		Pagination: pagination,
+	})
+	if err != nil {
+		redirectBackWithErrors(w, r, err.Error())
+	}
+
+	template.View(w, r, "view_ebook", map[string]any{
+		"Ebook":      ebook,
+		"Clients":    clients,
+		"Pagination": pagination,
+	}, "admin")
+}

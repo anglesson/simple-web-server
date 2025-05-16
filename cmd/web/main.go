@@ -42,6 +42,7 @@ func main() {
 		r.Get("/ebook/create", handlers.EbookCreateView)
 		r.Post("/ebook/create", handlers.EbookCreateSubmit)
 		r.Get("/ebook/edit/{id}", handlers.EbookUpdateView)
+		r.Get("/ebook/view/{id}", handlers.EbookShowView)
 		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
 		r.Get("/client", handlers.ClientIndexView)
 		r.Post("/client", handlers.ClientCreateSubmit)

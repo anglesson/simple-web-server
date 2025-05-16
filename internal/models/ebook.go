@@ -32,3 +32,7 @@ func NewEbook(title, description, file string, value float64, creator Creator) *
 func (e *Ebook) GetValue() string {
 	return utils.FloatToBRL(e.Value)
 }
+
+func (e *Ebook) GetLastUpdate() string {
+	return e.UpdatedAt.Format("02-01-2006 15:04")
+}
