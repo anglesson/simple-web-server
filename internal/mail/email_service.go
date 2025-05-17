@@ -50,11 +50,11 @@ func (s *EmailService) SendAccountConfirmation(name, email, token string) {
 func (s *EmailService) SendLinkToDownload(purchases []*models.Purchase) {
 	for _, purchase := range purchases {
 		data := map[string]interface{}{
-			"Name":               purchase.Client.Name,
-			"Title":              "Seu ebook chegou!",
-			"AppName":            config.AppConfig.AppName,
-			"Contact":            config.AppConfig.MailFromAddress,
-			"ConfirmAccountLink": fmt.Sprintf("/download/ebook/%d", purchase.EbookID),
+			"Name":              purchase.Client.Name,
+			"Title":             "Seu ebook chegou!",
+			"AppName":           config.AppConfig.AppName,
+			"Contact":           config.AppConfig.MailFromAddress,
+			"EbookDownloadLink": fmt.Sprintf("/download/ebook/%d", purchase.EbookID),
 		}
 
 		s.mailer.From(config.AppConfig.MailFromAddress)
