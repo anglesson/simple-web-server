@@ -38,7 +38,7 @@
           <div class="d-md-flex justify-content-md-end
               align-items-center">
             <div class="text-center text-md-end">
-              <button id="buttonSend" type="submit" form="sendForm" class="btn btn-primary">Enviar</button>
+              <button id="buttonSend" type="button" disabled class="btn btn-primary">Enviar</button>
             </div>
           </div>
         </div>
@@ -117,7 +117,7 @@
                     <td class="align-middle text-truncate" style="max-width: 200px">
                       <div class="d-flex align-items-center">
                         <div class="lh-1">
-                          <input class="form-check-input" type="checkbox" name="clients[]" value="{{.ID}}" />
+                          <input class="form-check-input" type="checkbox" name="clients[]" value="{{.ID}}" data-client-name="{{.Name}}" data-client-email="{{.Contact.Email}}" onclick="toggleEnableButton(event);" />
                         </div>
                       </div>
                     </td>
@@ -156,31 +156,24 @@
     </div>
   </div>
 </div>
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    let checkSelectAll = document.getElementById("checkSelectAll")
-    let buttonSend = document.getElementById("buttonSend")
-    let checkClients = Array.from(document.getElementsByName('clients[]'))
-    let sendForm = document.getElementById("sendForm")
 
-    checkSelectAll.addEventListener("click", function () {
-      console.log(checkSelectAll.checked)
-      if (checkSelectAll.checked) {
-        checkClients.forEach(element => {
-          element.checked = true;
-        });
-        return;
-      }
+<!-- Modal Send Confirmation -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Confirmação de envio</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button form="sendForm" type="submit" class="btn btn-primary">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-      checkClients.forEach(element => {
-        element.checked = false;
-      });
-    })
-
-    sendForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      event.target.submit();
-    })
-  })
-</script>
+<script defer src="/assets/js/ebook.view.js"></script>
 {{ end }}
