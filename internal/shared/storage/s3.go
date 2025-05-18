@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"time"
+	"os"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -65,12 +65,44 @@ func GenerateDownloadLink(filename string) string {
 	}
 
 	// Gera o link pré-assinado com tempo de expiração
-	presignedURL, err := presigner.PresignGetObject(context.TODO(), params, func(opts *s3.PresignOptions) {
-		opts.Expires = time.Minute * 15 // link expira em 15 minutos
-	})
+	presignedURL, err := presigner.PresignGetObject(context.TODO(), params, func(opts *s3.PresignOptions) {})
 	if err != nil {
 		log.Fatalf("Erro ao gerar URL pré-assinada: %v", err)
 	}
 
 	return presignedURL.URL
+}
+
+func GetFile(filename string) (string, error) {
+	cfg := getConfig()
+
+	s3Client := s3.NewFromConfig(cfg)
+
+	params := &s3.GetObjectInput{
+		Bucket: aws.String(config.AppConfig.S3BucketName),
+		Key:    aws.String(filename),
+	}
+	output, err := s3Client.GetObject(context.TODO(), params)
+	if err != nil {
+		log.Fatalf("Erro ao gerar URL pré-assinada: %v", err)
+		return "", err
+	}
+
+	// Caminho local onde você quer salvar o arquivo
+	localPath := "/tmp/" + filename
+
+	// Criar arquivo local
+	f, err := os.Create(localPath)
+	if err != nil {
+		log.Fatalf("erro ao criar arquivo local: %v", err)
+	}
+	defer f.Close()
+
+	// Copiar conteúdo do S3 para o arquivo local
+	_, err = io.Copy(f, output.Body)
+	if err != nil {
+		log.Fatalf("erro ao salvar conteúdo: %v", err)
+	}
+
+	return localPath, nil
 }

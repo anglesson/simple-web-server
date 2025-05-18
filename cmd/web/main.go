@@ -31,6 +31,7 @@ func main() {
 		r.Post("/register", handlers.RegisterSubmit)
 		r.Get("/forget-password", handlers.ForgetPasswordView)
 		r.Post("/forget-password", handlers.ForgetPasswordSubmit)
+		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
 	})
 
 	// Private routes

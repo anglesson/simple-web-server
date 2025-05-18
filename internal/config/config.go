@@ -10,6 +10,7 @@ import (
 type AppConfiguration struct {
 	AppName            string
 	AppMode            string
+	Host               string
 	Port               string
 	MailHost           string
 	MailPort           string
@@ -35,6 +36,7 @@ func LoadConfigs() {
 		}
 	}
 	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Web App")
+	AppConfig.Host = GetEnv("HOST", "http://localhost")
 	AppConfig.Port = GetEnv("PORT", "8080")
 	AppConfig.MailHost = GetEnv("MAIL_HOST", "sandbox.smtp.mailtrap.io")
 	AppConfig.MailPort = GetEnv("MAIL_PORT", "2525")

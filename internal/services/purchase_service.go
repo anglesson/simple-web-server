@@ -6,6 +6,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/shared/storage"
 )
 
 type PurchaseService struct {
@@ -36,4 +37,34 @@ func (ps *PurchaseService) CreatePurchase(ebookId uint, clients []uint) error {
 
 	go ps.mailService.SendLinkToDownload(purchases)
 	return nil
+}
+
+func (ps *PurchaseService) GetEbookFile(purchaseID int) (string, error) {
+	purchase, err := ps.purchaseRepository.FindByID(uint(purchaseID))
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+
+	if !purchase.AvailableDownloads() {
+		return "", errors.New("não é possível realizar o download, limite de downloads atingido")
+	}
+
+	if purchase.IsExpired() {
+		return "", errors.New("não é possível realizar o download, o pedido está expirado")
+	}
+
+	fileLocation, err := storage.GetFile(purchase.Ebook.File)
+	if err != nil {
+		return "", errors.New("erro no download do objeto")
+	}
+
+	outputFilePath, err := ApplyWatermark(fileLocation, purchase.Client.Name, purchase.Client.CPF, purchase.Client.Contact.Email)
+	if err != nil {
+		return "", err
+	}
+
+	purchase.UseDownload()
+	ps.purchaseRepository.Update(purchase)
+
+	return outputFilePath, nil
 }

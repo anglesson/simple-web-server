@@ -128,9 +128,9 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	locationFile, _ := storage.Upload(file, fileHeader.Filename)
+	storage.Upload(file, fileHeader.Filename)
 	log.Println("Upload realizado")
-	ebook := models.NewEbook(form.Title, form.Description, locationFile, form.Value, creator)
+	ebook := models.NewEbook(form.Title, form.Description, fileHeader.Filename, form.Value, creator)
 
 	database.DB.Create(&ebook)
 	log.Println("Ebook criado")

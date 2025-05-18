@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/config"
@@ -12,6 +13,17 @@ import (
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/go-chi/chi/v5"
 )
+
+func purchaseServiceFactory() *services.PurchaseService {
+	mailPort, _ := strconv.Atoi(config.AppConfig.MailPort)
+	ms := mail.NewEmailService(mail.NewGoMailer(
+		config.AppConfig.MailHost,
+		mailPort,
+		config.AppConfig.MailUsername,
+		config.AppConfig.MailPassword))
+	pr := repositories.NewPurchaseRepository()
+	return services.NewPurchaseService(pr, ms)
+}
 
 func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -38,16 +50,27 @@ func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ClientID: %v", id)
 	}
 
-	mailPort, _ := strconv.Atoi(config.AppConfig.MailPort)
-	ms := mail.NewEmailService(mail.NewGoMailer(
-		config.AppConfig.MailHost,
-		mailPort,
-		config.AppConfig.MailUsername,
-		config.AppConfig.MailPassword))
-	pr := repositories.NewPurchaseRepository()
-	purchaseService := services.NewPurchaseService(pr, ms)
-	purchaseService.CreatePurchase(uint(ebookId), clients)
+	purchaseServiceFactory().CreatePurchase(uint(ebookId), clients)
 
 	cookies.NotifySuccess(w, "Envio realizado!")
 	http.Redirect(w, r, "/ebook/view/"+ebookIdStr, http.StatusSeeOther)
+}
+
+func PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	// Get ID Purchase
+	idStrPurchase := chi.URLParam(r, "id")
+
+	purchaseID, _ := strconv.Atoi(idStrPurchase)
+
+	outputPath, err := purchaseServiceFactory().GetEbookFile(purchaseID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	defer os.Remove(outputPath)
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(outputPath))
+	w.Header().Set("Content-Type", "application/octet-stream")
+	http.ServeFile(w, r, outputPath)
 }
