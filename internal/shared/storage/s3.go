@@ -67,7 +67,7 @@ func GenerateDownloadLink(filename string) string {
 	// Gera o link pré-assinado com tempo de expiração
 	presignedURL, err := presigner.PresignGetObject(context.TODO(), params, func(opts *s3.PresignOptions) {})
 	if err != nil {
-		log.Fatalf("Erro ao gerar URL pré-assinada: %v", err)
+		log.Panicf("Erro ao gerar URL pré-assinada: %v", err)
 	}
 
 	return presignedURL.URL
@@ -84,7 +84,7 @@ func GetFile(filename string) (string, error) {
 	}
 	output, err := s3Client.GetObject(context.TODO(), params)
 	if err != nil {
-		log.Fatalf("Erro ao gerar URL pré-assinada: %v", err)
+		log.Panicf("Erro ao gerar URL pré-assinada: %v", err)
 		return "", err
 	}
 
