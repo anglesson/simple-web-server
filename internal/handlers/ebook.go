@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -54,6 +55,12 @@ func EbookCreateView(w http.ResponseWriter, r *http.Request) {
 }
 
 func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
+	loggedUser := middlewares.Auth(r)
+	if loggedUser.ID == 0 {
+		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
+		return
+	}
+
 	log.Println("Criando ebook")
 	errors := make(map[string]string)
 
@@ -100,24 +107,17 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
-	if !ok {
-		log.Println("Invalid user email")
-		http.Error(w, "Invalid user email", http.StatusInternalServerError)
+	fmt.Printf("Criando ebook para: %v", loggedUser)
+
+	// Busca o criador
+	creator, err := services.NewCreatorService().FindCreatorByUserID(loggedUser.ID)
+	if err != nil {
+		log.Printf("Falha ao cadastrar ebook: %s", err)
+		redirectBackWithErrors(w, r, "Falha ao cadastrar ebook")
 		return
 	}
 
-	user := repositories.NewUserRepository().FindByEmail(user_email)
-	creator := models.Creator{
-		UserID: user.ID,
-	}
-	result := database.DB.First(&creator)
-
-	if result.Error != nil {
-		log.Printf("Falha ao cadastrar ebook: %s", result.Error)
-		http.Error(w, "Entre em contato", http.StatusInternalServerError)
-		return
-	}
+	fmt.Printf("Criando ebook para creator: %v", creator.ID)
 
 	// Obtenha o arquivo do formulário
 	file, fileHeader, err := r.FormFile("file") // "file" deve ser o nome do campo no HTML
@@ -130,8 +130,9 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	storage.Upload(file, fileHeader.Filename)
 	log.Println("Upload realizado")
-	ebook := models.NewEbook(form.Title, form.Description, fileHeader.Filename, form.Value, creator)
+	ebook := models.NewEbook(form.Title, form.Description, fileHeader.Filename, form.Value, *creator)
 
+	log.Printf("dados do ebook: %v", &ebook)
 	database.DB.Create(&ebook)
 	log.Println("Ebook criado")
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)

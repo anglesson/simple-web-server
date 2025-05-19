@@ -24,12 +24,14 @@ func NewEbookRepository() *EbookRepository {
 
 func (r *EbookRepository) FindEbooksByUser(UserID uint, query EbookQuery) (*[]models.Ebook, error) {
 	var ebooks []models.Ebook
-
+	log.Printf("UsuarioID: %v", UserID)
 	err := database.DB.
-		Offset(query.Pagination.GetOffset()).Limit(query.Pagination.GetLimit()).
-		Where("user_id = ?", UserID).
-		InnerJoins("Creator").
+		Model(&models.Ebook{}).
+		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
+		Where("creators.user_id = ?", UserID).
 		Scopes(ContainsTitleOrDescriptionWith(query.Title)).
+		Offset(query.Pagination.GetOffset()).
+		Limit(query.Pagination.GetLimit()).
 		Find(&ebooks).
 		Error
 	if err != nil {
@@ -44,6 +46,6 @@ func (r *EbookRepository) FindEbooksByUser(UserID uint, query EbookQuery) (*[]mo
 
 func ContainsTitleOrDescriptionWith(term string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Where("title like '%" + term + "%'").Or("description like '%" + term + "%'")
+		return db.Where("title LIKE ? OR description LIKE ?", "%"+term+"%", "%"+term+"%")
 	}
 }

@@ -6,27 +6,38 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
-	"github.com/anglesson/simple-web-server/internal/shared/database"
 )
 
-type CreatorService struct{}
-
-func NewCreatorService() *CreatorService {
-	return &CreatorService{}
+type CreatorService struct {
+	creatorRepository *repositories.CreatorRepository
 }
 
-func (cs *CreatorService) FindCreatorByEmail(email string) (*models.Creator, error) {
-	userRepository := repositories.NewUserRepository()
-	user := userRepository.FindByEmail(email)
-	creator := models.Creator{
-		UserID: user.ID,
+func NewCreatorService() *CreatorService {
+	return &CreatorService{
+		creatorRepository: repositories.NewCreatorRepository(),
 	}
-	result := database.DB.First(&creator)
+}
 
-	if result.Error != nil {
-		log.Printf("Erro ao buscar creator: %s", result.Error)
+func (cs *CreatorService) FindCreatorByUserID(userID uint) (*models.Creator, error) {
+	creator, err := cs.creatorRepository.FindCreatorByUserID(userID)
+	if err != nil {
+		log.Printf("Erro ao buscar creator: %s", err)
 		return nil, errors.New("creator not found")
 	}
 
-	return &creator, nil
+	log.Printf("Usuário encontrado! ID: %v", creator.Name)
+
+	return creator, nil
+}
+
+func (cs *CreatorService) FindCreatorByEmail(email string) (*models.Creator, error) {
+	creator, err := cs.creatorRepository.FindCreatorByUserEmail(email)
+	if err != nil {
+		log.Printf("Erro ao buscar creator: %s", err)
+		return nil, errors.New("creator not found")
+	}
+
+	log.Printf("Usuário encontrado! ID: %v", creator.Name)
+
+	return creator, nil
 }

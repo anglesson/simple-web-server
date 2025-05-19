@@ -25,7 +25,7 @@ func NewEbook(title, description, file string, value float64, creator Creator) *
 		Value:       value,
 		Status:      true,
 		File:        file,
-		Creator:     creator,
+		CreatorID:   creator.ID,
 	}
 }
 
