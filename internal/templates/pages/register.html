@@ -1,4 +1,4 @@
-{{ define "title"}}Sign Up | Dash UI{{ end }}
+{{ define "title"}}Cadastro | {{appName}}{{ end }}
 {{ define "content" }}
 <!-- container -->
 <div class="container d-flex flex-column">
@@ -11,7 +11,7 @@
         <div class="card-body p-6">
           <div class="mb-4">
             {{ template "logo" .}}
-            <p class="mb-6">Please enter your user information.</p>
+            <p class="mb-6">Por favor, insira suas informações de usuário.</p>
 
           </div>
           <!-- Form -->
@@ -20,21 +20,21 @@
             <input type="hidden" name="csrf_token" value="{{.csrf_token}}">
             <!-- Username -->
             <div class="mb-3">
-              <label for="username" class="form-label">User Name</label>
-              <input type="text" id="username" class="form-control" name="username" placeholder="User Name" required=""
+              <label for="username" class="form-label">Nome de Usuário</label>
+              <input type="text" id="username" class="form-control" name="username" placeholder="Nome de Usuário" required=""
                 value="{{.Form.Username}}">
               {{with .Errors.username}}<p class="text-danger">{{.}}</p>{{end}}
             </div>
             <!-- Email -->
             <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input type="email" id="email" class="form-control" name="email" placeholder="Email address here"
+              <label for="email" class="form-label">E-mail</label>
+              <input type="email" id="email" class="form-control" name="email" placeholder="Seu endereço de e-mail"
                 required="" value="{{with .Form.Email}}{{.}}{{end}}">
               {{with .Errors.email}}<p class="text-danger">{{.}}</p>{{end}}
             </div>
             <!-- Password -->
             <div class="mb-3">
-              <label for="password" class="form-label">Password</label>
+              <label for="password" class="form-label">Senha</label>
               <input type="password" id="password" class="form-control" name="password" placeholder="**************"
                 required="">
               {{with .Errors.password}}
@@ -43,8 +43,8 @@
             </div>
             <!-- Password -->
             <div class="mb-3">
-              <label for="confirm-password" class="form-label">Confirm
-                Password</label>
+              <label for="confirm-password" class="form-label">Confirmar
+                Senha</label>
               <input type="password" id="confirm-password" class="form-control" name="password_confirmation"
                 placeholder="**************" required="">
               {{with .Errors.password_confirmation}}
@@ -55,28 +55,28 @@
             <div class="mb-3">
               <div class="form-check custom-checkbox">
                 <input type="checkbox" class="form-check-input" id="agreeCheck">
-                <label class="form-check-label" for="agreeCheck"><span class="fs-5">I agree to the <a
-                      href="terms-condition-page.html">Terms of
-                      Service </a>and
-                    <a href="terms-condition-page.html">Privacy Policy.</a></span></label>
+                <label class="form-check-label" for="agreeCheck"><span class="fs-5">Eu concordo com os <a
+                      href="terms-condition-page.html">Termos de
+                      Serviço </a>e
+                    <a href="terms-condition-page.html">Política de Privacidade.</a></span></label>
               </div>
             </div>
             <div>
               <!-- Button -->
               <div class="d-grid">
                 <button type="submit" class="btn btn-primary">
-                  Create Free Account
+                  Criar Conta Gratuita
                 </button>
               </div>
 
               <div class="d-md-flex justify-content-between mt-4">
                 <div class="mb-2 mb-md-0">
-                  <a href="/login" class="fs-5">Already
-                    member? Login </a>
+                  <a href="/login" class="fs-5">Já é
+                    membro? Faça login </a>
                 </div>
                 <div>
                   <a href="/forget-password" class="text-inherit
-                        fs-5">Forgot your password?</a>
+                        fs-5">Esqueceu sua senha?</a>
                 </div>
 
               </div>
