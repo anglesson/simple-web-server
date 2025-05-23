@@ -1,4 +1,4 @@
-{{ define "title" }} Homepage | Dash Ui - Bootstrap 5 Admin Dashboard Template {{ end }}
+{{ define "title" }} Início {{ end }}
 {{ define "content" }}
 <!-- Container fluid -->
 <div class="bg-primary pt-10 pb-21"></div>
@@ -152,7 +152,7 @@
                   <div class="float-start me-3">{{.PercentDownloads}}%</div>
                   <div class="mt-2">
                     <div class="progress" style="height: 5px;">
-                      <div class="progress-bar" role="progressbar" style="width: {{.PercentDownloads}}%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                      <div class="progress-bar w-{{.PercentDownloads}}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                   </div>
                 </td>
