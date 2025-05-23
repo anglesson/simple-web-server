@@ -61,12 +61,12 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Criando ebook")
+	log.Println("Criando e-book")
 	errors := make(map[string]string)
 
 	value, err := utils.BRLToFloat(r.FormValue("value"))
 	if err != nil {
-		log.Println("Falha na conversão do ebook")
+		log.Println("Falha na conversão do e-book")
 		http.Error(w, "erro na conversão", http.StatusInternalServerError)
 	}
 	form := models.EbookRequest{
@@ -107,17 +107,17 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Criando ebook para: %v", loggedUser)
+	fmt.Printf("Criando e-book para: %v", loggedUser)
 
 	// Busca o criador
 	creator, err := services.NewCreatorService().FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		log.Printf("Falha ao cadastrar ebook: %s", err)
-		redirectBackWithErrors(w, r, "Falha ao cadastrar ebook")
+		log.Printf("Falha ao cadastrar e-book: %s", err)
+		redirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
 		return
 	}
 
-	fmt.Printf("Criando ebook para creator: %v", creator.ID)
+	fmt.Printf("Criando e-book para creator: %v", creator.ID)
 
 	// Obtenha o arquivo do formulário
 	file, fileHeader, err := r.FormFile("file") // "file" deve ser o nome do campo no HTML
@@ -132,9 +132,9 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	log.Println("Upload realizado")
 	ebook := models.NewEbook(form.Title, form.Description, fileHeader.Filename, form.Value, *creator)
 
-	log.Printf("dados do ebook: %v", &ebook)
+	log.Printf("dados do e-book: %v", &ebook)
 	database.DB.Create(&ebook)
-	log.Println("Ebook criado")
+	log.Println("E-book criado")
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
 }
 
@@ -170,7 +170,7 @@ func GetEbookByID(w http.ResponseWriter, r *http.Request) *models.Ebook {
 		Where("id = ?", chi.URLParam(r, "id")).
 		First(&ebook).Error
 	if err != nil {
-		http.Error(w, "Erro ao buscar ebook", http.StatusInternalServerError)
+		http.Error(w, "Erro ao buscar e-book", http.StatusInternalServerError)
 		return nil
 	}
 
@@ -178,12 +178,12 @@ func GetEbookByID(w http.ResponseWriter, r *http.Request) *models.Ebook {
 }
 
 func EbookUpdateView(w http.ResponseWriter, r *http.Request) {
-	// Recupera o ebook
+	// Recupera o e-book
 	loggedUser := GetSessionUser(r)
 
 	ebook := GetEbookByID(w, r)
 	if ebook == nil {
-		http.Error(w, "Erro ao buscar ebook", http.StatusNotFound)
+		http.Error(w, "Erro ao buscar e-book", http.StatusNotFound)
 		return
 	}
 
@@ -261,7 +261,7 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	result := database.DB.First(&creator)
 
 	if result.Error != nil {
-		log.Printf("Falha ao cadastrar ebook: %s", result.Error)
+		log.Printf("Falha ao cadastrar e-book: %s", result.Error)
 		http.Error(w, "Entre em contato", http.StatusInternalServerError)
 		return
 	}
@@ -284,7 +284,7 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	database.DB.Save(&ebook)
 
-	cookies.NotifySuccess(w, "Dados do ebook foram atualizados!")
+	cookies.NotifySuccess(w, "Dados do e-book foram atualizados!")
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
 }
 
@@ -307,7 +307,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 
 	ebook := GetEbookByID(w, r)
 	if ebook == nil {
-		http.Error(w, "Erro ao buscar ebook", http.StatusNotFound)
+		http.Error(w, "Erro ao buscar e-book", http.StatusNotFound)
 		return
 	}
 
