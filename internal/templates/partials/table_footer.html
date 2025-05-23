@@ -1,11 +1,11 @@
 {{ define "table-footer" }}
 <div class="card-footer d-md-flex justify-content-between align-items-center">
-    <span>Showing {{ .Data.Pagination.Start }} to {{ .Data.Pagination.End }} of {{.Data.Pagination.Total}}
-        entries</span>
+    <span>Mostrando {{ .Data.Pagination.Start }} até {{ .Data.Pagination.End }} de {{.Data.Pagination.Total}}
+        registros</span>
     <nav class="mt-2 mt-md-0">
         <ul class="pagination mb-0">
             <li class="page-item {{if le .Data.Pagination.Page 1 }}disabled{{end}}">
-                <a class="page-link" href="?page={{.Data.Pagination.PrevPage}}&page_size={{.Data.Pagination.PageSize}}">Previous</a>
+                <a class="page-link" href="?page={{.Data.Pagination.PrevPage}}&page_size={{.Data.Pagination.PageSize}}">Anterior</a>
             </li>
 
             {{ $page := .Data.Pagination.Page }}
@@ -44,7 +44,7 @@
                         {{end}}
 
                         <li class="page-item {{if lt .Data.Pagination.NextPage .Data.Pagination.TotalPages }}disabled{{end}}">
-                            <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&page_size={{.Data.Pagination.PageSize}}">Next</a>
+                            <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&page_size={{.Data.Pagination.PageSize}}">Próximo</a>
                         </li>
         </ul>
     </nav>

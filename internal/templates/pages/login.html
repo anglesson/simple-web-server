@@ -1,4 +1,4 @@
-{{ define "title" }}Sign In | Dash UI{{ end }}
+{{ define "title" }}Entrar | {{appName}}{{ end }}
 {{ define "content" }}
 <!-- container -->
 <div class="container d-flex flex-column">
@@ -11,20 +11,20 @@
         <div class="card-body p-6">
           <div class="mb-4">
             {{ template "logo" .}}
-            <p class="mb-6">Please enter your user information.</p>
+            <p class="mb-6">Por favor, insira suas informações de usuário.</p>
           </div>
           <!-- Form -->
           <form method="post" action="/login">
             <!-- Email -->
             <div class="mb-3">
-              <label for="email" class="form-label">Username or email</label>
-              <input type="email" id="email" class="form-control" name="email" placeholder="Email address here"
+              <label for="email" class="form-label">Nome de usuário ou e-mail</label>
+              <input type="email" id="email" class="form-control" name="email" placeholder="Seu endereço de e-mail"
                 required="" value="{{.Form.Email}}">
               {{with .Errors.email}}<p class="text-danger">{{.}}</p>{{end}}
             </div>
             <!-- Password -->
             <div class="mb-3">
-              <label for="password" class="form-label">Password</label>
+              <label for="password" class="form-label">Senha</label>
               <input type="password" id="password" class="form-control" name="password" placeholder="**************"
                 required="">
               {{with .Errors.password}}<p class="text-danger">{{.}}</p>{{end}}
@@ -34,26 +34,25 @@
                   mb-4">
               <div class="form-check custom-checkbox">
                 <input type="checkbox" class="form-check-input" id="rememberme">
-                <label class="form-check-label" for="rememberme">Remember
-                  me</label>
+                <label class="form-check-label" for="rememberme">Lembrar
+                  de mim</label>
               </div>
 
             </div>
             <div>
               <!-- Button -->
               <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Sign
-                  in</button>
+                <button type="submit" class="btn btn-primary">Entrar</button>
               </div>
 
               <div class="d-md-flex justify-content-between mt-4">
                 <div class="mb-2 mb-md-0">
-                  <a href="/register" class="fs-5">Create An
-                    Account </a>
+                  <a href="/register" class="fs-5">Criar uma
+                    Conta </a>
                 </div>
                 <div>
                   <a href="/forget-password" class="text-inherit
-                        fs-5">Forgot your password?</a>
+                        fs-5">Esqueceu sua senha?</a>
                 </div>
 
               </div>
