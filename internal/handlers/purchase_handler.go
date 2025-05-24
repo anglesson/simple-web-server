@@ -50,7 +50,15 @@ func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("ClientID: %v", id)
 	}
 
-	purchaseServiceFactory().CreatePurchase(uint(ebookId), clients)
+	if len(clients) == 0 {
+		cookies.NotifyError(w, "Informe os clientes que receberão o e-book")
+		return
+	}
+
+	err = purchaseServiceFactory().CreatePurchase(uint(ebookId), clients)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	cookies.NotifySuccess(w, "Envio realizado!")
 	http.Redirect(w, r, "/ebook/view/"+ebookIdStr, http.StatusSeeOther)
