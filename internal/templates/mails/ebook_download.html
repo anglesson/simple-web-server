@@ -1,0 +1,22 @@
+{{ define "title" }}
+{{.Title}}
+{{ end }}
+
+{{ define "content" }}
+<h1>{{.Title}}</h1>
+<p>Olá {{.Name}},</p>
+
+<p>Parabéns pela sua aquisição!</p>
+
+<p>Seu e-book <b>{{.Ebook.Title}}</b> já está disponível para download. Clique no botão abaixo para acessá-lo:</p>
+
+<p>
+    <a href="{{.EbookDownloadLink}}" class="button">📥 Baixar E-book</a>
+</p>
+<p>Atenciosamente,</p>
+<p>{{.AppName}}<br />
+    <small><i>{{.Contact}}</i></small>
+</p>
+<br>
+<p style="font-size: 10px;">*Se você não realizou essa compra ou não se cadastrou em nosso serviço, por favor, ignore este e-mail.</p>
+{{ end }}

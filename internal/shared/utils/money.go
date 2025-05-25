@@ -7,12 +7,21 @@ import (
 )
 
 func FloatToBRL(value float64) string {
-	brl := fmt.Sprintf("R$ %.2f", value)
-	brl = strings.Replace(brl, ".", ",", 1)
-	if idx := strings.LastIndex(brl, ","); idx > 3 {
-		brl = brl[:idx-3] + "." + brl[idx-3:]
+	// Format with 2 decimal places
+	formattedValue := fmt.Sprintf("%.2f", value)
+
+	// Split the string into integer and decimal parts
+	parts := strings.Split(formattedValue, ".")
+	integer := parts[0]
+	decimal := parts[1]
+
+	// Add thousands separators to the integer part
+	for i := len(integer) - 3; i > 0; i -= 3 {
+		integer = integer[:i] + "." + integer[i:]
 	}
-	return brl
+
+	// Put it all back together
+	return fmt.Sprintf("R$ %s,%s", integer, decimal)
 }
 
 func BRLToFloat(brl string) (float64, error) {

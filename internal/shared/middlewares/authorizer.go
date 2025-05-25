@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/auth/models"
-	"github.com/anglesson/simple-web-server/internal/auth/repositories"
+	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/repositories"
 )
 
 // First, define a custom type for context keys (typically at package level)
@@ -77,18 +77,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Authentication logic
 		csrfToken, err := authorizer(r)
 		if err != nil {
-			if r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/forget-password" {
-				next.ServeHTTP(w, r)
-				return
-			}
 			log.Println("Unauthorized access attempt:", err)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-
-		// Fluxo de autenticação logado
-		if r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/forget-password" {
-			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 			return
 		}
 
@@ -117,7 +107,8 @@ func Auth(r *http.Request) *models.User {
 		return &models.User{}
 	}
 
-	user = repositories.FindByEmail(user_email)
+	userRepository := repositories.NewUserRepository()
+	user = userRepository.FindByEmail(user_email)
 
 	return user
 }

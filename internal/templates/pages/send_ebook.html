@@ -1,0 +1,314 @@
+{{ define "title" }} Enviar E-book {{ end }}
+{{ define "content" }}
+<!-- Container fluid -->
+<div class="container-fluid p-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Envios</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/">Início</a></li>
+                <li class="breadcrumb-item active">Envios</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row g-4 pb-12">
+        <!-- E-book Selection Card -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header border-0 bg-white py-3">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0">Selecionar E-book</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <select class="form-select form-select-lg" id="ebookSelect" name="ebook_id" required>
+                                <option value="">Selecione um e-book</option>
+                                {{ range .Data.Ebooks }}
+                                <option value="{{.ID}}" data-title="{{.Title}}" data-description="{{.Description}}"
+                                    data-value="{{.GetValue}}">{{.Title}}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <div class="me-3">
+                            <span class="text-muted me-2">Clientes selecionados:</span>
+                            <span class="badge bg-primary" id="selectedClientsCount">0</span>
+                        </div>
+                        <button id="buttonSend" type="button" disabled class="btn btn-primary btn-lg px-4"
+                            data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                            <i class="fe fe-send me-2"></i>Enviar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients Selection Card -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header border-0 bg-white py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="align-items-center">
+                                <i class="fe fe-users me-2 fs-4 text-primary"></i>
+                                <h5 class="mb-0">Selecionar Clientes</h5>
+                                <small class="text-muted">
+                                    Esta lista mostra apenas os clientes que ainda não receberam o e-book. <br> Para
+                                    reenviar para um cliente específico, acesse a página do e-book e selecione o
+                                    cliente desejado.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 p-1">
+                            <form id="searchForm" class="form" action="" method="get">
+                                <div class="input-group">
+                                    <input id="term" name="term" type="search" class="form-control border-start-0"
+                                        placeholder="Buscar clientes por nome, email ou CPF..." />
+                                </div>
+                                {{ if .Data.EbookID }}
+                                <input id="ebook_id_input" type="search" name="ebook_id" value="{{ .Data.EbookID }}"
+                                    hidden />
+                                {{ end }}
+                                <button type="submit" class="btn btn-primary" hidden></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {{ if not .Data.EbookID }}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fe fe-book fs-1 text-muted"></i>
+                        </div>
+                        <h5>Selecione um e-book</h5>
+                        <p class="text-muted">Escolha um e-book para visualizar a lista de clientes disponíveis. Caso
+                            não tenha cadastrado, <a href="/ebook">começe por aqui</a>.</p>
+                    </div>
+                    {{ else }}
+                    {{ if .Data.Clients }}
+                    {{ range .Data.Clients }}
+                    <div class="list-group-item px-0 py-3 border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" name="clients[]" value="{{.ID}}"
+                                    data-client-name="{{.Name}}" data-client-email="{{.Contact.Email}}"
+                                    onclick="toggleEnableButton(event);">
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center">
+                                    <h6 class="mb-0 me-2">{{.Name}}</h6>
+                                    <small class="text-muted">{{.CPF}}</small>
+                                </div>
+                                <div class="d-flex flex-column align-items-start text-muted">
+                                    <small class="me-3"><i class="fe fe-mail"></i>{{.Contact.Email}}</small>
+                                    <small><i class="fe fe-phone"></i>{{.Contact.Phone}}</small>
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link btn-sm text-muted p-0" type="button"
+                                    data-bs-toggle="dropdown">
+                                    <i class="fe fe-more-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#clientModal" data-bs-title="Editar Cliente"
+                                            data-bs-id="{{.ID}}" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}"
+                                            data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">
+                                            <i class="fe fe-edit-2 me-2"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#">
+                                            <i class="fe fe-trash-2 me-2"></i>Excluir
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {{ end }}
+                    {{ else }}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fe fe-book fs-1 text-muted"></i>
+                        </div>
+                        <h5>Nenhum cliente encontrado</h5>
+                        <p class="text-muted">Você enviou o ebook selecionado para todos os seus clientes ou você não
+                            tem clientes cadastrados. <a href="/client">Confira aqui</a></p>
+                    </div>
+                    {{ end }}
+                    {{ end }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Send Confirmation -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="staticBackdropLabel">
+                        <i class="fe fe-send text-primary me-2"></i>Confirmação de envio
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalContent">
+                        <!-- Content will be dynamically populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="sendForm" method="POST" class="d-inline">
+                    </form>
+                    <button form="sendForm" type="submit" class="btn btn-primary">
+                        <i class="fe fe-send me-2"></i>Confirmar Envio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+
+    .hover-shadow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .sticky-bottom {
+        position: sticky;
+        bottom: 0;
+        z-index: 1020;
+    }
+</style>
+
+<script>
+    window.onload = () => {
+        const searchInput = document.getElementById("searchForm");
+        const ebookSelect = document.getElementById("ebookSelect");
+        const buttonSend = document.getElementById("buttonSend");
+        const sendForm = document.getElementById("sendForm");
+        const modalContent = document.getElementById("modalContent");
+        const selectedClientsCount = document.getElementById("selectedClientsCount");
+
+        // Handle search input
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchTerm = urlParams.get("term");
+        if (searchTerm) {
+            searchInput.value = searchTerm;
+        }
+
+        searchInput.addEventListener("input", function () {
+            if (searchInput.value === "") {
+                history.replaceState(null, "", window.location.pathname);
+                document.location.reload();
+            }
+        });
+
+        searchInput.addEventListener("submit", function () {
+            console.log("submit")
+        })
+
+        // Handle ebook selection
+        const ebookId = urlParams.get("ebook_id");
+        if (ebookId) {
+            ebookSelect.value = ebookId;
+        }
+        ebookSelect.addEventListener("change", function (event) {
+            if (event.target.value) {
+                window.location.href = `${window.location.pathname}?ebook_id=${event.target.value}`;
+            } else {
+                window.location.href = window.location.pathname;
+            }
+            updateSendButtonState();
+        });
+
+        // Update send button state and selected count
+        function updateSendButtonState () {
+            const selectedEbook = ebookSelect.value;
+            const selectedClients = document.querySelectorAll('input[name="clients[]"]:checked');
+            buttonSend.disabled = !selectedEbook || selectedClients.length === 0;
+            selectedClientsCount.textContent = selectedClients.length;
+        }
+
+        // Update form action with selected ebook ID
+        buttonSend.addEventListener("click", function () {
+            const selectedEbook = ebookSelect.value;
+            const selectedClients = document.querySelectorAll('input[name="clients[]"]:checked');
+
+            // Create hidden inputs for selected clients
+            const form = document.getElementById('sendForm');
+            form.innerHTML = ''; // Clear existing form content
+
+            // Add hidden inputs for each selected client
+            selectedClients.forEach(client => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'clients[]';
+                input.value = client.value;
+                form.appendChild(input);
+            });
+
+            // Set form action
+            form.action = `/purchase/ebook/${selectedEbook}`;
+
+            // Update modal content
+            const selectedEbookOption = ebookSelect.options[ebookSelect.selectedIndex];
+
+            let modalHtml = `
+                <div class="mb-2">
+                    <h6 class="text-muted mb-2">E-book selecionado</h6>
+                    <h5 class="mb-2 text-uppercase">${selectedEbookOption.dataset.title}</h5>
+                    <p class="text-muted mb-2">${selectedEbookOption.dataset.description}</p>
+                    <p class="text-primary fw-bold mb-0">${selectedEbookOption.dataset.value}</p>
+                </div>
+                <hr>
+                <div class="mb-0">
+                    <h6 class="text-muted mb-3">Clientes selecionados (${selectedClients.length})</h6>
+                    <div class="list-group list-group-flush">`;
+
+            selectedClients.forEach(client => {
+                const clientName = client.getAttribute('data-client-name');
+                const clientEmail = client.getAttribute('data-client-email');
+                modalHtml += `
+                    <div class="list-group-item px-0">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h6 class="mb-0 text-uppercase">${clientName}</h6>
+                                <small class="text-muted">${clientEmail}</small>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            modalHtml += `
+                    </div>
+                </div>`;
+
+            modalContent.innerHTML = modalHtml;
+        });
+    };
+
+    function toggleEnableButton (event) {
+        const buttonSend = document.getElementById("buttonSend");
+        const selectedEbook = document.getElementById("ebookSelect").value;
+        const selectedClients = document.querySelectorAll('input[name="clients[]"]:checked');
+        buttonSend.disabled = !selectedEbook || selectedClients.length === 0;
+        document.getElementById("selectedClientsCount").textContent = selectedClients.length;
+    }
+</script>
+{{ end }}
