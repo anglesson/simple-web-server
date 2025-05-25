@@ -8,22 +8,24 @@ import (
 )
 
 type AppConfiguration struct {
-	AppName            string
-	AppMode            string
-	Host               string
-	Port               string
-	MailHost           string
-	MailPort           string
-	MailUsername       string
-	MailPassword       string
-	MailAuth           string
-	MailFromAddress    string
-	MailFromName       string
-	MailContactAddress string
-	S3AccessKey        string
-	S3SecretKey        string
-	S3Region           string
-	S3BucketName       string
+	AppName               string
+	AppMode               string
+	Host                  string
+	Port                  string
+	MailHost              string
+	MailPort              string
+	MailUsername          string
+	MailPassword          string
+	MailAuth              string
+	MailFromAddress       string
+	MailFromName          string
+	MailContactAddress    string
+	S3AccessKey           string
+	S3SecretKey           string
+	S3Region              string
+	S3BucketName          string
+	HubDesenvolvedorApi   string
+	HubDesenvolvedorToken string
 }
 
 var AppConfig AppConfiguration
@@ -49,6 +51,8 @@ func LoadConfigs() {
 	AppConfig.S3SecretKey = GetEnv("S3_SECRET_KEY", "")
 	AppConfig.S3Region = GetEnv("S3_REGION", "sa-east-1")
 	AppConfig.S3BucketName = GetEnv("S3_BUCKET_NAME", "sa-east-1")
+	AppConfig.HubDesenvolvedorApi = GetEnv("HUB_DEVSENVOLVEDOR_API", "")
+	AppConfig.HubDesenvolvedorToken = GetEnv("HUB_DEVSENVOLVEDOR_TOKEN", "")
 }
 
 func GetEnv(key, fallback string) string {

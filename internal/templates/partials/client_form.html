@@ -21,6 +21,12 @@
             <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
+            <label for="cpf" class="col-form-label">Data Nascimento</label>
+            <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ .Form.DataNascimento }}" />
+            {{with .Errors.CPF}}
+            <p class="text-danger">{{.}}</p>{{end}}
+          </div>
+          <div class="mb-3">
             <label for="Email" class="col-form-label">Email</label>
             <input type="text" class="form-control" id="email" name="email" value="{{ .Form.Email }}" />
             {{with .Errors.Email}}

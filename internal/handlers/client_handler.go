@@ -57,10 +57,11 @@ func ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	errors := make(map[string]string)
 
 	form := models.ClientRequest{
-		Name:  r.FormValue("name"),
-		CPF:   r.FormValue("cpf"),
-		Email: r.FormValue("email"),
-		Phone: r.FormValue("phone"),
+		Name:           r.FormValue("name"),
+		CPF:            r.FormValue("cpf"),
+		DataNascimento: r.FormValue("data_nascimento"),
+		Email:          r.FormValue("email"),
+		Phone:          r.FormValue("phone"),
 	}
 
 	errForm := utils.ValidateForm(form)
@@ -100,7 +101,7 @@ func ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Validar se o cliente existe
 	clientService := services.NewClientService()
-	_, err = clientService.CreateClient(form.Name, form.CPF, form.Email, form.Phone, creator)
+	_, err = clientService.CreateClient(form.Name, form.CPF, form.DataNascimento, form.Email, form.Phone, creator)
 	if err != nil {
 		redirectBackWithErrors(w, r, err.Error())
 	}
@@ -134,11 +135,12 @@ func ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := models.ClientRequest{
-		ID:    uint(clientID),
-		Name:  r.FormValue("name"),
-		CPF:   r.FormValue("cpf"),
-		Email: r.FormValue("email"),
-		Phone: r.FormValue("phone"),
+		ID:             uint(clientID),
+		Name:           r.FormValue("name"),
+		CPF:            r.FormValue("cpf"),
+		DataNascimento: r.FormValue("data_nascimento"),
+		Email:          r.FormValue("email"),
+		Phone:          r.FormValue("phone"),
 	}
 
 	clientService := services.NewClientService()
@@ -233,7 +235,7 @@ func ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 	for i, linha := range rows {
 		log.Printf("linha: %s", linha)
 		if i > 0 {
-			client := models.NewClient(linha[0], linha[1], linha[2], linha[3], creator)
+			client := models.NewClient(linha[0], linha[1], linha[2], linha[3], linha[4], creator)
 			clients = append(clients, client)
 		}
 	}
