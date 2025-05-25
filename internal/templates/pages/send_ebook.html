@@ -65,72 +65,85 @@
                                     cliente desejado.</small>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fe fe-search"></i>
-                                </span>
-                                <input id="searchForm" name="term" type="search" class="form-control border-start-0"
-                                    placeholder="Buscar clientes por nome, email ou CPF..." />
-                            </div>
+                        <div class="col-md-6 p-1">
+                            <form id="searchForm" class="form" action="" method="get">
+                                <div class="input-group">
+                                    <input id="term" name="term" type="search" class="form-control border-start-0"
+                                        placeholder="Buscar clientes por nome, email ou CPF..." />
+                                </div>
+                                {{ if .Data.EbookID }}
+                                <input id="ebook_id_input" type="search" name="ebook_id" value="{{ .Data.EbookID }}"
+                                    hidden />
+                                {{ end }}
+                                <button type="submit" class="btn btn-primary" hidden></button>
+                            </form>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
+                    {{ if not .Data.EbookID }}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fe fe-book fs-1 text-muted"></i>
+                        </div>
+                        <h5>Selecione um e-book</h5>
+                        <p class="text-muted">Escolha um e-book para visualizar a lista de clientes disponíveis. Caso
+                            não tenha cadastrado, <a href="/ebook">começe por aqui</a>.</p>
+                    </div>
+                    {{ else }}
                     {{ if .Data.Clients }}
-                    <div class="list-group list-group-flush">
-
-                        {{ range .Data.Clients }}
-                        <div class="list-group-item px-0 py-3">
-                            <div class="d-flex align-items-center">
-                                <div class="form-check me-3">
-                                    <input class="form-check-input" type="checkbox" name="clients[]" value="{{.ID}}"
-                                        data-client-name="{{.Name}}" data-client-email="{{.Contact.Email}}"
-                                        onclick="toggleEnableButton(event);">
+                    {{ range .Data.Clients }}
+                    <div class="list-group-item px-0 py-3 border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" name="clients[]" value="{{.ID}}"
+                                    data-client-name="{{.Name}}" data-client-email="{{.Contact.Email}}"
+                                    onclick="toggleEnableButton(event);">
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center">
+                                    <h6 class="mb-0 me-2">{{.Name}}</h6>
+                                    <small class="text-muted">{{.CPF}}</small>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center">
-                                        <h6 class="mb-0 me-2">{{.Name}}</h6>
-                                        <small class="text-muted">{{.CPF}}</small>
-                                    </div>
-                                    <div class="d-flex flex-column align-items-start text-muted">
-                                        <small class="me-3"><i class="fe fe-mail"></i>{{.Contact.Email}}</small>
-                                        <small><i class="fe fe-phone"></i>{{.Contact.Phone}}</small>
-                                    </div>
-                                </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-link btn-sm text-muted p-0" type="button"
-                                        data-bs-toggle="dropdown">
-                                        <i class="fe fe-more-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                data-bs-target="#clientModal" data-bs-title="Editar Cliente"
-                                                data-bs-id="{{.ID}}" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}"
-                                                data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">
-                                                <i class="fe fe-edit-2 me-2"></i>Editar
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item text-danger" href="#">
-                                                <i class="fe fe-trash-2 me-2"></i>Excluir
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <div class="d-flex flex-column align-items-start text-muted">
+                                    <small class="me-3"><i class="fe fe-mail"></i>{{.Contact.Email}}</small>
+                                    <small><i class="fe fe-phone"></i>{{.Contact.Phone}}</small>
                                 </div>
                             </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link btn-sm text-muted p-0" type="button"
+                                    data-bs-toggle="dropdown">
+                                    <i class="fe fe-more-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#clientModal" data-bs-title="Editar Cliente"
+                                            data-bs-id="{{.ID}}" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}"
+                                            data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">
+                                            <i class="fe fe-edit-2 me-2"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#">
+                                            <i class="fe fe-trash-2 me-2"></i>Excluir
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-                        {{ end }}
                     </div>
+                    {{ end }}
                     {{ else }}
                     <div class="text-center py-5">
                         <div class="mb-3">
-                            <i class="fe fe-users fs-1 text-muted"></i>
+                            <i class="fe fe-book fs-1 text-muted"></i>
                         </div>
                         <h5>Nenhum cliente encontrado</h5>
-                        <p class="text-muted">Adicione clientes para começar a enviar e-books</p>
+                        <p class="text-muted">Você enviou o ebook selecionado para todos os seus clientes ou você não
+                            tem clientes cadastrados. <a href="/client">Confira aqui</a></p>
                     </div>
+                    {{ end }}
                     {{ end }}
                 </div>
             </div>
@@ -206,8 +219,21 @@
             }
         });
 
+        searchInput.addEventListener("submit", function () {
+            console.log("submit")
+        })
+
         // Handle ebook selection
-        ebookSelect.addEventListener("change", function () {
+        const ebookId = urlParams.get("ebook_id");
+        if (ebookId) {
+            ebookSelect.value = ebookId;
+        }
+        ebookSelect.addEventListener("change", function (event) {
+            if (event.target.value) {
+                window.location.href = `${window.location.pathname}?ebook_id=${event.target.value}`;
+            } else {
+                window.location.href = window.location.pathname;
+            }
             updateSendButtonState();
         });
 

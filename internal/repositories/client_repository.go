@@ -11,6 +11,7 @@ import (
 
 type ClientQuery struct {
 	Term       string
+	EbookID    uint
 	Pagination *Pagination
 }
 
@@ -84,4 +85,25 @@ func (cr *ClientRepository) InsertBatch(clients []*models.Client) error {
 		return errors.New("falha no processamento dos clientes")
 	}
 	return nil
+}
+
+func (cr *ClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+	var clients []models.Client
+	err := database.DB.Debug().
+		Offset(query.Pagination.GetOffset()).
+		Limit(query.Pagination.GetLimit()).
+		Model(&models.Client{}).
+		Joins("JOIN client_creators ON client_creators.client_id = clients.id and client_creators.creator_id = ?", creator.ID).
+		Where("clients.id NOT IN (SELECT client_id FROM purchases WHERE ebook_id = ?)", query.EbookID).
+		Preload("Contact").
+		Preload("Creators").
+		Scopes(ContainsNameCpfEmailOrPhoneWith(query.Term)).
+		Find(&clients).Error
+
+	if err != nil {
+		log.Printf("Erro na busca de clientes: %s", err)
+		return nil, errors.New("erro na busca de clientes")
+	}
+
+	return &clients, nil
 }
