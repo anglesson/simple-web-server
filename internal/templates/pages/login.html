@@ -1,4 +1,4 @@
-{{ define "title" }}Login | Docfy{{ end }} {{ define "content" }}
+{{ define "title" }}Login | {{ appName }}{{ end }} {{ define "content" }}
 <!-- container -->
 <div class="container d-flex flex-column">
   <div class="row align-items-center justify-content-center g-0 min-vh-100">
@@ -7,26 +7,18 @@
       <div class="card smooth-shadow-md">
         <!-- Card body -->
         <div class="card-body p-6">
-          <div class="mb-4">
-            <a href="../index.html"
-              ><img
-                src="../assets/images/brand/logo/logo-primary.svg"
-                class="mb-2"
-                alt=""
-            /></a>
-            <!-- <p class="mb-6">Por favor, insira suas informações de usuário.</p> -->
-          </div>
+          <div class="mb-4" href="/">{{ template "logo" .}}</div>
           <!-- Form -->
           <form method="post" action="/login">
-            <!-- Email -->
+            <!-- E-mail -->
             <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
+              <label for="email" class="form-label">E-mail</label>
               <input
                 type="email"
                 id="email"
                 class="form-control"
                 name="email"
-                placeholder="Email"
+                placeholder="Digite seu e-mail"
                 required=""
                 value="{{.Form.Email}}"
               />
@@ -42,7 +34,7 @@
                 id="password"
                 class="form-control"
                 name="password"
-                placeholder="**************"
+                placeholder="Digite sua senha"
                 required=""
               />
               {{with .Errors.password}}
