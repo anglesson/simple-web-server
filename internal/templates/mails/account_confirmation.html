@@ -1,11 +1,11 @@
-{{ define "title" }}
-{{.Title}}
-{{ end }}
-{{ define "content" }}
-    <h1>Confirmação de Conta</h1>
-    <p>Olá {{.Name}},</p>
-    <p>Obrigado por se cadastrar em {{.AppName}}! Para completar seu registro, por favor, confirme sua conta clicando no link abaixo:</p>
-    <a href="{{.ConfirmAccountLink}}" class="button">Confirmar</a>
-    <p>Se você não se cadastrou em nosso serviço, por favor, ignore este e-mail.</p>
-    <p>Atenciosamente, {{.AppName}} ({{.Contact}})</p>
+{{ define "title" }} {{.Title}} {{ end }} {{ define "content" }}
+<h1>Confirmação de Conta</h1>
+<p>Olá {{.Name}},</p>
+<p>
+  Obrigado por se cadastrar em {{.appName}}! Para completar seu registro, por
+  favor, confirme sua conta clicando no link abaixo:
+</p>
+<a href="{{.ConfirmAccountLink}}" class="button">Confirmar</a>
+<p>Se você não se cadastrou em nosso serviço, por favor, ignore este e-mail.</p>
+<p>Atenciosamente, {{.appName}} ({{.Contact}})</p>
 {{ end }}

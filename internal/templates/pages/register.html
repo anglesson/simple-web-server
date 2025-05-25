@@ -1,52 +1,77 @@
-{{ define "title"}}Cadastro | {{appName}}{{ end }}
-{{ define "content" }}
+{{ define "title"}}Registro | {{ appName }}{{ end }} {{ define "content" }}
 <!-- container -->
 <div class="container d-flex flex-column">
-  <div class="row align-items-center justify-content-center g-0
-        min-vh-100">
+  <div class="row align-items-center justify-content-center g-0 min-vh-100">
     <div class="col-12 col-md-8 col-lg-6 col-xxl-4 py-8 py-xl-0">
       <!-- Card -->
       <div class="card smooth-shadow-md">
         <!-- Card body -->
         <div class="card-body p-6">
-          <div class="mb-4">
-            {{ template "logo" .}}
-            <p class="mb-6">Por favor, insira suas informações de usuário.</p>
-
-          </div>
+          <div class="mb-4" href="/">{{ template "logo" .}}</div>
           <!-- Form -->
           <form method="post" action="/register">
             <!-- TODO: Add CSRF TOKEN -->
-            <input type="hidden" name="csrf_token" value="{{.csrf_token}}">
+            <input type="hidden" name="csrf_token" value="{{.csrf_token}}" />
             <!-- Username -->
             <div class="mb-3">
-              <label for="username" class="form-label">Nome de Usuário</label>
-              <input type="text" id="username" class="form-control" name="username" placeholder="Nome de Usuário" required=""
-                value="{{.Form.Username}}">
-              {{with .Errors.username}}<p class="text-danger">{{.}}</p>{{end}}
+              <label for="username" class="form-label">Nome de usuário</label>
+              <input
+                type="text"
+                id="username"
+                class="form-control"
+                name="username"
+                placeholder="Digite um nome de usuário"
+                required=""
+                value="{{.Form.Username}}"
+              />
+              {{with .Errors.username}}
+              <p class="text-danger">{{.}}</p>
+              {{end}}
             </div>
-            <!-- Email -->
+            <!-- E-mail -->
             <div class="mb-3">
               <label for="email" class="form-label">E-mail</label>
-              <input type="email" id="email" class="form-control" name="email" placeholder="Seu endereço de e-mail"
-                required="" value="{{with .Form.Email}}{{.}}{{end}}">
-              {{with .Errors.email}}<p class="text-danger">{{.}}</p>{{end}}
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                name="email"
+                placeholder="Digite seu e-mail"
+                required=""
+                value="{{with .Form.Email}}{{.}}{{end}}"
+              />
+              {{with .Errors.email}}
+              <p class="text-danger">{{.}}</p>
+              {{end}}
             </div>
             <!-- Password -->
             <div class="mb-3">
               <label for="password" class="form-label">Senha</label>
-              <input type="password" id="password" class="form-control" name="password" placeholder="**************"
-                required="">
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                name="password"
+                placeholder="Digite sua senha"
+                required=""
+              />
               {{with .Errors.password}}
               <p class="text-danger">{{.}}</p>
               {{end}}
             </div>
             <!-- Password -->
             <div class="mb-3">
-              <label for="confirm-password" class="form-label">Confirmar
-                Senha</label>
-              <input type="password" id="confirm-password" class="form-control" name="password_confirmation"
-                placeholder="**************" required="">
+              <label for="confirm-password" class="form-label"
+                >Confirmar senha</label
+              >
+              <input
+                type="password"
+                id="confirm-password"
+                class="form-control"
+                name="password_confirmation"
+                placeholder="Confirme sua senha"
+                required=""
+              />
               {{with .Errors.password_confirmation}}
               <p class="text-danger">{{.}}</p>
               {{end}}
@@ -54,34 +79,41 @@
             <!-- Checkbox -->
             <div class="mb-3">
               <div class="form-check custom-checkbox">
-                <input type="checkbox" class="form-check-input" id="agreeCheck">
-                <label class="form-check-label" for="agreeCheck"><span class="fs-5">Eu concordo com os <a
-                      href="terms-condition-page.html">Termos de
-                      Serviço </a>e
-                    <a href="terms-condition-page.html">Política de Privacidade.</a></span></label>
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="agreeCheck"
+                />
+                <label class="form-check-label" for="agreeCheck"
+                  ><span class="fs-5"
+                    >Eu concordo com os
+                    <a href="terms-condition-page.html">Termos de Serviço </a>e
+                    <a href="terms-condition-page.html"
+                      >Política de Privacidade.</a
+                    ></span
+                  ></label
+                >
               </div>
             </div>
             <div>
               <!-- Button -->
               <div class="d-grid">
                 <button type="submit" class="btn btn-primary">
-                  Criar Conta Gratuita
+                  Criar conta
                 </button>
               </div>
 
               <div class="d-md-flex justify-content-between mt-4">
                 <div class="mb-2 mb-md-0">
-                  <a href="/login" class="fs-5">Já é
-                    membro? Faça login </a>
+                  <a href="/login" class="fs-5">Já é membro? Login </a>
                 </div>
                 <div>
-                  <a href="/forget-password" class="text-inherit
-                        fs-5">Esqueceu sua senha?</a>
+                  <a href="/forget-password" class="text-inherit fs-5"
+                    >Esqueceu sua senha?</a
+                  >
                 </div>
-
               </div>
             </div>
-
           </form>
         </div>
       </div>

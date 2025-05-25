@@ -1,5 +1,5 @@
-{{ define "title"}}
-Docffy - Proteja seus e-books
+{{ define "title" }}
+{{ appName }} - Proteja e gerencie seus documentos
 {{ end }}
 {{ define "content" }}
 <!-- Navbar -->
@@ -39,14 +39,17 @@ Docffy - Proteja seus e-books
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 col-md-12 mb-8 mb-lg-0">
-                <h1 class="display-3 fw-bold mb-3 text-white">Proteja e gerencie seus e-books com o Docffy</h1>
+                <h1 class="display-3 fw-bold mb-3 text-white">Proteja e gerencie seus e-books com o {{ appName }}</h1>
                 <p class="lead text-white-50 mb-4">Proteja seus e-books com marca d'água, personalizada. Fácil de usar, seguro e profissional</p>
                 <a href="/register" class="btn btn-light me-2">Comece Agora</a>
                 <a href="#features" class="btn btn-outline-light">Saiba Mais</a>
             </div>
             <div class="col-lg-6 col-md-12">
                 <div class="position-relative">
-                    <img src="./assets/images/svg/hero.svg" alt="Hero Image" class="img-fluid opacity-100">
+                    <img src="../assets/images/brand/logo/lading-logo.svg" alt="" class="img-fluid">
+                    <!-- <div class="position-absolute bottom-0 end-0 mb-n8 me-n8">
+                        <img src="./assets/images/pattern/dots-pattern.svg" alt="pattern" class="opacity-50">
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -59,8 +62,9 @@ Docffy - Proteja seus e-books
         <div class="row mb-8 justify-content-center">
             <div class="col-lg-6 col-md-12 text-center">
                 <span class="text-primary mb-3 d-block text-uppercase fw-semibold ls-xl">Recursos</span>
-                <h2 class="mb-2 display-4 fw-bold">Tudo o que Você Precisa</h2>
-                <p class="lead">Nossa plataforma oferece todas as ferramentas que você precisa para proteger e gerenciar seus e-books.</p>
+                <h2 class="mb-2 display-4 fw-bold">Tudo o que você precisa</h2>
+                <p class="lead">Nosso gerenciador de marca d'água de PDF's fornece todas as ferramentas necessárias para
+                    proteger e gerenciar seus documentos.</p>
             </div>
         </div>
         <div class="row g-4">
@@ -70,8 +74,33 @@ Docffy - Proteja seus e-books
                         <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3 mb-4">
                             <i class="bi bi-shield-check fs-3"></i>
                         </div>
-                        <h4>Marca d’água Segura</h4>
-                        <p class="mb-0">Adicione marcas d'água personalizadas de texto para proteger seus e-books contra uso não autorizado.</p>
+                        <h4>Marca d'água segura</h4>
+                        <p class="mb-0">Add custom text or image watermarks to protect your sensitive documents from
+                            unauthorized use.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3 mb-4">
+                            <i class="bi bi-cloud-arrow-up fs-3"></i>
+                        </div>
+                        <h4>Processamento em lote</h4>
+                        <p class="mb-0">Process multiple PDF files at once, saving you time and streamlining your
+                            workflow.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3 mb-4">
+                            <i class="bi bi-palette fs-3"></i>
+                        </div>
+                        <h4>Opções de personalização</h4>
+                        <p class="mb-0">Personalizadoize font, size, color, opacity, and position to match your branding
+                            requirements.</p>
                     </div>
                 </div>
             </div>
@@ -81,8 +110,21 @@ Docffy - Proteja seus e-books
                         <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3 mb-4">
                             <i class="bi bi-layers fs-3"></i>
                         </div>
-                        <h4>Suporte a Múltiplas Páginas</h4>
-                        <p class="mb-0">Aplique marcas d'água em todas as páginas dos seus e-books.</p>
+                        <h4>Suporte a múltiplas páginas</h4>
+                        <p class="mb-0">Apply watermarks to specific pages or all pages in your documents with
+                            precision.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3 mb-4">
+                            <i class="bi bi-gear fs-3"></i>
+                        </div>
+                        <h4>Integração com API</h4>
+                        <p class="mb-0">Integrate our watermarking capabilities directly into your existing
+                            applications and workflows.</p>
                     </div>
                 </div>
             </div>
@@ -92,8 +134,8 @@ Docffy - Proteja seus e-books
                         <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3 mb-4">
                             <i class="bi bi-graph-up fs-3"></i>
                         </div>
-                        <h4>Métricas de Desempenho</h4>
-                        <p class="mb-0">Acompanhe dados completos dos seus e-books: visualizações, envios de e-mail, clientes e mais.</p>
+                        <h4>Análise de uso</h4>
+                        <p class="mb-0">Monitore a segurança dos documentos com relatórios e análises abrangentes.</p>
                     </div>
                 </div>
             </div>
@@ -106,9 +148,9 @@ Docffy - Proteja seus e-books
     <div class="container">
         <div class="row mb-8 justify-content-center">
             <div class="col-lg-6 col-md-12 text-center">
-                <span class="text-primary mb-3 d-block text-uppercase fw-semibold ls-xl">Processo</span>
-                <h2 class="mb-2 display-4 fw-bold">Como Funciona</h2>
-                <p class="lead">Simples, rápido e seguro — proteja seus e-books em três passos fáceis.</p>
+                <span class="text-primary mb-3 d-block text-uppercase fw-semibold ls-xl">Como Funciona</span>
+                <h2 class="mb-2 display-4 fw-bold">Em apenas alguns cliques</h2>
+                <p class="lead">Simples, rápido e seguro — proteja seus documentos em três passos fáceis.</p>
             </div>
         </div>
         <div class="row align-items-center">
@@ -118,8 +160,8 @@ Docffy - Proteja seus e-books
                         <div class="icon-shape icon-lg bg-primary text-white rounded-circle mb-4">
                             <span class="fs-3 fw-bold">1</span>
                         </div>
-                        <h3>Cadastre seus e-books</h3>
-                        <p class="mb-0">Cadastre facilmente seus e-books através da nossa interface segura.</p>
+                        <h3>Envie os documentos</h3>
+                        <p class="mb-0">Envie facilmente seus arquivos PDF através da nossa interface segura.</p>
                     </div>
                 </div>
             </div>
@@ -129,8 +171,8 @@ Docffy - Proteja seus e-books
                         <div class="icon-shape icon-lg bg-primary text-white rounded-circle mb-4">
                             <span class="fs-3 fw-bold">2</span>
                         </div>
-                        <h3>Cadastre seus clientes</h3>
-                        <p class="mb-0">Crie ou importe seus clientes de forma fácil.</p>
+                        <h3>Configure a marca d'água</h3>
+                        <p class="mb-0">Personalize o texto da marca d'água, posição, opacidade e mais.</p>
                     </div>
                 </div>
             </div>
@@ -140,8 +182,8 @@ Docffy - Proteja seus e-books
                         <div class="icon-shape icon-lg bg-primary text-white rounded-circle mb-4">
                             <span class="fs-3 fw-bold">3</span>
                         </div>
-                        <h3>Envio em massa</h3>
-                        <p class="mb-0">Envie seus e-books protegidos para múltiplos destinatários.</p>
+                        <h3>Baixe os arquivos protegidos</h3>
+                        <p class="mb-0">Baixe seus PDFs protegidos, prontos para compartilhamento ou distribuição.</p>
                     </div>
                 </div>
             </div>
@@ -160,21 +202,52 @@ Docffy - Proteja seus e-books
                     surpresas.</p>
             </div>
         </div>
-        <div class="row g-4 justify-content-center">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-6">
+                        <h4 class="fw-bold">Básico</h4>
+                        <p class="text-muted mb-4">Perfeito para indivíduos</p>
+                        <h1 class="display-5 fw-bold text-primary">R$ 9,90</h1>
+                        <p class="text-muted">por mês</p>
+                        <ul class="list-unstyled mb-4">
+                            <li>Envie até 10 PDFs por mês</li>
+                            <li>Opções básicas de marca d'água</li>
+                            <li>Suporte por e-mail</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">Comece agora</a>
+                    </div>
+                </div>
+            </div>
             <div class="col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center p-6">
                         <h4 class="fw-bold">Pro</h4>
-                        <p class="text-muted mb-4">Ideal para pequenas equipes e profissionais</p>
-                        <h1 class="display-5 fw-bold text-primary">R$ 29<small>,90</small></h1>
+                        <p class="text-muted mb-4">Ideal para pequenas equipes</p>
+                        <h1 class="display-5 fw-bold text-primary">R$ 29,90</h1>
                         <p class="text-muted">por mês</p>
                         <ul class="list-unstyled mb-4">
-                            <li>Processamento de até 100 PDFs por mês</li>
-                            <li>Marcas d’água personalizáveis e seguras</li>
-                            <li>Relatórios detalhados de uso</li>
+                            <li>Envie até 100 PDFs por mês</li>
+                            <li>Opções avançadas de marca d'água</li>
                             <li>Suporte prioritário por e-mail</li>
                         </ul>
-                        <a href="/register" class="btn btn-primary">Assine Agora</a>
+                        <a href="#" class="btn btn-primary">Comece agora</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-6">
+                        <h4 class="fw-bold">Empresarial</h4>
+                        <p class="text-muted mb-4">Ideal para grandes organizações</p>
+                        <h1 class="display-5 fw-bold text-primary">Personalizado</h1>
+                        <p class="text-muted">preço</p>
+                        <ul class="list-unstyled mb-4">
+                            <li>PDFs ilimitados</li>
+                            <li>Opções completas de personalização</li>
+                            <li>Suporte dedicado</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary">Fale conosco</a>
                     </div>
                 </div>
             </div>
@@ -187,8 +260,8 @@ Docffy - Proteja seus e-books
     <div class="container">
         <div class="row">
             <div class="col-lg-4 col-md-6 mb-4">
-                <h5 class="fw-bold">Sobre Nós</h5>
-                <p>Fornecemos soluções seguras e eficientes para proteger e gerenciar e-books digitais.</p>
+                <h5 class="fw-bold">Sobre nós</h5>
+                <p>Fornecemos soluções seguras e eficientes para proteger e gerenciar documentos digitais.</p>
             </div>
             <div class="col-lg-2 col-md-6 mb-4">
                 <h5 class="fw-bold">Links</h5>
@@ -202,7 +275,9 @@ Docffy - Proteja seus e-books
             <div class="col-lg-3 col-md-6 mb-4">
                 <h5 class="fw-bold">Contato</h5>
                 <ul class="list-unstyled"></ul>
-                <li>Email: <a href="mailto:suporte@docffy.com" class="text-white text-decoration-none">suporte@docffy.com</a></li>
+                <li>E-mail: <a href="mailto:support@pdfwatermarkhandler.com"
+                        class="text-white text-decoration-none">support@docffy.com</a></li>
+                <li>Telefone: (81) 99999-9999</li>
                 </ul>
             </div>
             <div class="col-lg-3 col-md-6">
@@ -216,7 +291,7 @@ Docffy - Proteja seus e-books
             </div>
         </div>
         <div class="text-center mt-4">
-            <small>&copy; 2025 Docffy. Todos os direitos reservados.</small>
+            <small>&copy; 2025 {{ appName }}. Todos os direitos reservados.</small>
         </div>
     </div>
 </footer>

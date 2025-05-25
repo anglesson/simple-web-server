@@ -37,7 +37,7 @@ func LoadConfigs() {
 			log.Fatal("Erro ao carregar o arquivo .env")
 		}
 	}
-	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Web App")
+	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Docffy")
 	AppConfig.Host = GetEnv("HOST", "http://localhost")
 	AppConfig.Port = GetEnv("PORT", "8080")
 	AppConfig.MailHost = GetEnv("MAIL_HOST", "sandbox.smtp.mailtrap.io")
