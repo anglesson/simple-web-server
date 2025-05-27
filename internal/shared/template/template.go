@@ -28,6 +28,13 @@ func TemplateFunctions(r *http.Request) template.FuncMap {
 		"user": func() *models.User {
 			return middlewares.Auth(r)
 		},
+		"json": func(data any) (template.JS, error) {
+			jsonData, err := json.Marshal(data)
+			if err != nil {
+				return "", err // Or handle error appropriately
+			}
+			return template.JS(jsonData), nil
+		},
 	}
 }
 

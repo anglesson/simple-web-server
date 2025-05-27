@@ -109,12 +109,99 @@
     </div>
   </div>
 
+  <!-- Charts Section -->
+  <div class="row mt-6">
+    <!-- Daily Purchases Chart -->
+    <div class="col-xl-6 col-lg-6 col-md-12 col-12 mt-6">
+      <div class="card">
+        <div class="card-header bg-white py-4 border-0">
+          <h4 class="mb-0">Envios por dia (Últimos 7 dias)</h4>
+        </div>
+        <div class="card-body">
+          <canvas id="purchasesChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Downloads Chart -->
+    <div class="col-xl-6 col-lg-6 col-md-12 col-12 mt-6">
+      <div class="card">
+        <div class="card-header bg-white py-4 border-0">
+          <h4 class="mb-0">Downloads por dia (Últimos 7 dias)</h4>
+        </div>
+        <div class="card-body">
+          <canvas id="downloadsChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Ebooks Chart -->
+    <div class="col-xl-4 col-lg-4 col-md-12 col-12 mt-6">
+      <div class="card">
+        <div class="card-header bg-white py-4 border-0">
+          <h4 class="mb-0">Top 3 Ebooks mais enviados</h4>
+        </div>
+        <div class="card-body">
+          <canvas id="topEbooksChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Downloaded Ebooks -->
+    <div class="col-xl-4 col-lg-4 col-md-12 col-12 mt-6">
+      <div class="card">
+        <div class="card-header bg-white py-4 border-0">
+          <h4 class="mb-0">Top 3 Ebooks mais baixados</h4>
+        </div>
+        <div class="card-body">
+          <canvas id="topDownloadedEbooksChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Clients -->
+    <div class="col-xl-4 col-lg-4 col-md-12 col-12 mt-6">
+      <div class="card">
+        <div class="card-header bg-white py-4 border-0">
+          <h4 class="mb-0">Top 10 Clientes</h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table text-nowrap mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Cliente</th>
+                  <th>Total de compras</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{ range .Data.TopClients }}
+                <tr>
+                  <td class="align-middle">
+                    <div class="d-flex align-items-center">
+                      <div class="ms-3 lh-1">
+                        <h5 class="mb-1">{{.Name}}</h5>
+                        <p class="mb-0 text-muted">{{.Email}}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="align-middle">{{.TotalPurchases}}</td>
+                </tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="row mt-6">
     <div class="col-md-12 col-12">
       <!-- card  -->
       <div class="card">
         <!-- card header  -->
-        <div class="card-header bg-white  py-4">
+        <div class="card-header bg-white  py-4 border-0">
           <h4 class="mb-0">Estatísticas dos envios</h4>
         </div>
         {{ if .Data.EbookStats }}
@@ -172,4 +259,189 @@
     </div>
   </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Get JSON data from Go template variables
+const dailyPurchasesData = JSON.parse('{{.Data.DailyPurchasesJSON}}') || [];
+const dailyDownloadsData = JSON.parse('{{.Data.DailyDownloadsJSON}}') || [];
+const topEbooksData = JSON.parse('{{.Data.TopEbooksJSON}}') || [];
+const topDownloadedEbooksData = JSON.parse('{{.Data.TopDownloadedEbooksJSON}}') || [];
+
+// Generate last 7 days labels
+function getLast7Days() {
+    const dates = [];
+    const displayDates = [];
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        // Keep original format for data mapping
+        const originalFormat = date.toISOString().split('T')[0];
+        dates.push(originalFormat);
+        // Create display format
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        displayDates.push(`${day}/${month}/${year}`);
+    }
+    return { dates, displayDates };
+}
+
+const { dates: last7Days, displayDates: last7DaysDisplay } = getLast7Days();
+
+// Create data maps for purchases and downloads
+const purchasesMap = new Map(dailyPurchasesData.map(item => [item.date, item.count]));
+const downloadsMap = new Map(dailyDownloadsData.map(item => [item.date, item.count]));
+
+// Fill in data for all 7 days
+const dailyPurchasesCounts = last7Days.map(date => purchasesMap.get(date) || 0);
+const dailyDownloadsCounts = last7Days.map(date => downloadsMap.get(date) || 0);
+
+// Process data for other charts
+const topEbooksLabels = topEbooksData.map(item => item.title);
+const topEbooksCounts = topEbooksData.map(item => item.total_purchases);
+
+const topDownloadedEbooksLabels = topDownloadedEbooksData.map(item => item.title);
+const topDownloadedEbooksCounts = topDownloadedEbooksData.map(item => item.total_downloads);
+
+// Daily Purchases Chart
+const purchasesCtx = document.getElementById('purchasesChart').getContext('2d');
+new Chart(purchasesCtx, {
+  type: 'line',
+  data: {
+    labels: last7DaysDisplay,
+    datasets: [{
+      label: 'Envios',
+      data: dailyPurchasesCounts,
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 1,
+      fill: false
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          precision: 0
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        }
+      }
+    }
+  }
+});
+
+// Daily Downloads Chart
+const downloadsCtx = document.getElementById('downloadsChart').getContext('2d');
+new Chart(downloadsCtx, {
+  type: 'line',
+  data: {
+    labels: last7DaysDisplay,
+    datasets: [{
+      label: 'Downloads',
+      data: dailyDownloadsCounts,
+      borderColor: 'rgb(153, 102, 255)',
+      tension: 0.1,
+      fill: false
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          precision: 0
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        }
+      }
+    }
+  }
+});
+
+// Top Ebooks Chart
+const topEbooksCtx = document.getElementById('topEbooksChart').getContext('2d');
+new Chart(topEbooksCtx, {
+  type: 'bar',
+  data: {
+    labels: topEbooksLabels,
+    datasets: [{
+      label: 'Total de envios',
+      data: topEbooksCounts,
+      backgroundColor: 'rgba(54, 162, 235, 0.5)',
+      borderColor: 'rgb(54, 162, 235)',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      }
+    },
+    scales: {
+      y: {
+        ticks: {
+          stepSize: 1
+        }
+      }
+    }
+  }
+});
+
+// Top Downloaded Ebooks Chart
+const topDownloadedEbooksCtx = document.getElementById('topDownloadedEbooksChart').getContext('2d');
+new Chart(topDownloadedEbooksCtx, {
+  type: 'bar',
+  data: {
+    labels: topDownloadedEbooksLabels,
+    datasets: [{
+      label: 'Total de downloads',
+      data: topDownloadedEbooksCounts,
+      backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      borderColor: 'rgb(255, 99, 132)',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      }
+    },
+    scales: {
+      y: {
+        ticks: {
+          stepSize: 1
+        }
+      }
+    }
+  }
+});
+</script>
 {{end}}

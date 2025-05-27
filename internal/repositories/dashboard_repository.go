@@ -144,3 +144,140 @@ func (dr *DashboardRepository) GetEbookStats() ([]EbookStats, error) {
 
 	return stats, nil
 }
+
+type DailyStats struct {
+	Date  string `json:"date"`
+	Count int64  `json:"count"`
+}
+
+type TopEbook struct {
+	Title          string `json:"title"`
+	TotalPurchases int64  `json:"total_purchases"`
+}
+
+type TopClient struct {
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	TotalPurchases int64  `json:"total_purchases"`
+}
+
+type TopDownloadedEbook struct {
+	Title          string `json:"title"`
+	TotalDownloads int64  `json:"total_downloads"`
+}
+
+func (dr *DashboardRepository) GetDailyPurchases() ([]DailyStats, error) {
+	var stats []DailyStats
+
+	// Use date function directly in Where clause for SQLite
+	err := database.DB.
+		Debug().
+		Table("purchases").
+		Select("strftime('%Y-%m-%d', purchases.created_at) as date, COUNT(*) as count").
+		Joins("INNER JOIN ebooks ON ebooks.id = purchases.ebook_id").
+		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
+		Where("creators.user_id = ?", dr.UserID).
+		Where("purchases.created_at >= datetime('now', '-7 days', 'localtime')"). // Use localtime for correct timezone
+		Group("strftime('%Y-%m-%d', purchases.created_at)").
+		Order("date ASC").
+		Scan(&stats).Error
+
+	if err != nil {
+		log.Printf("Erro ao buscar estatísticas diárias de envios: %v", err)
+		return nil, err
+	}
+
+	return stats, nil
+}
+
+func (dr *DashboardRepository) GetDailyDownloads() ([]DailyStats, error) {
+	var stats []DailyStats
+
+	// Use date function directly in Where clause for SQLite
+	err := database.DB.
+		Table("purchases").
+		Select("DATE(purchases.updated_at) as date, SUM(purchases.downloads_used) as count").
+		Joins("INNER JOIN ebooks ON ebooks.id = purchases.ebook_id").
+		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
+		Where("creators.user_id = ?", dr.UserID).
+		Where("purchases.updated_at >= date('now', '-7 days')"). // Direct date comparison
+		Where("purchases.downloads_used > 0").
+		Group("DATE(purchases.updated_at)").
+		Order("date ASC").
+		Scan(&stats).Error
+
+	if err != nil {
+		log.Printf("Erro ao buscar estatísticas diárias de downloads: %v", err)
+		return nil, err
+	}
+
+	return stats, nil
+}
+
+func (dr *DashboardRepository) GetTopEbooks() ([]TopEbook, error) {
+	var ebooks []TopEbook
+
+	err := database.DB.
+		Table("ebooks").
+		Select("ebooks.title, COUNT(purchases.id) as total_purchases").
+		Joins("INNER JOIN purchases ON purchases.ebook_id = ebooks.id").
+		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
+		Where("creators.user_id = ?", dr.UserID).
+		Group("ebooks.id").
+		Order("total_purchases DESC").
+		Limit(3).
+		Scan(&ebooks).Error
+
+	if err != nil {
+		log.Printf("Erro ao buscar top ebooks: %v", err)
+		return nil, err
+	}
+
+	return ebooks, nil
+}
+
+func (dr *DashboardRepository) GetTopClients() ([]TopClient, error) {
+	var clients []TopClient
+
+	err := database.DB.
+		Table("clients").
+		Select("clients.name, contacts.email, COUNT(purchases.id) as total_purchases").
+		Joins("INNER JOIN purchases ON purchases.client_id = clients.id").
+		Joins("INNER JOIN ebooks ON ebooks.id = purchases.ebook_id").
+		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
+		Joins("INNER JOIN contacts ON contacts.id = clients.contact_id").
+		Where("creators.user_id = ?", dr.UserID).
+		Group("clients.id, contacts.email").
+		Order("total_purchases DESC").
+		Limit(10).
+		Scan(&clients).Error
+
+	if err != nil {
+		log.Printf("Erro ao buscar top clientes: %v", err)
+		return nil, err
+	}
+
+	return clients, nil
+}
+
+func (dr *DashboardRepository) GetTopDownloadedEbooks() ([]TopDownloadedEbook, error) {
+	var ebooks []TopDownloadedEbook
+
+	err := database.DB.
+		Table("ebooks").
+		Select("ebooks.title, SUM(purchases.downloads_used) as total_downloads").
+		Joins("INNER JOIN purchases ON purchases.ebook_id = ebooks.id").
+		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
+		Where("creators.user_id = ?", dr.UserID).
+		Group("ebooks.id").
+		Order("total_downloads DESC").
+		Limit(3).
+		Scan(&ebooks).Error
+
+	if err != nil {
+		log.Printf("Erro ao buscar top ebooks mais baixados: %v", err)
+		return nil, err
+	}
+
+	return ebooks, nil
+}
