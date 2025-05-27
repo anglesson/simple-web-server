@@ -14,38 +14,38 @@
     <div class="col-lg-12 col-md-12 col-12">
       <div class="card">
         <div class="card-body">
-          <form id="ebook-form" action="/ebook/update/{{.Data.ID}}" method="post" enctype="multipart/form-data">
+          <form id="ebook-form" action="/ebook/update/{{.Data.ebook.ID}}" method="post" enctype="multipart/form-data">
             <div class="mb-3">
               <label for="ebookTitle" class="form-label">Título do E-book</label>
-              <input type="text" class="form-control" id="ebookTitle" name="title" placeholder="Digite o título do e-book" required value="{{if .Form.Title}}{{.Form.Title}}{{else}}{{.Data.Title}}{{end}}">
+              <input type="text" class="form-control" id="ebookTitle" name="title" placeholder="Digite o título do e-book" required value="{{if .Form.Title}}{{.Form.Title}}{{else}}{{.Data.ebook.Title}}{{end}}">
               {{with .Errors.Title}}
               <p class="text-danger">{{.}}</p>{{end}}
             </div>
             <div class="mb-3">
               <label for="ebookDescription" class="form-label">Descrição</label>
               <textarea class="form-control" id="ebookDescription" name="description" rows="3" placeholder="Digite a descrição do e-book" required>{{if .Form.Description}}{{.Form.Description}}
-              {{else}}{{.Data.Description}}{{end}}</textarea>
+              {{else}}{{.Data.ebook.Description}}{{end}}</textarea>
               {{with .Errors.Description}}
               <p class="text-danger">{{.}}</p>{{end}}
             </div>
             <div class="mb-3">
               <label for="ebookPrice" class="form-label">Valor</label>
-              <input type="text" class="form-control" id="ebookPrice" name="value" placeholder="Digite o valor do e-book" maxlength="15" max="100000" required value="{{if .Form.Value}}{{.Form.Value}}{{else}}{{.Data.Value}}{{end}}">
+              <input type="text" class="form-control" id="ebookPrice" name="value" placeholder="Digite o valor do e-book" maxlength="15" max="100000" required value="{{if .Form.Value}}{{.Form.Value}}{{else}}{{.Data.ebook.Value}}{{end}}">
               {{with .Errors.Value}}
               <p class="text-danger">{{.}}</p>{{end}}
             </div>
             <div class="mb-3">
               <label for="ebookFile" class="form-label">Arquivo do e-book</label>
 
-              {{if .Data.File}}
+              {{if .Data.ebook.File}}
               <div class="mb-2 p-3 border rounded">
                 <div class="d-flex align-items-center justify-content-between">
                   <div class="d-flex align-items-center">
                     <i class="bi bi-file-earmark-pdf fs-4 me-2"></i>
-                    <span class="text-truncate" style="max-width: 300px;">{{.Data.File}}</span>
+                    <span class="text-truncate" style="max-width: 300px;">{{.Data.ebook.File}}</span>
                   </div>
                   <div>
-                    <a href="{{.Data.FileURL}}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <a href="{{.Data.ebook.FileURL}}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
                       <i class="bi bi-download"></i> Download
                     </a>
                     <button type="button" class="btn btn-sm btn-outline-secondary" id="changeFileBtn">
@@ -69,7 +69,7 @@
             <div class="mb-3">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" name="status" value="true" id="ebookStatus" {{if
-                  .Form.Status}}checked{{else}}{{if .Data.Status}}checked{{end}}{{end}}>
+                  .Form.Status}}checked{{else}}{{if .Data.ebook.Status}}checked{{end}}{{end}}>
                 <label class="form-check-label" for="ebookStatus">
                   Ativo
                 </label>
