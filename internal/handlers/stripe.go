@@ -17,6 +17,9 @@ import (
 func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// Initialize Stripe with API key
+	stripe.Key = config.AppConfig.StripeSecretKey
+
 	// Get session token from cookie
 	sessionCookie, err := r.Cookie("session_token")
 	if err != nil || sessionCookie.Value == "" {
