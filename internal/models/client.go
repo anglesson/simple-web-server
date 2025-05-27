@@ -11,6 +11,7 @@ type Client struct {
 	Validated      bool       `json:"validated"`
 	Contact        Contact    `gorm:"foreignKey:ContactID"`
 	Creators       []*Creator `gorm:"many2many:client_creators"`
+	Purchases      []*Purchase
 }
 
 func NewClient(name, cpf, dataNascimento, email, phone string, creator *Creator) *Client {
@@ -32,4 +33,24 @@ func (c *Client) Update(name, cpf, email, phone string) {
 	c.CPF = cpf
 	c.Contact.Email = email
 	c.Contact.Phone = phone
+}
+
+func (c *Client) TotalPurchasesByEbook(ebookID uint) int {
+	var count int
+	for _, purchase := range c.Purchases {
+		if purchase.EbookID == ebookID {
+			count++
+		}
+	}
+	return count
+}
+
+func (c *Client) TotalDownladsByEbook(ebookID uint) int {
+	var count int
+	for _, purchase := range c.Purchases {
+		if purchase.EbookID == ebookID {
+			count = +purchase.DownloadsUsed
+		}
+	}
+	return count
 }

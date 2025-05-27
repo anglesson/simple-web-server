@@ -331,8 +331,9 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		redirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := repositories.NewClientRepository().FindClientsByCreator(creator, repositories.ClientQuery{
+	clients, err := repositories.NewClientRepository().FindByClientsWhereEbookWasSend(creator, repositories.ClientQuery{
 		Term:       term,
+		EbookID:    ebook.ID,
 		Pagination: pagination,
 	})
 	if err != nil {

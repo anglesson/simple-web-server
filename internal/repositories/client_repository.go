@@ -107,3 +107,26 @@ func (cr *ClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creat
 
 	return &clients, nil
 }
+
+func (cr *ClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+	var clients []models.Client
+	err := database.DB.Debug().
+		Offset(query.Pagination.GetOffset()).
+		Limit(query.Pagination.GetLimit()).
+		Model(&models.Client{}).
+		Joins("JOIN client_creators ON client_creators.client_id = clients.id and client_creators.creator_id = ?", creator.ID).
+		Joins("JOIN purchases ON purchases.client_id = clients.id").
+		Where("clients.id IN (SELECT client_id FROM purchases WHERE ebook_id = ?)", query.EbookID).
+		Preload("Contact").
+		Preload("Creators").
+		Preload("Purchases").
+		Scopes(ContainsNameCpfEmailOrPhoneWith(query.Term)).
+		Find(&clients).Error
+
+	if err != nil {
+		log.Printf("Erro na busca de clientes: %s", err)
+		return nil, errors.New("erro na busca de clientes")
+	}
+
+	return &clients, nil
+}
