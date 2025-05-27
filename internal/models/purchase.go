@@ -15,6 +15,7 @@ type Purchase struct {
 	ExpiresAt     time.Time `json:"expires_at"`
 	DownloadsUsed int       `json:"downloads_used"`
 	DownloadLimit int       `json:"download_limit"`
+	Downloads     []DownloadLog
 }
 
 func NewPurchase(ebookID, clientID uint) *Purchase {
@@ -46,4 +47,7 @@ func (p *Purchase) IsExpired() bool {
 
 func (p *Purchase) UseDownload() {
 	p.DownloadsUsed++
+	p.Downloads = append(p.Downloads, DownloadLog{
+		Purchase: p,
+	})
 }

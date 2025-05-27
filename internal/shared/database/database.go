@@ -28,4 +28,5 @@ func migrate() {
 	DB.AutoMigrate(&models.Creator{})
 	DB.AutoMigrate(&models.Ebook{})
 	DB.AutoMigrate(&models.Purchase{})
+	DB.AutoMigrate(&models.DownloadLog{})
 }
