@@ -26,6 +26,8 @@ type AppConfiguration struct {
 	S3BucketName          string
 	HubDesenvolvedorApi   string
 	HubDesenvolvedorToken string
+	StripeSecretKey       string
+	StripePriceID         string
 }
 
 var AppConfig AppConfiguration
@@ -53,6 +55,8 @@ func LoadConfigs() {
 	AppConfig.S3BucketName = GetEnv("S3_BUCKET_NAME", "sa-east-1")
 	AppConfig.HubDesenvolvedorApi = GetEnv("HUB_DEVSENVOLVEDOR_API", "")
 	AppConfig.HubDesenvolvedorToken = GetEnv("HUB_DEVSENVOLVEDOR_TOKEN", "")
+	AppConfig.StripeSecretKey = GetEnv("STRIPE_SECRET_KEY", "")
+	AppConfig.StripePriceID = GetEnv("STRIPE_PRICE_ID", "")
 }
 
 func GetEnv(key, fallback string) string {

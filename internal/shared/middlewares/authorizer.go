@@ -24,27 +24,15 @@ func authorizer(r *http.Request) (string, error) {
 	// Get session token from the cookie
 	cookie, err := r.Cookie("session_token")
 	if err != nil || cookie.Value == "" {
-		log.Println("Session token not found in cookie:", err)
+		log.Printf("Session token not found in cookie: %v", err)
 		return "", ErrUnauthorized
 	}
 
 	// Find user by session token
-	var foundUser models.Login
-	var foundEmail string
-	var userFound bool
-	var user models.User
-
-	for email, user := range repositories.Users {
-		if user.SessionToken == cookie.Value {
-			foundUser = user
-			foundEmail = email
-			userFound = true
-			break
-		}
-	}
-
-	if !userFound {
-		log.Println("User not found for session token:", cookie.Value)
+	userRepository := repositories.NewUserRepository()
+	user := userRepository.FindBySessionToken(cookie.Value)
+	if user == nil {
+		log.Printf("User not found for session token: %s", cookie.Value)
 		return "", ErrUnauthorized
 	}
 
@@ -58,18 +46,24 @@ func authorizer(r *http.Request) (string, error) {
 		csrfToken = csrfHeader
 	}
 
-	if csrfToken != foundUser.CSRFToken || csrfToken == "" {
-		log.Println("CSRF token mismatch or empty for user:", foundEmail)
+	if csrfToken == "" {
+		log.Printf("CSRF token is empty for user: %s", user.Email)
+		return "", ErrUnauthorized
+	}
+
+	if csrfToken != user.CSRFToken {
+		log.Printf("CSRF token mismatch for user: %s. Received: %s, Expected: %s",
+			user.Email, csrfToken, user.CSRFToken)
 		return "", ErrUnauthorized
 	}
 
 	// Store the email and CSRF token in request context
-	ctx := context.WithValue(r.Context(), UserEmailKey, foundEmail)
-	ctx = context.WithValue(ctx, CSRFTokenKey, foundUser.CSRFToken)
+	ctx := context.WithValue(r.Context(), UserEmailKey, user.Email)
+	ctx = context.WithValue(ctx, CSRFTokenKey, user.CSRFToken)
 	ctx = context.WithValue(ctx, User, user)
 	*r = *r.WithContext(ctx)
 
-	return foundUser.CSRFToken, nil
+	return user.CSRFToken, nil
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -77,7 +71,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Authentication logic
 		csrfToken, err := authorizer(r)
 		if err != nil {
-			log.Println("Unauthorized access attempt:", err)
+			log.Printf("Unauthorized access attempt: %v", err)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
@@ -95,6 +89,7 @@ func GetCSRFToken(r *http.Request) string {
 	if token, ok := r.Context().Value(CSRFTokenKey).(string); ok {
 		return token
 	}
+	log.Printf("CSRF token not found in context")
 	return ""
 }
 
@@ -103,7 +98,7 @@ func Auth(r *http.Request) *models.User {
 
 	user_email, ok := r.Context().Value(UserEmailKey).(string)
 	if !ok {
-		log.Panic("Ocorreu erro ao recuperar as informações do usuário")
+		log.Printf("User email not found in context")
 		return &models.User{}
 	}
 

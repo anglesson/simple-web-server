@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
 )
@@ -92,6 +94,13 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
 	if err := repositories.NewUserRepository().Save(user); err != nil {
 		redirectBackWithErrors(w, r, err.Error())
+	}
+
+	// Create Stripe customer
+	stripeService := services.NewStripeService()
+	if err := stripeService.CreateCustomer(user); err != nil {
+		log.Printf("Error creating Stripe customer: %v", err)
+		// Don't fail registration if Stripe fails, but log the error
 	}
 
 	creatorRepository := repositories.NewCreatorRepository()

@@ -11,5 +11,12 @@ func HomeView(w http.ResponseWriter, r *http.Request) {
 		ErrorView(w, r, 404)
 		return
 	}
-	template.View(w, r, "home", nil, "guest")
+
+	// Generate CSRF token for the home page
+	csrfToken := sessionService.GenerateCSRFToken()
+	sessionService.SetCSRFToken(w)
+
+	template.View(w, r, "home", map[string]interface{}{
+		"csrf_token": csrfToken,
+	}, "guest")
 }

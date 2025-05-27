@@ -15,19 +15,33 @@ func NewUserRepository() *UserRepository {
 }
 
 func (ur *UserRepository) Save(user *models.User) error {
-	err := database.DB.Create(&user)
-	if err != nil {
-		return err.Error
+	result := database.DB.Save(user)
+	if result.Error != nil {
+		log.Printf("Erro ao salvar usuário: %v", result.Error)
+		return result.Error
 	}
 
-	log.Default().Printf("Created new user with ID: %d, EMAIL: %s", user.ID, user.Email)
-
+	log.Printf("Usuário atualizado com sucesso. ID: %d, EMAIL: %s", user.ID, user.Email)
 	return nil
 }
 
 // TODO: add error handler
 func (ur *UserRepository) FindByEmail(emailUser string) *models.User {
-	var user *models.User
-	database.DB.First(&user, "email = ?", emailUser)
-	return user
+	var user models.User
+	result := database.DB.Where("email = ?", emailUser).First(&user)
+	if result.Error != nil {
+		log.Printf("Erro ao buscar usuário por email: %v", result.Error)
+		return nil
+	}
+	return &user
+}
+
+func (r *UserRepository) FindBySessionToken(token string) *models.User {
+	var user models.User
+	result := database.DB.Where("session_token = ?", token).First(&user)
+	if result.Error != nil {
+		log.Printf("Erro ao buscar usuário por session token: %v", result.Error)
+		return nil
+	}
+	return &user
 }

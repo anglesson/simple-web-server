@@ -15,7 +15,11 @@ import (
 var sessionService = services.NewSessionService()
 
 func LoginView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "login", nil, "guest")
+	csrfToken := sessionService.GenerateCSRFToken()
+	sessionService.SetCSRFToken(w)
+	template.View(w, r, "login", map[string]interface{}{
+		"csrf_token": csrfToken,
+	}, "guest")
 }
 
 func LoginSubmit(w http.ResponseWriter, r *http.Request) {

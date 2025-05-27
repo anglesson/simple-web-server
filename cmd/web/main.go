@@ -37,20 +37,33 @@ func main() {
 	// Private routes
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware)
+		r.Use(middlewares.TrialMiddleware)
+
 		r.Post("/logout", handlers.LogoutSubmit)
 		r.Get("/dashboard", handlers.DashboardView)
+		r.Get("/settings", handlers.SettingsView)
+
+		// Ebook routes
 		r.Get("/ebook", handlers.EbookIndexView)
 		r.Get("/ebook/create", handlers.EbookCreateView)
 		r.Post("/ebook/create", handlers.EbookCreateSubmit)
 		r.Get("/ebook/edit/{id}", handlers.EbookUpdateView)
 		r.Get("/ebook/view/{id}", handlers.EbookShowView)
 		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
+
+		// Client routes
 		r.Get("/client", handlers.ClientIndexView)
 		r.Post("/client", handlers.ClientCreateSubmit)
 		r.Post("/client/update/{id}", handlers.ClientUpdateSubmit)
 		r.Post("/client/import", handlers.ClientImportSubmit)
+
+		// Purchase routes
 		r.Post("/purchase/ebook/{id}", handlers.PurchaseCreateHandler)
+		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
 		r.Get("/send", handlers.SendViewHandler)
+
+		// Stripe routes
+		r.Post("/api/create-checkout-session", handlers.CreateCheckoutSession)
 	})
 
 	r.Get("/", handlers.HomeView) // Home page deve ser a ultima rota

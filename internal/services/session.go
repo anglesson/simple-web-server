@@ -43,14 +43,17 @@ func (s *SessionService) SetSessionToken(w http.ResponseWriter) {
 }
 
 func (s *SessionService) SetCSRFToken(w http.ResponseWriter) {
-	http.SetCookie(w, &http.Cookie{
+	cookie := &http.Cookie{
 		Name:     "csrf_token",
 		Value:    s.CSRFToken,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: false,
 		Secure:   false,
 		SameSite: http.SameSiteStrictMode,
-	})
+		Path:     "/",
+	}
+	http.SetCookie(w, cookie)
+	log.Printf("CSRF token definido no cookie: %s", s.CSRFToken)
 }
 
 func (s *SessionService) ClearSessionToken(w http.ResponseWriter) {
@@ -106,10 +109,24 @@ func (s *SessionService) InitSession(w http.ResponseWriter, email string) {
 	s.SetCSRFToken(w)
 
 	// Update the session token in the user data
-	userFound := repositories.Users[email]
-	userFound.SessionToken = s.SessionToken
-	userFound.CSRFToken = s.CSRFToken
-	repositories.Users[email] = userFound
+	userRepository := repositories.NewUserRepository()
+	user := userRepository.FindByEmail(email)
+	if user == nil {
+		log.Printf("Erro: Usuário não encontrado para o email: %s", email)
+		return
+	}
 
-	log.Printf("Initialized session with EMAIL: %s", email)
+	log.Printf("Atualizando tokens para o usuário: %s", email)
+	log.Printf("Session Token: %s", s.SessionToken)
+	log.Printf("CSRF Token: %s", s.CSRFToken)
+
+	user.SessionToken = s.SessionToken
+	user.CSRFToken = s.CSRFToken
+
+	if err := userRepository.Save(user); err != nil {
+		log.Printf("Erro ao salvar tokens do usuário: %v", err)
+		return
+	}
+
+	log.Printf("Sessão inicializada com sucesso para o usuário: %s", email)
 }

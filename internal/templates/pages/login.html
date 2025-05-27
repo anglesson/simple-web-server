@@ -10,6 +10,7 @@
           <div class="mb-4" href="/">{{ template "logo" .}}</div>
           <!-- Form -->
           <form method="post" action="/login">
+            <input type="hidden" name="csrf_token" value="{{.csrf_token}}" />
             <!-- E-mail -->
             <div class="mb-3">
               <label for="email" class="form-label">E-mail</label>

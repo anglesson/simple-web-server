@@ -194,7 +194,9 @@ func EbookUpdateView(w http.ResponseWriter, r *http.Request) {
 
 	ebook.FileURL = storage.GenerateDownloadLink(ebook.File)
 
-	template.View(w, r, "update_ebook", ebook, "admin")
+	template.View(w, r, "update_ebook", map[string]interface{}{
+		"ebook": ebook,
+	}, "admin")
 }
 
 func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {

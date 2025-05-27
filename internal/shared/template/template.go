@@ -2,16 +2,13 @@ package template
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"net/url"
-	"path/filepath"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
-	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 )
 
@@ -38,61 +35,90 @@ func TemplateFunctions(r *http.Request) template.FuncMap {
 	}
 }
 
-func View(w http.ResponseWriter, r *http.Request, templateName string, data any, layout string) {
-	var form map[string]interface{}
-	var errors map[string]string
-	var flash cookies.FlashMessage
+func View(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}, layout string) {
+	if data == nil {
+		data = make(map[string]interface{})
+	}
 
-	if c, err := r.Cookie("form"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value)
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
+	// Get form data from cookies if available
+	formCookie, err := r.Cookie("form")
+	if err == nil {
+		formValue, _ := url.QueryUnescape(formCookie.Value)
+		var formData map[string]interface{}
+		if err := json.Unmarshal([]byte(formValue), &formData); err == nil {
+			data["Form"] = formData
 		}
-		_ = json.Unmarshal([]byte(decodedValue), &form)
-		http.SetCookie(w, &http.Cookie{Name: "form", MaxAge: -1})
+		http.SetCookie(w, &http.Cookie{
+			Name:   "form",
+			MaxAge: -1,
+		})
 	}
-	if c, err := r.Cookie("errors"); err == nil {
-		decodedValue, decodeErr := url.QueryUnescape(c.Value)
-		if decodeErr != nil {
-			log.Println("Error decoding cookie value:", decodeErr)
+
+	// Get error data from cookies if available
+	errorsCookie, err := r.Cookie("errors")
+	if err == nil {
+		errorsValue, _ := url.QueryUnescape(errorsCookie.Value)
+		var errorsData map[string]string
+		if err := json.Unmarshal([]byte(errorsValue), &errorsData); err == nil {
+			data["Errors"] = errorsData
 		}
-		_ = json.Unmarshal([]byte(decodedValue), &errors)
-		http.SetCookie(w, &http.Cookie{Name: "errors", MaxAge: -1})
+		http.SetCookie(w, &http.Cookie{
+			Name:   "errors",
+			MaxAge: -1,
+		})
 	}
 
-	if c, err := r.Cookie("flash"); err == nil {
-		decoded, _ := url.QueryUnescape(c.Value)
-		_ = json.Unmarshal([]byte(decoded), &flash)
-		http.SetCookie(w, &http.Cookie{Name: "flash", MaxAge: -1})
+	// Get CSRF token from context
+	if csrfToken := middlewares.GetCSRFToken(r); csrfToken != "" {
+		log.Printf("CSRF token encontrado no contexto: %s", csrfToken)
+		data["csrf_token"] = csrfToken
+	} else {
+		log.Printf("CSRF token não encontrado no contexto")
 	}
 
-	files := []string{
-		fmt.Sprintf("internal/templates/layouts/%s.html", layout),
-		fmt.Sprintf("internal/templates/pages/%s.html", templateName),
+	// Get user from context
+	if user := middlewares.Auth(r); user != nil {
+		log.Printf("Usuário encontrado no contexto: %s", user.Email)
+		data["user"] = user
+		if user.CSRFToken != "" {
+			log.Printf("Usando CSRF token do usuário: %s", user.CSRFToken)
+			data["csrf_token"] = user.CSRFToken
+		}
+	} else {
+		log.Printf("Usuário não encontrado no contexto")
 	}
-	partials, _ := filepath.Glob("internal/templates/partials/*.html")
-	files = append(files, partials...)
 
-	t := template.New(layout + ".html").Funcs(TemplateFunctions(r))
-	t, err := t.ParseFiles(files...)
+	// Parse the template
+	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseGlob("internal/templates/layouts/*.html")
 	if err != nil {
-		http.Error(w, "Erro ao carregar template", http.StatusInternalServerError)
-		log.Println("Template parse error:", err)
+		log.Printf("Erro ao carregar layouts: %v", err)
+		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
 		return
 	}
 
-	tmplData := map[string]any{
-		"Form":   form,
-		"Errors": errors,
-		"Data":   data,
-	}
-
-	if flash.Message != "" {
-		tmplData["Flash"] = flash
-	}
-
-	err = t.ExecuteTemplate(w, layout+".html", tmplData)
+	// Parse partial templates
+	_, err = tmpl.ParseGlob("internal/templates/partials/*.html")
 	if err != nil {
-		log.Printf("Erro ao renderizar template: %s", err)
+		log.Printf("Erro ao carregar parciais: %v", err)
+		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
+		return
+	}
+
+	// Parse the page template
+	_, err = tmpl.ParseFiles("internal/templates/pages/" + page + ".html")
+	if err != nil {
+		log.Printf("Erro ao carregar página: %v", err)
+		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
+		return
+	}
+
+	// Execute the template
+	err = tmpl.ExecuteTemplate(w, layout, map[string]interface{}{
+		"Data": data,
+	})
+	if err != nil {
+		log.Printf("Erro ao renderizar template: %v", err)
+		http.Error(w, "Erro ao renderizar página", http.StatusInternalServerError)
+		return
 	}
 }
