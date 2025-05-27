@@ -34,14 +34,16 @@ type AppConfiguration struct {
 var AppConfig AppConfiguration
 
 func LoadConfigs() {
-	if AppConfig.AppMode == "development" || AppConfig.AppMode == "" {
+	AppConfig.AppMode = GetEnv("APPLICATION_MODE", "development")
+
+	if AppConfig.AppMode == "development" {
 		err := godotenv.Load()
 		if err != nil {
-			log.Fatal("Erro ao carregar o arquivo .env")
+			log.Printf("Aviso: Arquivo .env não encontrado: %v", err)
 		}
 	}
+
 	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Docffy")
-	AppConfig.AppMode = GetEnv("APPLICATION_MODE", "development")
 	AppConfig.Host = GetEnv("HOST", "http://localhost")
 	AppConfig.Port = GetEnv("PORT", "8080")
 	AppConfig.MailHost = GetEnv("MAIL_HOST", "sandbox.smtp.mailtrap.io")
