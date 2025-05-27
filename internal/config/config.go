@@ -41,6 +41,7 @@ func LoadConfigs() {
 		}
 	}
 	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Docffy")
+	AppConfig.AppMode = GetEnv("APPLICATION_MODE", "development")
 	AppConfig.Host = GetEnv("HOST", "http://localhost")
 	AppConfig.Port = GetEnv("PORT", "8080")
 	AppConfig.MailHost = GetEnv("MAIL_HOST", "sandbox.smtp.mailtrap.io")
