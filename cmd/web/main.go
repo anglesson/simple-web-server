@@ -34,6 +34,9 @@ func main() {
 		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
 	})
 
+	// Stripe routes
+	r.Post("/api/create-checkout-session", handlers.CreateCheckoutSession)
+
 	// Private routes
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware)
@@ -61,9 +64,6 @@ func main() {
 		r.Post("/purchase/ebook/{id}", handlers.PurchaseCreateHandler)
 		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
 		r.Get("/send", handlers.SendViewHandler)
-
-		// Stripe routes
-		r.Post("/api/create-checkout-session", handlers.CreateCheckoutSession)
 	})
 
 	r.Get("/", handlers.HomeView) // Home page deve ser a ultima rota

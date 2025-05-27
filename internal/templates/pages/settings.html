@@ -1,29 +1,27 @@
 {{ define "title" }}Configurações{{ end }}
 
 {{ define "content" }}
-<div class="container min-vh-100 d-flex align-items-center">
-    <div class="row justify-content-center w-100">
-        <div class="col-xl-8 col-lg-10 col-md-12">
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="h3 mb-4">Configurações</h1>
+
+            <!-- Subscription Section -->
             <div class="card">
                 <div class="card-body">
-                    <div class="mb-6">
-                        <h4 class="mb-1">Assinatura</h4>
-                    </div>
-                    <div class="mb-3">
-                        {{ if .user.IsInTrialPeriod }}
-                            <div class="alert alert-info">
-                                <p class="mb-0">Você está atualmente no período de teste. Restam {{ .user.DaysLeftInTrial }} dias.</p>
-                            </div>
-                        {{ else }}
-                            <div class="alert alert-warning">
-                                <p class="mb-0">Seu período de teste expirou. Por favor, assine para continuar usando a plataforma.</p>
-                            </div>
-                        {{ end }}
-                    </div>
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-primary" id="subscribe-button">
-                            Assinar Agora
-                        </button>
+                    <h2 class="h5 mb-4">Assinatura</h2>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-0">Status atual: <span class="fw-medium">{{if .Data.user.IsSubscribed}}Ativo{{else}}Inativo{{end}}</span></p>
+                            {{if .Data.user.IsSubscribed}}
+                                <p class="small text-muted mt-1">Válido até: {{.Data.user.SubscriptionEndDate.Format "02/01/2006"}}</p>
+                            {{end}}
+                        </div>
+                        {{if not .Data.user.IsSubscribed}}
+                            <button id="subscribeButton" class="btn btn-primary">
+                                Assinar Agora
+                            </button>
+                        {{end}}
                     </div>
                 </div>
             </div>
@@ -33,60 +31,39 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const subscribeButton = document.getElementById('subscribe-button');
+    const csrfToken = '{{ .Data.user.CSRFToken }}';
+    console.log('CSRF Token:', csrfToken); // Debug log
+
+    // Handle subscription button click
+    const subscribeButton = document.getElementById('subscribeButton');
     if (subscribeButton) {
-        subscribeButton.addEventListener('click', function() {
-            const csrfToken = '{{ .user.CSRFToken }}';
-            console.log('CSRF Token:', csrfToken); // Debug
+        subscribeButton.addEventListener('click', async function() {
+            try {
+                console.log('Enviando requisição com CSRF token:', csrfToken);
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
 
-            if (!csrfToken || csrfToken === '') {
-                console.error('CSRF Token não encontrado');
-                alert('Erro de segurança: Token CSRF não encontrado. Por favor, faça login novamente.');
-                window.location.href = '/login';
-                return;
-            }
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
 
-            // Redirecionar para o Checkout do Stripe
-            fetch('/api/create-checkout-session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
-                credentials: 'same-origin'
-            })
-            .then(async response => {
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    console.error('Resposta inválida:', await response.text());
-                    throw new Error('Resposta inválida do servidor');
-                }
-                
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('Erro na resposta:', errorData);
-                    throw new Error(errorData.error || 'Erro na resposta do servidor');
+                    console.error('Error data:', errorData);
+                    throw new Error(errorData.error || 'Erro ao criar sessão de checkout');
                 }
-                
-                return response.json();
-            })
-            .then(data => {
-                if (data.url) {
-                    window.location.href = data.url;
-                } else {
-                    console.error('URL não recebida:', data);
-                    throw new Error('URL de checkout não recebida');
-                }
-            })
-            .catch(error => {
+
+                const data = await response.json();
+                console.log('Success data:', data);
+                window.location.href = data.url;
+            } catch (error) {
                 console.error('Erro:', error);
-                if (error.message === 'Resposta inválida do servidor') {
-                    alert('Sua sessão expirou. Por favor, faça login novamente.');
-                    window.location.href = '/login';
-                } else {
-                    alert('Ocorreu um erro ao processar sua assinatura. Por favor, tente novamente.');
-                }
-            });
+                alert('Erro ao processar a assinatura. Por favor, tente novamente.');
+            }
         });
     }
 });

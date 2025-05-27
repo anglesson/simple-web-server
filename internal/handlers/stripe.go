@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/internal/config"
-	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
+	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/checkout/session"
 )
@@ -14,19 +14,41 @@ import (
 func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	user := middlewares.Auth(r)
-	if user == nil {
-		log.Printf("Usuário não autenticado ao tentar criar sessão de checkout")
+	// Get session token from cookie
+	sessionCookie, err := r.Cookie("session_token")
+	if err != nil || sessionCookie.Value == "" {
+		log.Printf("Session token not found in cookie: %v", err)
+		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Não autorizado",
 		})
 		return
 	}
 
+	log.Printf("Session token found: %s", sessionCookie.Value)
+
+	// Find user by session token
+	userRepository := repositories.NewUserRepository()
+	user := userRepository.FindBySessionToken(sessionCookie.Value)
+	if user == nil {
+		log.Printf("User not found for session token: %s", sessionCookie.Value)
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Não autorizado",
+		})
+		return
+	}
+
+	log.Printf("User found: %s", user.Email)
+
 	// Validate CSRF token
 	csrfToken := r.Header.Get("X-CSRF-Token")
+	log.Printf("CSRF token from header: %s", csrfToken)
+	log.Printf("User CSRF token: %s", user.CSRFToken)
+
 	if csrfToken == "" {
 		log.Printf("Token CSRF não encontrado no header")
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Token CSRF não encontrado",
 		})
@@ -36,6 +58,7 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	if csrfToken != user.CSRFToken {
 		log.Printf("Token CSRF inválido para o usuário %s. Token recebido: %s, Token esperado: %s",
 			user.Email, csrfToken, user.CSRFToken)
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Token CSRF inválido",
 		})
@@ -44,8 +67,31 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 
 	if user.StripeCustomerID == "" {
 		log.Printf("Usuário %s não possui ID do Stripe", user.Email)
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Erro ao processar pagamento: Cliente não encontrado",
+		})
+		return
+	}
+
+	// Log Stripe configuration
+	log.Printf("Stripe Secret Key: %s", config.AppConfig.StripeSecretKey)
+	log.Printf("Stripe Price ID: %s", config.AppConfig.StripePriceID)
+
+	if config.AppConfig.StripeSecretKey == "" {
+		log.Printf("Stripe Secret Key não configurada")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Erro de configuração do Stripe",
+		})
+		return
+	}
+
+	if config.AppConfig.StripePriceID == "" {
+		log.Printf("Stripe Price ID não configurado")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Erro de configuração do Stripe",
 		})
 		return
 	}
@@ -63,9 +109,12 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		CancelURL:  stripe.String("http://" + r.Host + "/settings?canceled=true"),
 	}
 
+	log.Printf("Criando sessão do Stripe com os parâmetros: %+v", params)
+
 	s, err := session.New(params)
 	if err != nil {
 		log.Printf("Erro ao criar sessão do Stripe: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Erro ao processar pagamento: " + err.Error(),
 		})
@@ -78,8 +127,10 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		URL: s.URL,
 	}
 
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("Erro ao codificar resposta: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Erro ao processar resposta",
 		})

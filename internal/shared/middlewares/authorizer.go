@@ -2,9 +2,11 @@ package middlewares
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -72,12 +74,36 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		csrfToken, err := authorizer(r)
 		if err != nil {
 			log.Printf("Unauthorized access attempt: %v", err)
+
+			// Check if it's an API request
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(map[string]string{
+					"error": "Não autorizado",
+				})
+				return
+			}
+
+			// For regular page requests, redirect to login
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
 		// Store CSRF token in a header that your templates can access
 		w.Header().Set("X-CSRF-Token", csrfToken)
+
+		// Set CSRF token in cookie if not present
+		if _, err := r.Cookie("csrf_token"); err != nil {
+			http.SetCookie(w, &http.Cookie{
+				Name:     "csrf_token",
+				Value:    csrfToken,
+				Path:     "/",
+				HttpOnly: false,
+				Secure:   false,
+				SameSite: http.SameSiteStrictMode,
+			})
+		}
 
 		// Call the next handler
 		next.ServeHTTP(w, r)

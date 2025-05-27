@@ -103,10 +103,9 @@ func (s *SessionService) GetSession(w http.ResponseWriter, r *http.Request) (str
 }
 
 func (s *SessionService) InitSession(w http.ResponseWriter, email string) {
+	// Generate new tokens
 	s.SessionToken = s.GenerateSessionToken()
-	s.SetSessionToken(w)
 	s.CSRFToken = s.GenerateCSRFToken()
-	s.SetCSRFToken(w)
 
 	// Update the session token in the user data
 	userRepository := repositories.NewUserRepository()
@@ -127,6 +126,10 @@ func (s *SessionService) InitSession(w http.ResponseWriter, email string) {
 		log.Printf("Erro ao salvar tokens do usuário: %v", err)
 		return
 	}
+
+	// Set cookies after saving to database
+	s.SetSessionToken(w)
+	s.SetCSRFToken(w)
 
 	log.Printf("Sessão inicializada com sucesso para o usuário: %s", email)
 }

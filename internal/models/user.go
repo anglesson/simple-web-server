@@ -9,15 +9,18 @@ import (
 
 type User struct {
 	gorm.Model
-	Username         string     `json:"username" validate:"required"`
-	Password         string     `json:"password" validate:"required"`
-	Email            string     `json:"email" validate:"required,email" gorm:"unique"`
-	TrialStartDate   *time.Time `json:"trial_start_date"`
-	TrialEndDate     *time.Time `json:"trial_end_date"`
-	IsTrialActive    bool       `json:"is_trial_active"`
-	StripeCustomerID string     `json:"stripe_customer_id"`
-	CSRFToken        string
-	SessionToken     string
+	Username             string     `json:"username" validate:"required"`
+	Password             string     `json:"password" validate:"required"`
+	Email                string     `json:"email" validate:"required,email" gorm:"unique"`
+	TrialStartDate       *time.Time `json:"trial_start_date"`
+	TrialEndDate         *time.Time `json:"trial_end_date"`
+	IsTrialActive        bool       `json:"is_trial_active"`
+	StripeCustomerID     string     `json:"stripe_customer_id"`
+	StripeSubscriptionID string     `json:"stripe_subscription_id"`
+	SubscriptionStatus   string     `json:"subscription_status"`
+	SubscriptionEndDate  *time.Time `json:"subscription_end_date"`
+	CSRFToken            string
+	SessionToken         string
 }
 
 func NewUser(username, password, email string) *User {
@@ -61,4 +64,14 @@ func (u *User) DaysLeftInTrial() int {
 		return 0
 	}
 	return int(days)
+}
+
+func (u *User) IsSubscribed() bool {
+	if u.SubscriptionStatus == "active" {
+		return true
+	}
+	if u.SubscriptionEndDate != nil && time.Now().Before(*u.SubscriptionEndDate) {
+		return true
+	}
+	return false
 }

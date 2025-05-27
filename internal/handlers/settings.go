@@ -16,19 +16,17 @@ func SettingsView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Usar o token CSRF do usuário diretamente
-	csrfToken := user.CSRFToken
-	if csrfToken == "" {
-		log.Printf("Token CSRF não encontrado para o usuário: %s", user.Email)
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
+	// Gerar novo token CSRF se necessário
+	if user.CSRFToken == "" {
+		user.CSRFToken = sessionService.GenerateCSRFToken()
+		sessionService.SetCSRFToken(w)
 	}
 
 	log.Printf("Renderizando página de configurações para o usuário: %s", user.Email)
-	log.Printf("Token CSRF: %s", csrfToken)
+	log.Printf("Token CSRF: %s", user.CSRFToken)
 
+	// Passar apenas o objeto user para o template
 	template.View(w, r, "settings", map[string]interface{}{
-		"user":       user,
-		"csrf_token": csrfToken,
+		"user": user,
 	}, "admin")
 }
