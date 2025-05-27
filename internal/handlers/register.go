@@ -67,7 +67,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the user already exists
 	foundedUser := repositories.NewUserRepository().FindByEmail(form.Email)
-	if foundedUser == nil {
+	if foundedUser != nil {
 		errors["email"] = "Email já cadastrado"
 	}
 
@@ -94,19 +94,29 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
 	if err := repositories.NewUserRepository().Save(user); err != nil {
 		redirectBackWithErrors(w, r, err.Error())
+		return
 	}
 
 	// Create Stripe customer
 	stripeService := services.NewStripeService()
 	if err := stripeService.CreateCustomer(user); err != nil {
 		log.Printf("Error creating Stripe customer: %v", err)
-		// Don't fail registration if Stripe fails, but log the error
+		redirectBackWithErrors(w, r, "Erro ao criar cliente no Stripe")
+		return
+	}
+
+	// Save user with StripeCustomerID
+	if err := repositories.NewUserRepository().Save(user); err != nil {
+		log.Printf("Error saving user with StripeCustomerID: %v", err)
+		redirectBackWithErrors(w, r, "Erro ao salvar dados do usuário")
+		return
 	}
 
 	creatorRepository := repositories.NewCreatorRepository()
 	creator := models.NewCreator(user.Username, user.Email, "", user.ID)
 	if err := creatorRepository.Create(creator); err != nil {
 		redirectBackWithErrors(w, r, err.Error())
+		return
 	}
 
 	sessionService.InitSession(w, user.Email)

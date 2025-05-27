@@ -36,6 +36,7 @@ func main() {
 
 	// Stripe routes
 	r.Post("/api/create-checkout-session", handlers.CreateCheckoutSession)
+	r.Post("/api/webhook", handlers.HandleStripeWebhook)
 
 	// Private routes
 	r.Group(func(r chi.Router) {

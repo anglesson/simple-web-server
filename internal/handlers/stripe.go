@@ -2,13 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/checkout/session"
+	"github.com/stripe/stripe-go/v76/webhook"
 )
 
 func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
@@ -136,4 +139,122 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+}
+
+func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading request body: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Configure webhook options to ignore API version mismatch
+	opts := webhook.ConstructEventOptions{
+		IgnoreAPIVersionMismatch: true,
+	}
+
+	event, err := webhook.ConstructEventWithOptions(payload, r.Header.Get("Stripe-Signature"), config.AppConfig.StripeWebhookSecret, opts)
+	if err != nil {
+		log.Printf("Error verifying webhook signature: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Handle the event
+	switch event.Type {
+	case "checkout.session.completed":
+		var session stripe.CheckoutSession
+		err := json.Unmarshal(event.Data.Raw, &session)
+		if err != nil {
+			log.Printf("Error parsing checkout session: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		// Find user by Stripe customer ID
+		userRepository := repositories.NewUserRepository()
+		user := userRepository.FindByStripeCustomerID(session.Customer.ID)
+		if user == nil {
+			log.Printf("User not found for Stripe customer ID: %s", session.Customer.ID)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		// Update user subscription status
+		user.StripeSubscriptionID = session.Subscription.ID
+		user.SubscriptionStatus = "active"
+		now := time.Now()
+		user.SubscriptionEndDate = &now
+
+		if err := userRepository.Save(user); err != nil {
+			log.Printf("Error updating user subscription: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	case "customer.subscription.updated":
+		var subscription stripe.Subscription
+		err := json.Unmarshal(event.Data.Raw, &subscription)
+		if err != nil {
+			log.Printf("Error parsing subscription: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		// Find user by Stripe customer ID
+		userRepository := repositories.NewUserRepository()
+		user := userRepository.FindByStripeCustomerID(subscription.Customer.ID)
+		if user == nil {
+			log.Printf("User not found for Stripe customer ID: %s", subscription.Customer.ID)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		// Update user subscription status
+		user.SubscriptionStatus = string(subscription.Status)
+		if subscription.CurrentPeriodEnd > 0 {
+			endDate := time.Unix(subscription.CurrentPeriodEnd, 0)
+			user.SubscriptionEndDate = &endDate
+		}
+
+		if err := userRepository.Save(user); err != nil {
+			log.Printf("Error updating user subscription: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	case "customer.subscription.deleted":
+		var subscription stripe.Subscription
+		err := json.Unmarshal(event.Data.Raw, &subscription)
+		if err != nil {
+			log.Printf("Error parsing subscription: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		// Find user by Stripe customer ID
+		userRepository := repositories.NewUserRepository()
+		user := userRepository.FindByStripeCustomerID(subscription.Customer.ID)
+		if user == nil {
+			log.Printf("User not found for Stripe customer ID: %s", subscription.Customer.ID)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		// Update user subscription status
+		user.SubscriptionStatus = "canceled"
+		if subscription.CurrentPeriodEnd > 0 {
+			endDate := time.Unix(subscription.CurrentPeriodEnd, 0)
+			user.SubscriptionEndDate = &endDate
+		}
+
+		if err := userRepository.Save(user); err != nil {
+			log.Printf("Error updating user subscription: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

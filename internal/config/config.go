@@ -28,6 +28,7 @@ type AppConfiguration struct {
 	HubDesenvolvedorToken string
 	StripeSecretKey       string
 	StripePriceID         string
+	StripeWebhookSecret   string
 }
 
 var AppConfig AppConfiguration
@@ -57,6 +58,7 @@ func LoadConfigs() {
 	AppConfig.HubDesenvolvedorToken = GetEnv("HUB_DEVSENVOLVEDOR_TOKEN", "")
 	AppConfig.StripeSecretKey = GetEnv("STRIPE_SECRET_KEY", "")
 	AppConfig.StripePriceID = GetEnv("STRIPE_PRICE_ID", "")
+	AppConfig.StripeWebhookSecret = GetEnv("STRIPE_WEBHOOK_SECRET", "")
 }
 
 func GetEnv(key, fallback string) string {
