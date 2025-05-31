@@ -24,7 +24,7 @@ func (m *MockClientRepository) FindByCPF(cpf string) *domain.Client {
 	return args.Get(0).(*domain.Client)
 }
 
-func TestShoulCallRepositoryWithCorretParam(t *testing.T) {
+func TestCreateClientUseCase_ShoulCallRepositoryWithCorretParam(t *testing.T) {
 	input := CreateClientInput{
 		Name:     "any_name",
 		CPF:      "any_cpf",
@@ -54,7 +54,7 @@ func TestShoulCallRepositoryWithCorretParam(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
-func TestShouldReturnErrorIfClientAlready(t *testing.T) {
+func TestCreateClientUseCase_ShouldReturnErrorIfClientAlready(t *testing.T) {
 	input := CreateClientInput{
 		Name:     "any_name",
 		CPF:      "any_cpf",
