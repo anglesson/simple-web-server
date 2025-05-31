@@ -44,11 +44,11 @@ func TestShoulCallRepositoryWithCorretParam(t *testing.T) {
 		Phone:    input.Phone,
 	}).Return(nil)
 
-	clientUseCase := &ClientUseCase{
+	createClientUseCase := &CreateClientUseCase{
 		clientRepository: mockRepo,
 	}
 
-	err := clientUseCase.Create(input)
+	_, err := createClientUseCase.Execute(input)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -68,11 +68,11 @@ func TestShouldReturnErrorIfClientAlready(t *testing.T) {
 
 	mockRepo.On("FindByCPF", "any_cpf").Return(&domain.Client{})
 
-	clientUseCase := &ClientUseCase{
+	clientUseCase := &CreateClientUseCase{
 		clientRepository: mockRepo,
 	}
 
-	err := clientUseCase.Create(input)
+	_, err := clientUseCase.Execute(input)
 
 	if err == nil {
 		t.Error("Expected error when client already exists, got nil")
