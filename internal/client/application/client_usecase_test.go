@@ -44,9 +44,7 @@ func TestShoulCallRepositoryWithCorretParam(t *testing.T) {
 		Phone:    input.Phone,
 	}).Return(nil)
 
-	createClientUseCase := &CreateClientUseCase{
-		clientRepository: mockRepo,
-	}
+	createClientUseCase := NewCreateClientUseCase(mockRepo)
 
 	_, err := createClientUseCase.Execute(input)
 	if err != nil {
@@ -68,9 +66,7 @@ func TestShouldReturnErrorIfClientAlready(t *testing.T) {
 
 	mockRepo.On("FindByCPF", "any_cpf").Return(&domain.Client{})
 
-	clientUseCase := &CreateClientUseCase{
-		clientRepository: mockRepo,
-	}
+	clientUseCase := NewCreateClientUseCase(mockRepo)
 
 	_, err := clientUseCase.Execute(input)
 

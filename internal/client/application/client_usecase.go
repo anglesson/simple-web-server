@@ -10,8 +10,10 @@ type CreateClientUseCase struct {
 	clientRepository ClientRepositoryInterface
 }
 
-func NewCreateClientUseCase() *CreateClientUseCase {
-	return &CreateClientUseCase{}
+func NewCreateClientUseCase(clientRepository ClientRepositoryInterface) *CreateClientUseCase {
+	return &CreateClientUseCase{
+		clientRepository: clientRepository,
+	}
 }
 
 func (cuc *CreateClientUseCase) Execute(input CreateClientInput) (*CreateClientOutput, error) {
