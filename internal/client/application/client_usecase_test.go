@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/client/domain"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -40,92 +41,93 @@ func (m *MockReceitaFederalService) Search(cpf, birthDay string) (ReceitaFederal
 	return data.(ReceitaFederalData), nil
 }
 
-func TestCreateClientUseCase_ShoulCallRepositoryWithCorretParam(t *testing.T) {
-	input := CreateClientInput{
-		Name:     "any_name",
-		CPF:      "any_cpf",
-		BirthDay: "any_birthday",
-		Email:    "any_email",
-		Phone:    "any_phone",
-	}
-	mockRepo := new(MockClientRepository)
-
-	mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-
-	mockRepo.On("Create", &domain.Client{
-		Name:     "name_rf",
-		CPF:      input.CPF,
-		BirthDay: input.BirthDay,
-		Email:    input.Email,
-		Phone:    input.Phone,
-	}).Return(nil)
-
-	mockReceitaService := new(MockReceitaFederalService)
-	mockReceitaService.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
-	createClientUseCase := NewCreateClientUseCase(mockRepo, mockReceitaService)
-
-	_, err := createClientUseCase.Execute(input)
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
-
-	mockRepo.AssertExpectations(t)
+type testSetup struct {
+	mockRepo       *MockClientRepository
+	mockRFService  *MockReceitaFederalService
+	createClientUC *CreateClientUseCase
+	defaultInput   CreateClientInput
 }
 
-func TestCreateClientUseCase_ShouldReturnErrorIfClientAlready(t *testing.T) {
-	input := CreateClientInput{
+func setupTest(t *testing.T) *testSetup {
+	mockRepo := new(MockClientRepository)
+	mockRFService := new(MockReceitaFederalService)
+	createClientUC := NewCreateClientUseCase(mockRepo, mockRFService)
+
+	defaultInput := CreateClientInput{
 		Name:     "any_name",
 		CPF:      "any_cpf",
 		BirthDay: "any_birthday",
 		Email:    "any_email",
 		Phone:    "any_phone",
 	}
-	mockRepo := new(MockClientRepository)
 
-	mockRepo.On("FindByCPF", "any_cpf").Return(&domain.Client{})
-
-	mockReceitaService := new(MockReceitaFederalService)
-	mockReceitaService.On("Search", "any_cpf", "any_birthday")
-	clientUseCase := NewCreateClientUseCase(mockRepo, mockReceitaService)
-
-	_, err := clientUseCase.Execute(input)
-
-	if err == nil {
-		t.Error("Expected error when client already exists, got nil")
+	return &testSetup{
+		mockRepo:       mockRepo,
+		mockRFService:  mockRFService,
+		createClientUC: createClientUC,
+		defaultInput:   defaultInput,
 	}
-
-	mockRepo.AssertExpectations(t)
 }
 
-func TestCreateClientUseCase_ShouldCallReceitaFederalService(t *testing.T) {
-	input := CreateClientInput{
-		Name:     "any_name",
-		CPF:      "any_cpf",
-		BirthDay: "any_birthday",
-		Email:    "any_email",
-		Phone:    "any_phone",
+func TestCreateClientUseCase(t *testing.T) {
+	tests := []struct {
+		name          string
+		setupMocks    func(*testSetup)
+		expectedError bool
+		errorMessage  string
+	}{
+		{
+			name: "should create client successfully",
+			setupMocks: func(ts *testSetup) {
+				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
+				ts.mockRepo.On("Create", &domain.Client{
+					Name:     "name_rf",
+					CPF:      ts.defaultInput.CPF,
+					BirthDay: ts.defaultInput.BirthDay,
+					Email:    ts.defaultInput.Email,
+					Phone:    ts.defaultInput.Phone,
+				}).Return(nil)
+			},
+			expectedError: false,
+		},
+		{
+			name: "should return error if client already exists",
+			setupMocks: func(ts *testSetup) {
+				ts.mockRepo.On("FindByCPF", "any_cpf").Return(&domain.Client{})
+			},
+			expectedError: true,
+			errorMessage:  "client already exists",
+		},
+		{
+			name: "should return error if Receita Federal service fails",
+			setupMocks: func(ts *testSetup) {
+				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{}, assert.AnError)
+			},
+			expectedError: true,
+			errorMessage:  "failed to validate CPF",
+		},
 	}
-	mockRepo := new(MockClientRepository)
-	mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-	mockRepo.On("Create", &domain.Client{
-		Name:     "name_pf",
-		CPF:      input.CPF,
-		BirthDay: input.BirthDay,
-		Email:    input.Email,
-		Phone:    input.Phone,
-	}).Return(nil)
 
-	mockRF := new(MockReceitaFederalService)
-	mockRF.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{
-		NomeDaPF: "name_pf",
-	}, nil)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := setupTest(t)
+			tt.setupMocks(ts)
 
-	createClientUseCase := NewCreateClientUseCase(mockRepo, mockRF)
+			_, err := ts.createClientUC.Execute(ts.defaultInput)
 
-	_, err := createClientUseCase.Execute(input)
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
+			if tt.expectedError {
+				assert.Error(t, err)
+				if tt.errorMessage != "" {
+					assert.Contains(t, err.Error(), tt.errorMessage)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+
+			ts.mockRepo.AssertExpectations(t)
+			ts.mockRFService.AssertExpectations(t)
+		})
 	}
-
-	mockRF.AssertExpectations(t)
 }
