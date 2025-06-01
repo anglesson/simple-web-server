@@ -7,19 +7,19 @@ import (
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 )
 
-type CreateClientUseCase struct {
+type ClientUseCase struct {
 	clientRepository      ClientRepositoryInterface
 	receitaFederalService common_application.CPFServicePort
 }
 
-func NewCreateClientUseCase(clientRepository ClientRepositoryInterface, receitaFederalService common_application.CPFServicePort) *CreateClientUseCase {
-	return &CreateClientUseCase{
+func NewClientUseCase(clientRepository ClientRepositoryInterface, receitaFederalService common_application.CPFServicePort) *ClientUseCase {
+	return &ClientUseCase{
 		clientRepository:      clientRepository,
 		receitaFederalService: receitaFederalService,
 	}
 }
 
-func (cuc *CreateClientUseCase) Execute(input CreateClientInput) (*CreateClientOutput, error) {
+func (cuc *ClientUseCase) CreateClient(input CreateClientInput) (*CreateClientOutput, error) {
 	foundClient := cuc.clientRepository.FindByCPF(input.CPF)
 	if foundClient != nil {
 		return nil, errors.New("client already exists")

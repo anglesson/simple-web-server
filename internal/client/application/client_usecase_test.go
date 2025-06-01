@@ -26,12 +26,12 @@ func (m *MockClientRepository) FindByCPF(cpf string) *client_domain.Client {
 	return args.Get(0).(*client_domain.Client)
 }
 
-// MockReceitaFederalService is a mock implementation of ReceitaFederalServiceInterface
-type MockReceitaFederalService struct {
+// CPFService is a mock implementation of ReceitaFederalServiceInterface
+type CPFService struct {
 	mock.Mock
 }
 
-func (m *MockReceitaFederalService) ConsultCPF(cpf, birthDay string) (common_application.CPFOutput, error) {
+func (m *CPFService) ConsultCPF(cpf, birthDay string) (common_application.CPFOutput, error) {
 	args := m.Called(cpf, birthDay)
 	data := args.Get(0)
 	err := args.Get(1)
@@ -44,15 +44,15 @@ func (m *MockReceitaFederalService) ConsultCPF(cpf, birthDay string) (common_app
 
 type testSetup struct {
 	mockRepo       *MockClientRepository
-	mockRFService  *MockReceitaFederalService
-	createClientUC *CreateClientUseCase
+	mockRFService  *CPFService
+	createClientUC *ClientUseCase
 	defaultInput   CreateClientInput
 }
 
 func setupTest(t *testing.T) *testSetup {
 	mockRepo := new(MockClientRepository)
-	mockRFService := new(MockReceitaFederalService)
-	createClientUC := NewCreateClientUseCase(mockRepo, mockRFService)
+	mockRFService := new(CPFService)
+	createClientUC := NewClientUseCase(mockRepo, mockRFService)
 
 	defaultInput := CreateClientInput{
 		Name:     "any_name",
@@ -116,7 +116,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			ts := setupTest(t)
 			tt.setupMocks(ts)
 
-			_, err := ts.createClientUC.Execute(ts.defaultInput)
+			_, err := ts.createClientUC.CreateClient(ts.defaultInput)
 
 			if tt.expectedError {
 				assert.Error(t, err)
