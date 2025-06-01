@@ -24,6 +24,22 @@ func (m *MockClientRepository) FindByCPF(cpf string) *domain.Client {
 	return args.Get(0).(*domain.Client)
 }
 
+// MockReceitaFederalService is a mock implementation of ReceitaFederalServiceInterface
+type MockReceitaFederalService struct {
+	mock.Mock
+}
+
+func (m *MockReceitaFederalService) Search(cpf, birthDay string) (ReceitaFederalData, error) {
+	args := m.Called(cpf, birthDay)
+	data := args.Get(0)
+	err := args.Get(1)
+
+	if err != nil {
+		return data.(ReceitaFederalData), err.(error)
+	}
+	return data.(ReceitaFederalData), nil
+}
+
 func TestCreateClientUseCase_ShoulCallRepositoryWithCorretParam(t *testing.T) {
 	input := CreateClientInput{
 		Name:     "any_name",
@@ -37,14 +53,16 @@ func TestCreateClientUseCase_ShoulCallRepositoryWithCorretParam(t *testing.T) {
 	mockRepo.On("FindByCPF", "any_cpf").Return(nil)
 
 	mockRepo.On("Create", &domain.Client{
-		Name:     input.Name,
+		Name:     "name_rf",
 		CPF:      input.CPF,
 		BirthDay: input.BirthDay,
 		Email:    input.Email,
 		Phone:    input.Phone,
 	}).Return(nil)
 
-	createClientUseCase := NewCreateClientUseCase(mockRepo)
+	mockReceitaService := new(MockReceitaFederalService)
+	mockReceitaService.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
+	createClientUseCase := NewCreateClientUseCase(mockRepo, mockReceitaService)
 
 	_, err := createClientUseCase.Execute(input)
 	if err != nil {
@@ -66,7 +84,9 @@ func TestCreateClientUseCase_ShouldReturnErrorIfClientAlready(t *testing.T) {
 
 	mockRepo.On("FindByCPF", "any_cpf").Return(&domain.Client{})
 
-	clientUseCase := NewCreateClientUseCase(mockRepo)
+	mockReceitaService := new(MockReceitaFederalService)
+	mockReceitaService.On("Search", "any_cpf", "any_birthday")
+	clientUseCase := NewCreateClientUseCase(mockRepo, mockReceitaService)
 
 	_, err := clientUseCase.Execute(input)
 
@@ -75,4 +95,37 @@ func TestCreateClientUseCase_ShouldReturnErrorIfClientAlready(t *testing.T) {
 	}
 
 	mockRepo.AssertExpectations(t)
+}
+
+func TestCreateClientUseCase_ShouldCallReceitaFederalService(t *testing.T) {
+	input := CreateClientInput{
+		Name:     "any_name",
+		CPF:      "any_cpf",
+		BirthDay: "any_birthday",
+		Email:    "any_email",
+		Phone:    "any_phone",
+	}
+	mockRepo := new(MockClientRepository)
+	mockRepo.On("FindByCPF", "any_cpf").Return(nil)
+	mockRepo.On("Create", &domain.Client{
+		Name:     "name_pf",
+		CPF:      input.CPF,
+		BirthDay: input.BirthDay,
+		Email:    input.Email,
+		Phone:    input.Phone,
+	}).Return(nil)
+
+	mockRF := new(MockReceitaFederalService)
+	mockRF.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{
+		NomeDaPF: "name_pf",
+	}, nil)
+
+	createClientUseCase := NewCreateClientUseCase(mockRepo, mockRF)
+
+	_, err := createClientUseCase.Execute(input)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	mockRF.AssertExpectations(t)
 }
