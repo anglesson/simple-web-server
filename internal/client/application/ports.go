@@ -8,3 +8,7 @@ type ClientRepositoryInterface interface {
 	Create(*client_domain.Client)
 	FindByCPF(cpf string) *client_domain.Client
 }
+
+type ClientUseCasePort interface {
+	CreateClient(input CreateClientInput) (*CreateClientOutput, error)
+}
