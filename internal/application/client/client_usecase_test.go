@@ -1,10 +1,11 @@
-package application_test
+package client_test
 
 import (
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/client/application"
-	"github.com/anglesson/simple-web-server/internal/client/domain"
+	application "github.com/anglesson/simple-web-server/internal/application/client"
+	common "github.com/anglesson/simple-web-server/internal/application/common"
+	domain "github.com/anglesson/simple-web-server/internal/domain/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -31,15 +32,15 @@ type MockReceitaFederalService struct {
 	mock.Mock
 }
 
-func (m *MockReceitaFederalService) Search(cpf, birthDay string) (application.ReceitaFederalData, error) {
+func (m *MockReceitaFederalService) Search(cpf, birthDay string) (common.ReceitaFederalData, error) {
 	args := m.Called(cpf, birthDay)
 	data := args.Get(0)
 	err := args.Get(1)
 
 	if err != nil {
-		return data.(application.ReceitaFederalData), err.(error)
+		return data.(common.ReceitaFederalData), err.(error)
 	}
-	return data.(application.ReceitaFederalData), nil
+	return data.(common.ReceitaFederalData), nil
 }
 
 type testSetup struct {
@@ -81,7 +82,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(application.ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common.ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
 				ts.mockRepo.On("Create", &domain.Client{
 					Name:     "name_rf",
 					CPF:      ts.defaultInput.CPF,
@@ -104,7 +105,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(application.ReceitaFederalData{}, assert.AnError)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common.ReceitaFederalData{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",

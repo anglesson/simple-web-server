@@ -1,10 +1,10 @@
-package domain_test
+package client_test
 
 import (
 	"errors"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/client/domain"
+	domain "github.com/anglesson/simple-web-server/internal/domain/client"
 )
 
 func TestNewClient(t *testing.T) {

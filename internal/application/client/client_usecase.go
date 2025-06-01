@@ -1,17 +1,18 @@
-package application
+package client
 
 import (
 	"errors"
 
-	"github.com/anglesson/simple-web-server/internal/client/domain"
+	ports "github.com/anglesson/simple-web-server/internal/application/common"
+	client_domain "github.com/anglesson/simple-web-server/internal/domain/client"
 )
 
 type CreateClientUseCase struct {
-	clientRepository      ClientRepositoryInterface
-	receitaFederalService ReceitaFederalServiceInterface
+	clientRepository      ports.ClientRepositoryInterface
+	receitaFederalService ports.ReceitaFederalServiceInterface
 }
 
-func NewCreateClientUseCase(clientRepository ClientRepositoryInterface, receitaFederalService ReceitaFederalServiceInterface) *CreateClientUseCase {
+func NewCreateClientUseCase(clientRepository ports.ClientRepositoryInterface, receitaFederalService ports.ReceitaFederalServiceInterface) *CreateClientUseCase {
 	return &CreateClientUseCase{
 		clientRepository:      clientRepository,
 		receitaFederalService: receitaFederalService,
@@ -29,7 +30,7 @@ func (cuc *CreateClientUseCase) Execute(input CreateClientInput) (*CreateClientO
 		return nil, errors.New("failed to validate CPF")
 	}
 
-	client, err := domain.NewClient(result.NomeDaPF, input.CPF, input.BirthDay, input.Email, input.Phone)
+	client, err := client_domain.NewClient(result.NomeDaPF, input.CPF, input.BirthDay, input.Email, input.Phone)
 	if err != nil {
 		return nil, err
 	}

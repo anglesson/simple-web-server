@@ -1,20 +1,8 @@
-package application
+package common
 
-type CreateClientInput struct {
-	Name     string
-	CPF      string
-	BirthDay string
-	Email    string
-	Phone    string
-}
-
-type CreateClientOutput struct {
-	Name     string
-	CPF      string
-	BirthDay string
-	Email    string
-	Phone    string
-}
+import (
+	"github.com/anglesson/simple-web-server/internal/domain/client"
+)
 
 type ReceitaFederalData struct {
 	NumeroDeCPF            string `json:"numero_de_cpf"`
@@ -25,4 +13,13 @@ type ReceitaFederalData struct {
 	DigitoVerificador      string `json:"digito_verificador"`
 	ComprovanteEmitido     string `json:"comprovante_emitido"`
 	ComprovanteEmitidoData string `json:"comprovante_emitido_data"`
+}
+
+type ClientRepositoryInterface interface {
+	Create(*client.Client)
+	FindByCPF(cpf string) *client.Client
+}
+
+type ReceitaFederalServiceInterface interface {
+	Search(cpf, birthDay string) (ReceitaFederalData, error)
 }
