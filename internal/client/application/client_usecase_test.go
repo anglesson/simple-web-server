@@ -1,8 +1,9 @@
-package application
+package application_test
 
 import (
 	"testing"
 
+	"github.com/anglesson/simple-web-server/internal/client/application"
 	"github.com/anglesson/simple-web-server/internal/client/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -30,30 +31,30 @@ type MockReceitaFederalService struct {
 	mock.Mock
 }
 
-func (m *MockReceitaFederalService) Search(cpf, birthDay string) (ReceitaFederalData, error) {
+func (m *MockReceitaFederalService) Search(cpf, birthDay string) (application.ReceitaFederalData, error) {
 	args := m.Called(cpf, birthDay)
 	data := args.Get(0)
 	err := args.Get(1)
 
 	if err != nil {
-		return data.(ReceitaFederalData), err.(error)
+		return data.(application.ReceitaFederalData), err.(error)
 	}
-	return data.(ReceitaFederalData), nil
+	return data.(application.ReceitaFederalData), nil
 }
 
 type testSetup struct {
 	mockRepo       *MockClientRepository
 	mockRFService  *MockReceitaFederalService
-	createClientUC *CreateClientUseCase
-	defaultInput   CreateClientInput
+	createClientUC *application.CreateClientUseCase
+	defaultInput   application.CreateClientInput
 }
 
 func setupTest(t *testing.T) *testSetup {
 	mockRepo := new(MockClientRepository)
 	mockRFService := new(MockReceitaFederalService)
-	createClientUC := NewCreateClientUseCase(mockRepo, mockRFService)
+	createClientUC := application.NewCreateClientUseCase(mockRepo, mockRFService)
 
-	defaultInput := CreateClientInput{
+	defaultInput := application.CreateClientInput{
 		Name:     "any_name",
 		CPF:      "any_cpf",
 		BirthDay: "any_birthday",
@@ -80,7 +81,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(application.ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
 				ts.mockRepo.On("Create", &domain.Client{
 					Name:     "name_rf",
 					CPF:      ts.defaultInput.CPF,
@@ -103,7 +104,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ReceitaFederalData{}, assert.AnError)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(application.ReceitaFederalData{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",
