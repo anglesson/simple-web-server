@@ -4,15 +4,15 @@ import (
 	"log"
 	"net/http"
 
-	application "github.com/anglesson/simple-web-server/internal/application/client"
+	client_application "github.com/anglesson/simple-web-server/internal/client/application"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 )
 
 type ClientHandler struct {
-	createClientUseCase application.CreateClientUseCase
+	createClientUseCase client_application.CreateClientUseCase
 }
 
-func NewClientHandler(useCase application.CreateClientUseCase) *ClientHandler {
+func NewClientHandler(useCase client_application.CreateClientUseCase) *ClientHandler {
 	return &ClientHandler{
 		createClientUseCase: useCase,
 	}
@@ -26,7 +26,7 @@ func (h *ClientHandler) CreateClientSubmit(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	input := application.CreateClientInput{
+	input := client_application.CreateClientInput{
 		Name:     r.FormValue("name"),
 		CPF:      r.FormValue("cpf"),
 		BirthDay: r.FormValue("birth_day"),

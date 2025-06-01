@@ -1,11 +1,9 @@
-package client_test
+package client_application
 
 import (
 	"testing"
 
-	application "github.com/anglesson/simple-web-server/internal/application/client"
-	common "github.com/anglesson/simple-web-server/internal/application/common"
-	domain "github.com/anglesson/simple-web-server/internal/domain/client"
+	client_domain "github.com/anglesson/simple-web-server/internal/client/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -15,16 +13,16 @@ type MockClientRepository struct {
 	mock.Mock
 }
 
-func (m *MockClientRepository) Create(client *domain.Client) {
+func (m *MockClientRepository) Create(client *client_domain.Client) {
 	m.Called(client)
 }
 
-func (m *MockClientRepository) FindByCPF(cpf string) *domain.Client {
+func (m *MockClientRepository) FindByCPF(cpf string) *client_domain.Client {
 	args := m.Called(cpf)
 	if args.Get(0) == nil {
 		return nil
 	}
-	return args.Get(0).(*domain.Client)
+	return args.Get(0).(*client_domain.Client)
 }
 
 // MockReceitaFederalService is a mock implementation of ReceitaFederalServiceInterface
@@ -32,30 +30,30 @@ type MockReceitaFederalService struct {
 	mock.Mock
 }
 
-func (m *MockReceitaFederalService) Search(cpf, birthDay string) (common.ReceitaFederalData, error) {
+func (m *MockReceitaFederalService) Search(cpf, birthDay string) (ConsultaPFOutput, error) {
 	args := m.Called(cpf, birthDay)
 	data := args.Get(0)
 	err := args.Get(1)
 
 	if err != nil {
-		return data.(common.ReceitaFederalData), err.(error)
+		return data.(ConsultaPFOutput), err.(error)
 	}
-	return data.(common.ReceitaFederalData), nil
+	return data.(ConsultaPFOutput), nil
 }
 
 type testSetup struct {
 	mockRepo       *MockClientRepository
 	mockRFService  *MockReceitaFederalService
-	createClientUC *application.CreateClientUseCase
-	defaultInput   application.CreateClientInput
+	createClientUC *CreateClientUseCase
+	defaultInput   CreateClientInput
 }
 
 func setupTest(t *testing.T) *testSetup {
 	mockRepo := new(MockClientRepository)
 	mockRFService := new(MockReceitaFederalService)
-	createClientUC := application.NewCreateClientUseCase(mockRepo, mockRFService)
+	createClientUC := NewCreateClientUseCase(mockRepo, mockRFService)
 
-	defaultInput := application.CreateClientInput{
+	defaultInput := CreateClientInput{
 		Name:     "any_name",
 		CPF:      "any_cpf",
 		BirthDay: "any_birthday",
@@ -82,8 +80,8 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common.ReceitaFederalData{NomeDaPF: "name_rf"}, nil)
-				ts.mockRepo.On("Create", &domain.Client{
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ConsultaPFOutput{NomeDaPF: "name_rf"}, nil)
+				ts.mockRepo.On("Create", &client_domain.Client{
 					Name:     "name_rf",
 					CPF:      ts.defaultInput.CPF,
 					BirthDay: ts.defaultInput.BirthDay,
@@ -96,7 +94,7 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should return error if client already exists",
 			setupMocks: func(ts *testSetup) {
-				ts.mockRepo.On("FindByCPF", "any_cpf").Return(&domain.Client{})
+				ts.mockRepo.On("FindByCPF", "any_cpf").Return(&client_domain.Client{})
 			},
 			expectedError: true,
 			errorMessage:  "client already exists",
@@ -105,7 +103,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common.ReceitaFederalData{}, assert.AnError)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ConsultaPFOutput{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",

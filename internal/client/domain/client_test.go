@@ -1,10 +1,8 @@
-package client_test
+package client_domain
 
 import (
 	"errors"
 	"testing"
-
-	domain "github.com/anglesson/simple-web-server/internal/domain/client"
 )
 
 func TestNewClient(t *testing.T) {
@@ -14,7 +12,7 @@ func TestNewClient(t *testing.T) {
 		birthDay      string
 		email         string
 		phone         string
-		expected      *domain.Client
+		expected      *Client
 		expectedError error
 	}{
 		{
@@ -23,7 +21,7 @@ func TestNewClient(t *testing.T) {
 			birthDay: "1990-01-01",
 			email:    "john@example.com",
 			phone:    "+55 11 99999-9999",
-			expected: &domain.Client{Name: "John Doe", CPF: "123.456.789-00", BirthDay: "1990-01-01", Email: "john@example.com", Phone: "+55 11 99999-9999"},
+			expected: &Client{Name: "John Doe", CPF: "123.456.789-00", BirthDay: "1990-01-01", Email: "john@example.com", Phone: "+55 11 99999-9999"},
 		},
 		{
 			name:     "Jane Smith",
@@ -31,7 +29,7 @@ func TestNewClient(t *testing.T) {
 			birthDay: "1990-01-01",
 			email:    "jane@example.com",
 			phone:    "+55 11 98888-8888",
-			expected: &domain.Client{Name: "Jane Smith", CPF: "987.654.321-00", BirthDay: "1990-01-01", Email: "jane@example.com", Phone: "+55 11 98888-8888"},
+			expected: &Client{Name: "Jane Smith", CPF: "987.654.321-00", BirthDay: "1990-01-01", Email: "jane@example.com", Phone: "+55 11 98888-8888"},
 		},
 		{
 			name:          "",
@@ -77,7 +75,7 @@ func TestNewClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := domain.NewClient(tt.name, tt.cpf, tt.birthDay, tt.email, tt.phone)
+			client, err := NewClient(tt.name, tt.cpf, tt.birthDay, tt.email, tt.phone)
 
 			if tt.expectedError != nil {
 				if err == nil {

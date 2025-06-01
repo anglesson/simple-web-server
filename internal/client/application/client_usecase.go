@@ -1,18 +1,17 @@
-package client
+package client_application
 
 import (
 	"errors"
 
-	ports "github.com/anglesson/simple-web-server/internal/application/common"
-	client_domain "github.com/anglesson/simple-web-server/internal/domain/client"
+	client_domain "github.com/anglesson/simple-web-server/internal/client/domain"
 )
 
 type CreateClientUseCase struct {
-	clientRepository      ports.ClientRepositoryInterface
-	receitaFederalService ports.ReceitaFederalServiceInterface
+	clientRepository      ClientRepositoryInterface
+	receitaFederalService ReceitaFederalServiceInterface
 }
 
-func NewCreateClientUseCase(clientRepository ports.ClientRepositoryInterface, receitaFederalService ports.ReceitaFederalServiceInterface) *CreateClientUseCase {
+func NewCreateClientUseCase(clientRepository ClientRepositoryInterface, receitaFederalService ReceitaFederalServiceInterface) *CreateClientUseCase {
 	return &CreateClientUseCase{
 		clientRepository:      clientRepository,
 		receitaFederalService: receitaFederalService,
