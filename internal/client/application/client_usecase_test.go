@@ -33,13 +33,7 @@ type CPFService struct {
 
 func (m *CPFService) ConsultCPF(cpf, birthDay string) (common_application.CPFOutput, error) {
 	args := m.Called(cpf, birthDay)
-	data := args.Get(0)
-	err := args.Get(1)
-
-	if err != nil {
-		return data.(common_application.CPFOutput), err.(error)
-	}
-	return data.(common_application.CPFOutput), nil
+	return args.Get(0).(common_application.CPFOutput), args.Error(1)
 }
 
 type testSetup struct {
@@ -81,7 +75,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
+				ts.mockRFService.On("ConsultCPF", "any_cpf", "any_birthday").Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
 				ts.mockRepo.On("Create", &client_domain.Client{
 					Name:     "name_rf",
 					CPF:      ts.defaultInput.CPF,
@@ -104,7 +98,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common_application.CPFOutput{}, assert.AnError)
+				ts.mockRFService.On("ConsultCPF", "any_cpf", "any_birthday").Return(common_application.CPFOutput{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",
