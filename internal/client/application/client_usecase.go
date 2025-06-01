@@ -7,12 +7,14 @@ import (
 )
 
 type CreateClientUseCase struct {
-	clientRepository ClientRepositoryInterface
+	clientRepository      ClientRepositoryInterface
+	receitaFederalService ReceitaFederalServiceInterface
 }
 
-func NewCreateClientUseCase(clientRepository ClientRepositoryInterface) *CreateClientUseCase {
+func NewCreateClientUseCase(clientRepository ClientRepositoryInterface, receitaFederalService ReceitaFederalServiceInterface) *CreateClientUseCase {
 	return &CreateClientUseCase{
-		clientRepository: clientRepository,
+		clientRepository:      clientRepository,
+		receitaFederalService: receitaFederalService,
 	}
 }
 
@@ -22,7 +24,12 @@ func (cuc *CreateClientUseCase) Execute(input CreateClientInput) (*CreateClientO
 		return nil, errors.New("client already exists")
 	}
 
-	client, err := domain.NewClient(input.Name, input.CPF, input.BirthDay, input.Email, input.Phone)
+	result, err := cuc.receitaFederalService.Search(input.CPF, input.BirthDay)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := domain.NewClient(result.NomeDaPF, input.CPF, input.BirthDay, input.Email, input.Phone)
 	if err != nil {
 		return nil, err
 	}

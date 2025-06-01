@@ -8,5 +8,5 @@ type ClientRepositoryInterface interface {
 }
 
 type ReceitaFederalServiceInterface interface {
-	Search(cpf, birthDay string) (any, error)
+	Search(cpf, birthDay string) (ReceitaFederalData, error)
 }
