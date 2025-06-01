@@ -8,7 +8,3 @@ type ClientRepositoryInterface interface {
 	Create(*client_domain.Client)
 	FindByCPF(cpf string) *client_domain.Client
 }
-
-type ReceitaFederalServiceInterface interface {
-	Search(cpf, birthDay string) (ConsultaPFOutput, error)
-}

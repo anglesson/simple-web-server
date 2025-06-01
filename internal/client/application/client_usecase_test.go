@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	client_domain "github.com/anglesson/simple-web-server/internal/client/domain"
+	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockClientRepository is a mock implementation of ClientRepositoryInterface
+// MockClientRepository is a mock common_application. of ClientRepositoryInterface
 type MockClientRepository struct {
 	mock.Mock
 }
@@ -30,15 +31,15 @@ type MockReceitaFederalService struct {
 	mock.Mock
 }
 
-func (m *MockReceitaFederalService) Search(cpf, birthDay string) (ConsultaPFOutput, error) {
+func (m *MockReceitaFederalService) ConsultCPF(cpf, birthDay string) (common_application.CPFOutput, error) {
 	args := m.Called(cpf, birthDay)
 	data := args.Get(0)
 	err := args.Get(1)
 
 	if err != nil {
-		return data.(ConsultaPFOutput), err.(error)
+		return data.(common_application.CPFOutput), err.(error)
 	}
-	return data.(ConsultaPFOutput), nil
+	return data.(common_application.CPFOutput), nil
 }
 
 type testSetup struct {
@@ -80,7 +81,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ConsultaPFOutput{NomeDaPF: "name_rf"}, nil)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
 				ts.mockRepo.On("Create", &client_domain.Client{
 					Name:     "name_rf",
 					CPF:      ts.defaultInput.CPF,
@@ -103,7 +104,7 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(ConsultaPFOutput{}, assert.AnError)
+				ts.mockRFService.On("Search", "any_cpf", "any_birthday").Return(common_application.CPFOutput{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",
