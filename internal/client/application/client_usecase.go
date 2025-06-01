@@ -26,7 +26,7 @@ func (cuc *CreateClientUseCase) Execute(input CreateClientInput) (*CreateClientO
 
 	result, err := cuc.receitaFederalService.Search(input.CPF, input.BirthDay)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to validate CPF")
 	}
 
 	client, err := domain.NewClient(result.NomeDaPF, input.CPF, input.BirthDay, input.Email, input.Phone)
