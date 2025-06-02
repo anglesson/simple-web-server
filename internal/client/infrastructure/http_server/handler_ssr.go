@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 )
 
@@ -27,11 +28,12 @@ func (h *ClientHandler) CreateClientSubmit(w http.ResponseWriter, r *http.Reques
 	}
 
 	input := client_application.CreateClientInput{
-		Name:     r.FormValue("name"),
-		CPF:      r.FormValue("cpf"),
-		BirthDay: r.FormValue("birth_day"),
-		Email:    r.FormValue("email"),
-		Phone:    r.FormValue("phone"),
+		Name:             r.FormValue("name"),
+		CPF:              r.FormValue("cpf"),
+		BirthDay:         r.FormValue("birth_day"),
+		Email:            r.FormValue("email"),
+		Phone:            r.FormValue("phone"),
+		CreatorUserEmail: r.Context().Value(common_infrastructure.LoggedUserKey).(string),
 	}
 
 	_, err = h.clientUseCase.CreateClient(input)

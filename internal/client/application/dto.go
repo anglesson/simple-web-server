@@ -1,11 +1,12 @@
 package client_application
 
 type CreateClientInput struct {
-	Name     string
-	CPF      string
-	BirthDay string
-	Email    string
-	Phone    string
+	Name             string
+	CPF              string
+	BirthDay         string
+	Email            string
+	Phone            string
+	CreatorUserEmail string
 }
 
 type CreateClientOutput struct {
