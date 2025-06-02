@@ -1,12 +1,14 @@
 package client_http
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -22,11 +24,12 @@ func (m *MockClientUseCase) CreateClient(input client_application.CreateClientIn
 
 func TestCreateClientSSR_Success(t *testing.T) {
 	expected := client_application.CreateClientInput{
-		Name:     "AnyName",
-		CPF:      "AnyCPF",
-		BirthDay: "AnyDate",
-		Email:    "AnyEmail",
-		Phone:    "AnyPhone",
+		Name:             "AnyName",
+		CPF:              "AnyCPF",
+		BirthDay:         "AnyDate",
+		Email:            "AnyEmail",
+		Phone:            "AnyPhone",
+		CreatorUserEmail: "any_user@mail.com",
 	}
 	mockUsecase := new(MockClientUseCase)
 
@@ -37,6 +40,8 @@ func TestCreateClientSSR_Success(t *testing.T) {
 	formData := strings.NewReader("name=AnyName&cpf=AnyCPF&birth_day=AnyDate&email=AnyEmail&phone=AnyPhone")
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	ctx := context.WithValue(req.Context(), common_infrastructure.LoggedUserKey, "any_user@mail.com")
+	req = req.WithContext(ctx)
 	rr := httptest.NewRecorder()
 	handler.CreateClientSubmit(rr, req)
 
