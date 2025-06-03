@@ -5,6 +5,7 @@ import (
 
 	client_domain "github.com/anglesson/simple-web-server/internal/client/domain"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -50,7 +51,7 @@ func setupTest(t *testing.T) *testSetup {
 
 	defaultInput := CreateClientInput{
 		Name:     "any_name",
-		CPF:      "any_cpf",
+		CPF:      "461.371.640-39",
 		BirthDay: "any_birthday",
 		Email:    "any_email",
 		Phone:    "any_phone",
@@ -74,11 +75,12 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
-				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("ConsultCPF", "any_cpf", "any_birthday").Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
+				ts.mockRepo.On("FindByCPF", "461.371.640-39").Return(nil)
+				ts.mockRFService.On("ConsultCPF", "461.371.640-39", "any_birthday").Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
+				cpf, _ := common_domain.NewCPF(ts.defaultInput.CPF)
 				ts.mockRepo.On("Create", &client_domain.Client{
 					Name:     "name_rf",
-					CPF:      ts.defaultInput.CPF,
+					CPF:      cpf,
 					BirthDay: ts.defaultInput.BirthDay,
 					Email:    ts.defaultInput.Email,
 					Phone:    ts.defaultInput.Phone,
@@ -89,7 +91,7 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should return error if client already exists",
 			setupMocks: func(ts *testSetup) {
-				ts.mockRepo.On("FindByCPF", "any_cpf").Return(&client_domain.Client{})
+				ts.mockRepo.On("FindByCPF", "461.371.640-39").Return(&client_domain.Client{})
 			},
 			expectedError: true,
 			errorMessage:  "client already exists",
@@ -97,8 +99,8 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
-				ts.mockRepo.On("FindByCPF", "any_cpf").Return(nil)
-				ts.mockRFService.On("ConsultCPF", "any_cpf", "any_birthday").Return(common_application.CPFOutput{}, assert.AnError)
+				ts.mockRepo.On("FindByCPF", "461.371.640-39").Return(nil)
+				ts.mockRFService.On("ConsultCPF", "461.371.640-39", "any_birthday").Return(common_application.CPFOutput{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",

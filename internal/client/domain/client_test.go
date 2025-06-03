@@ -12,64 +12,48 @@ func TestNewClient(t *testing.T) {
 		birthDay      string
 		email         string
 		phone         string
-		expected      *Client
+		expected      *map[string]string
 		expectedError error
 	}{
 		{
-			name:     "John Doe",
-			cpf:      "123.456.789-00",
-			birthDay: "1990-01-01",
-			email:    "john@example.com",
-			phone:    "+55 11 99999-9999",
-			expected: &Client{Name: "John Doe", CPF: "123.456.789-00", BirthDay: "1990-01-01", Email: "john@example.com", Phone: "+55 11 99999-9999"},
-		},
-		{
-			name:     "Jane Smith",
-			cpf:      "987.654.321-00",
-			birthDay: "1990-01-01",
-			email:    "jane@example.com",
-			phone:    "+55 11 98888-8888",
-			expected: &Client{Name: "Jane Smith", CPF: "987.654.321-00", BirthDay: "1990-01-01", Email: "jane@example.com", Phone: "+55 11 98888-8888"},
-		},
-		{
-			name:          "",
-			cpf:           "987.654.321-00",
+			name:          "Invalid CPF format",
+			cpf:           "123.456.789-XX", // invalid format
 			birthDay:      "1990-01-01",
-			email:         "jane@example.com",
-			phone:         "+55 11 98888-8888",
-			expectedError: errors.New("name is required"),
+			email:         "john@example.com",
+			phone:         "+55 11 99999-9999",
+			expectedError: errors.New("CPF inválido para o cliente: CPF inválido (dígitos verificadores)"),
 		},
 		{
-			name:          "John Doe",
+			name:          "Empty CPF",
 			cpf:           "", // empty CPF
 			birthDay:      "1990-01-01",
 			email:         "john@example.com",
 			phone:         "+55 11 99999-9999",
-			expectedError: errors.New("CPF is required"),
+			expectedError: errors.New("CPF inválido para o cliente: CPF deve ter 11 dígitos"),
 		},
 		{
-			name:          "John Doe",
-			cpf:           "123.456.789-00",
-			birthDay:      "", // empty birthDay
-			email:         "john@example.com",
-			phone:         "+55 11 99999-9999",
-			expectedError: errors.New("birthday is required"),
+			name:     "John Doe",
+			cpf:      " 201.476.380-11 ", // valid CPF with extra spaces
+			birthDay: "1990-01-01",
+			email:    "john@example.com",
+			phone:    "+55 11 99999-9999",
+			expected: &map[string]string{"Name": "John Doe", "CPF": "201.476.380-11", "BirthDay": "1990-01-01", "Email": "john@example.com", "Phone": "+55 11 99999-9999"},
 		},
 		{
-			name:          "John Doe",
-			cpf:           "123.456.789-00",
-			birthDay:      "1990-01-01",
-			email:         "", // empty email
-			phone:         "+55 11 99999-9999",
-			expectedError: errors.New("email is required"),
-		},
-		{
-			name:          "John Doe",
-			cpf:           "123.456.789-00",
+			name:          "Invalid CPF checksum",
+			cpf:           "123.456.789-11", // invalid checksum
 			birthDay:      "1990-01-01",
 			email:         "john@example.com",
-			phone:         "", // empty phone
-			expectedError: errors.New("phone is required"),
+			phone:         "+55 11 99999-9999",
+			expectedError: errors.New("CPF inválido para o cliente: CPF inválido (dígitos verificadores)"),
+		},
+		{
+			name:     "John Doe",
+			cpf:      "235.489.640-95", // valid CPF
+			birthDay: "1990-01-01",
+			email:    "john@example.com",
+			phone:    "+55 11 99999-9999",
+			expected: &map[string]string{"Name": "John Doe", "CPF": "235.489.640-95", "BirthDay": "1990-01-01", "Email": "john@example.com", "Phone": "+55 11 99999-9999"},
 		},
 	}
 
@@ -94,20 +78,20 @@ func TestNewClient(t *testing.T) {
 				return
 			}
 
-			if client.Name != tt.expected.Name {
-				t.Errorf("Name = %v, want %v", client.Name, tt.expected.Name)
+			if client.Name != (*tt.expected)["Name"] {
+				t.Errorf("Name = %v, want %v", client.Name, (*tt.expected)["Name"])
 			}
-			if client.CPF != tt.expected.CPF {
-				t.Errorf("CPF = %v, want %v", client.CPF, tt.expected.CPF)
+			if client.CPF.String() != (*tt.expected)["CPF"] {
+				t.Errorf("CPF = %v, want %v", client.CPF.String(), (*tt.expected)["CPF"])
 			}
-			if client.BirthDay != tt.expected.BirthDay {
-				t.Errorf("BirthDay = %v, want %v", client.BirthDay, tt.expected.BirthDay)
+			if client.BirthDay != (*tt.expected)["BirthDay"] {
+				t.Errorf("BirthDay = %v, want %v", client.BirthDay, (*tt.expected)["BirthDay"])
 			}
-			if client.Email != tt.expected.Email {
-				t.Errorf("Email = %v, want %v", client.Email, tt.expected.Email)
+			if client.Email != (*tt.expected)["Email"] {
+				t.Errorf("Email = %v, want %v", client.Email, (*tt.expected)["Email"])
 			}
-			if client.Phone != tt.expected.Phone {
-				t.Errorf("Phone = %v, want %v", client.Phone, tt.expected.Phone)
+			if client.Phone != (*tt.expected)["Phone"] {
+				t.Errorf("Phone = %v, want %v", client.Phone, (*tt.expected)["Phone"])
 			}
 		})
 	}

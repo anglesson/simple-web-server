@@ -1,12 +1,22 @@
 package client_domain
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+
+	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
+)
+
+const (
+	MinNameLength = 5
+	MaxNameLength = 255
+)
 
 type Client struct {
 	Name     string
 	Phone    string
 	BirthDay string
-	CPF      string
+	CPF      common_domain.CPF
 	Email    string
 }
 
@@ -14,8 +24,13 @@ func NewClient(name, cpf, birthDay, email, phone string) (*Client, error) {
 	if name == "" {
 		return nil, errors.New("name is required")
 	}
-	if cpf == "" {
-		return nil, errors.New("CPF is required")
+	if len(name) < 5 || len(name) > 255 {
+		return nil, fmt.Errorf("o nome dever ter entre %v e %v caracteres", MinNameLength, MaxNameLength)
+	}
+
+	validCPF, err := common_domain.NewCPF(cpf)
+	if err != nil {
+		return nil, fmt.Errorf("CPF inválido para o cliente: %w", err)
 	}
 	if birthDay == "" {
 		return nil, errors.New("birthday is required")
@@ -28,7 +43,7 @@ func NewClient(name, cpf, birthDay, email, phone string) (*Client, error) {
 	}
 	return &Client{
 		Name:     name,
-		CPF:      cpf,
+		CPF:      validCPF,
 		Email:    email,
 		Phone:    phone,
 		BirthDay: birthDay,
