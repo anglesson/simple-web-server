@@ -1,19 +1,19 @@
-package client_http
+package http_server
 
 import (
 	"log"
 	"net/http"
 
-	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	"github.com/anglesson/simple-web-server/internal/application"
 	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 )
 
 type ClientHandler struct {
-	clientUseCase client_application.ClientUseCasePort
+	clientUseCase application.ClientUseCasePort
 }
 
-func NewClientSSRHandler(useCase client_application.ClientUseCasePort) *ClientHandler {
+func NewClientSSRHandler(useCase application.ClientUseCasePort) *ClientHandler {
 	return &ClientHandler{
 		clientUseCase: useCase,
 	}
@@ -27,7 +27,7 @@ func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := client_application.CreateClientInput{
+	input := application.CreateClientInput{
 		Name:             r.FormValue("name"),
 		CPF:              r.FormValue("cpf"),
 		BirthDay:         r.FormValue("birth_day"),

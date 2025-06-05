@@ -1,4 +1,4 @@
-package client_application
+package application
 
 type CreateClientInput struct {
 	Name             string

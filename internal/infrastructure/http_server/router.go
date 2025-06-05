@@ -1,13 +1,13 @@
-package client_http
+package http_server
 
 import (
 	"net/http"
 
-	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	"github.com/anglesson/simple-web-server/internal/application"
 	"github.com/go-chi/chi/v5"
 )
 
-func NewRouter(useCase client_application.ClientUseCasePort) *chi.Mux {
+func NewRouter(useCase application.ClientUseCasePort) *chi.Mux {
 	r := chi.NewRouter()
 
 	fs := http.FileServer(http.Dir("web/assets"))

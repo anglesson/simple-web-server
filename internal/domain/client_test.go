@@ -1,8 +1,10 @@
-package client_domain
+package domain_test
 
 import (
 	"errors"
 	"testing"
+
+	"github.com/anglesson/simple-web-server/internal/domain"
 )
 
 func TestNewClient(t *testing.T) {
@@ -59,7 +61,7 @@ func TestNewClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := NewClient(tt.name, tt.cpf, tt.birthDay, tt.email, tt.phone)
+			client, err := domain.NewClient(tt.name, tt.cpf, tt.birthDay, tt.email, tt.phone)
 
 			if tt.expectedError != nil {
 				if err == nil {

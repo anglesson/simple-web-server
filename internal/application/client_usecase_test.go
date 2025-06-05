@@ -1,11 +1,12 @@
-package client_application
+package application_test
 
 import (
 	"testing"
 
-	client_domain "github.com/anglesson/simple-web-server/internal/client/domain"
+	application "github.com/anglesson/simple-web-server/internal/application"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
+	domain "github.com/anglesson/simple-web-server/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -15,16 +16,16 @@ type MockClientRepository struct {
 	mock.Mock
 }
 
-func (m *MockClientRepository) Create(client *client_domain.Client) {
+func (m *MockClientRepository) Create(client *domain.Client) {
 	m.Called(client)
 }
 
-func (m *MockClientRepository) FindByCPF(cpf string) *client_domain.Client {
+func (m *MockClientRepository) FindByCPF(cpf string) *domain.Client {
 	args := m.Called(cpf)
 	if args.Get(0) == nil {
 		return nil
 	}
-	return args.Get(0).(*client_domain.Client)
+	return args.Get(0).(*domain.Client)
 }
 
 // CPFService is a mock implementation of ReceitaFederalServiceInterface
@@ -40,16 +41,16 @@ func (m *CPFService) ConsultCPF(cpf common_domain.CPF, birthDay common_domain.Bi
 type testSetup struct {
 	mockRepo       *MockClientRepository
 	mockRFService  *CPFService
-	createClientUC *ClientUseCase
-	defaultInput   CreateClientInput
+	createClientUC *application.ClientUseCase
+	defaultInput   application.CreateClientInput
 }
 
 func setupTest(t *testing.T) *testSetup {
 	mockRepo := new(MockClientRepository)
 	mockRFService := new(CPFService)
-	createClientUC := NewClientUseCase(mockRepo, mockRFService)
+	createClientUC := application.NewClientUseCase(mockRepo, mockRFService)
 
-	defaultInput := CreateClientInput{
+	defaultInput := application.CreateClientInput{
 		Name:     "any_name",
 		CPF:      "461.371.640-39",
 		BirthDay: "1990-01-01",
@@ -79,7 +80,7 @@ func TestCreateClientUseCase(t *testing.T) {
 				cpf, _ := common_domain.NewCPF(ts.defaultInput.CPF)
 				birthDay, _ := common_domain.NewBirthDate(ts.defaultInput.BirthDay)
 				ts.mockRFService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
-				ts.mockRepo.On("Create", &client_domain.Client{
+				ts.mockRepo.On("Create", &domain.Client{
 					Name:     "name_rf",
 					CPF:      cpf,
 					BirthDay: birthDay,
@@ -92,7 +93,7 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should return error if client already exists",
 			setupMocks: func(ts *testSetup) {
-				ts.mockRepo.On("FindByCPF", "461.371.640-39").Return(&client_domain.Client{})
+				ts.mockRepo.On("FindByCPF", "461.371.640-39").Return(&domain.Client{})
 			},
 			expectedError: true,
 			errorMessage:  "client already exists",

@@ -1,10 +1,10 @@
-package client_application
+package application
 
 import (
 	"errors"
 
-	client_domain "github.com/anglesson/simple-web-server/internal/client/domain"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	domain "github.com/anglesson/simple-web-server/internal/domain"
 )
 
 type ClientUseCase struct {
@@ -25,7 +25,7 @@ func (cuc *ClientUseCase) CreateClient(input CreateClientInput) (*CreateClientOu
 		return nil, errors.New("client already exists")
 	}
 
-	client, err := client_domain.NewClient(input.Name, input.CPF, input.BirthDay, input.Email, input.Phone)
+	client, err := domain.NewClient(input.Name, input.CPF, input.BirthDay, input.Email, input.Phone)
 	if err != nil {
 		return nil, err
 	}

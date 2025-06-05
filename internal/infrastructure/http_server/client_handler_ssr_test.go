@@ -1,4 +1,4 @@
-package client_http
+package http_server_test
 
 import (
 	"context"
@@ -7,8 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	application "github.com/anglesson/simple-web-server/internal/application"
 	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
+	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -18,9 +19,9 @@ type MockClientUseCase struct {
 	mock.Mock
 }
 
-func (m *MockClientUseCase) CreateClient(input client_application.CreateClientInput) (*client_application.CreateClientOutput, error) {
+func (m *MockClientUseCase) CreateClient(input application.CreateClientInput) (*application.CreateClientOutput, error) {
 	args := m.Called(input)
-	return args.Get(0).(*client_application.CreateClientOutput), args.Error(1)
+	return args.Get(0).(*application.CreateClientOutput), args.Error(1)
 }
 
 type HandlerSSRSuit struct {
@@ -33,7 +34,7 @@ func (suite *HandlerSSRSuit) SetupTest() {
 }
 
 func (suite *HandlerSSRSuit) TestCreateClientSubmit() {
-	expected := client_application.CreateClientInput{
+	expected := application.CreateClientInput{
 		Name:             "AnyName",
 		CPF:              "AnyCPF",
 		BirthDay:         "AnyDate",
@@ -42,9 +43,9 @@ func (suite *HandlerSSRSuit) TestCreateClientSubmit() {
 		CreatorUserEmail: "any_user@mail.com",
 	}
 
-	suite.MockClientUseCase.On("CreateClient", expected).Return(&client_application.CreateClientOutput{}, nil).Once()
+	suite.MockClientUseCase.On("CreateClient", expected).Return(&application.CreateClientOutput{}, nil).Once()
 
-	handler := NewClientSSRHandler(suite.MockClientUseCase)
+	handler := http_server.NewClientSSRHandler(suite.MockClientUseCase)
 
 	formData := strings.NewReader("name=AnyName&cpf=AnyCPF&birth_day=AnyDate&email=AnyEmail&phone=AnyPhone")
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
