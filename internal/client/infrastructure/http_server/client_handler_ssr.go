@@ -13,13 +13,13 @@ type ClientHandler struct {
 	clientUseCase client_application.ClientUseCasePort
 }
 
-func NewSSRHandler(useCase client_application.ClientUseCasePort) *ClientHandler {
+func NewClientSSRHandler(useCase client_application.ClientUseCasePort) *ClientHandler {
 	return &ClientHandler{
 		clientUseCase: useCase,
 	}
 }
 
-func (h *ClientHandler) CreateClientSubmit(w http.ResponseWriter, r *http.Request) {
+func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		log.Printf("Erro ao analisar formulário para SSR: %v", err)

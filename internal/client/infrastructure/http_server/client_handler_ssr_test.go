@@ -44,7 +44,7 @@ func (suite *HandlerSSRSuit) TestCreateClientSubmit() {
 
 	suite.MockClientUseCase.On("CreateClient", expected).Return(&client_application.CreateClientOutput{}, nil).Once()
 
-	handler := NewSSRHandler(suite.MockClientUseCase)
+	handler := NewClientSSRHandler(suite.MockClientUseCase)
 
 	formData := strings.NewReader("name=AnyName&cpf=AnyCPF&birth_day=AnyDate&email=AnyEmail&phone=AnyPhone")
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
@@ -52,7 +52,7 @@ func (suite *HandlerSSRSuit) TestCreateClientSubmit() {
 	ctx := context.WithValue(req.Context(), common_infrastructure.LoggedUserKey, "any_user@mail.com")
 	req = req.WithContext(ctx)
 	rr := httptest.NewRecorder()
-	handler.CreateClientSubmit(rr, req)
+	handler.CreateClient(rr, req)
 
 	assert.Equal(suite.T(), http.StatusSeeOther, rr.Code, "Expected status code 303 See Other for success add")
 	assert.Equal(suite.T(), "/client", rr.Header().Get("Location"), "Expected redirect to root path")
