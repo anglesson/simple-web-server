@@ -32,7 +32,7 @@ type CPFService struct {
 	mock.Mock
 }
 
-func (m *CPFService) ConsultCPF(cpf, birthDay string) (common_application.CPFOutput, error) {
+func (m *CPFService) ConsultCPF(cpf common_domain.CPF, birthDay common_domain.BirthDate) (common_application.CPFOutput, error) {
 	args := m.Called(cpf, birthDay)
 	return args.Get(0).(common_application.CPFOutput), args.Error(1)
 }
@@ -52,7 +52,7 @@ func setupTest(t *testing.T) *testSetup {
 	defaultInput := CreateClientInput{
 		Name:     "any_name",
 		CPF:      "461.371.640-39",
-		BirthDay: "any_birthday",
+		BirthDay: "1990-01-01",
 		Email:    "any_email",
 		Phone:    "any_phone",
 	}
@@ -76,12 +76,13 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "461.371.640-39").Return(nil)
-				ts.mockRFService.On("ConsultCPF", "461.371.640-39", "any_birthday").Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
 				cpf, _ := common_domain.NewCPF(ts.defaultInput.CPF)
+				birthDay, _ := common_domain.NewBirthDate(ts.defaultInput.BirthDay)
+				ts.mockRFService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
 				ts.mockRepo.On("Create", &client_domain.Client{
 					Name:     "name_rf",
 					CPF:      cpf,
-					BirthDay: ts.defaultInput.BirthDay,
+					BirthDay: birthDay,
 					Email:    ts.defaultInput.Email,
 					Phone:    ts.defaultInput.Phone,
 				}).Return(nil)
@@ -100,7 +101,9 @@ func TestCreateClientUseCase(t *testing.T) {
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
 				ts.mockRepo.On("FindByCPF", "461.371.640-39").Return(nil)
-				ts.mockRFService.On("ConsultCPF", "461.371.640-39", "any_birthday").Return(common_application.CPFOutput{}, assert.AnError)
+				cpf, _ := common_domain.NewCPF(ts.defaultInput.CPF)
+				birthDay, _ := common_domain.NewBirthDate(ts.defaultInput.BirthDay)
+				ts.mockRFService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",

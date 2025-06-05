@@ -84,7 +84,7 @@ func TestNewClient(t *testing.T) {
 			if client.CPF.String() != (*tt.expected)["CPF"] {
 				t.Errorf("CPF = %v, want %v", client.CPF.String(), (*tt.expected)["CPF"])
 			}
-			if client.BirthDay != (*tt.expected)["BirthDay"] {
+			if client.BirthDay.Value().Format("2006-01-02") != (*tt.expected)["BirthDay"] {
 				t.Errorf("BirthDay = %v, want %v", client.BirthDay, (*tt.expected)["BirthDay"])
 			}
 			if client.Email != (*tt.expected)["Email"] {

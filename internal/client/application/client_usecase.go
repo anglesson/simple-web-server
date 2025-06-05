@@ -25,15 +25,17 @@ func (cuc *ClientUseCase) CreateClient(input CreateClientInput) (*CreateClientOu
 		return nil, errors.New("client already exists")
 	}
 
-	result, err := cuc.receitaFederalService.ConsultCPF(input.CPF, input.BirthDay)
+	client, err := client_domain.NewClient(input.Name, input.CPF, input.BirthDay, input.Email, input.Phone)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := cuc.receitaFederalService.ConsultCPF(client.CPF, *client.BirthDay)
 	if err != nil {
 		return nil, errors.New("failed to validate CPF")
 	}
 
-	client, err := client_domain.NewClient(result.NomeDaPF, input.CPF, input.BirthDay, input.Email, input.Phone)
-	if err != nil {
-		return nil, err
-	}
+	client.Name = result.NomeDaPF
 
 	cuc.clientRepository.Create(client)
 

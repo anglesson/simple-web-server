@@ -15,7 +15,7 @@ const (
 type Client struct {
 	Name     string
 	Phone    string
-	BirthDay string
+	BirthDay *common_domain.BirthDate
 	CPF      common_domain.CPF
 	Email    string
 }
@@ -32,8 +32,10 @@ func NewClient(name, cpf, birthDay, email, phone string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("CPF inválido para o cliente: %w", err)
 	}
-	if birthDay == "" {
-		return nil, errors.New("birthday is required")
+
+	birth, err := common_domain.NewBirthDate(birthDay)
+	if err != nil {
+		return nil, err
 	}
 	if email == "" {
 		return nil, errors.New("email is required")
@@ -46,6 +48,6 @@ func NewClient(name, cpf, birthDay, email, phone string) (*Client, error) {
 		CPF:      validCPF,
 		Email:    email,
 		Phone:    phone,
-		BirthDay: birthDay,
+		BirthDay: birth,
 	}, nil
 }
