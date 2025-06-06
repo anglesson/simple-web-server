@@ -3,8 +3,6 @@ package domain
 import (
 	"errors"
 	"fmt"
-
-	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
 )
 
 const (
@@ -16,8 +14,8 @@ type Client struct {
 	ID       uint
 	Name     string
 	Phone    string
-	BirthDay *common_domain.BirthDate
-	CPF      common_domain.CPF
+	BirthDay *BirthDate
+	CPF      CPF
 	Email    string
 }
 
@@ -29,12 +27,12 @@ func NewClient(name, cpf, birthDay, email, phone string) (*Client, error) {
 		return nil, fmt.Errorf("o nome dever ter entre %v e %v caracteres", MinNameLength, MaxNameLength)
 	}
 
-	validCPF, err := common_domain.NewCPF(cpf)
+	validCPF, err := NewCPF(cpf)
 	if err != nil {
 		return nil, fmt.Errorf("CPF inválido para o cliente: %w", err)
 	}
 
-	birth, err := common_domain.NewBirthDate(birthDay)
+	birth, err := NewBirthDate(birthDay)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +59,7 @@ func (c *Client) Update(name, cpf, email, phone string) error {
 		return fmt.Errorf("o nome dever ter entre %v e %v caracteres", MinNameLength, MaxNameLength)
 	}
 
-	validCPF, err := common_domain.NewCPF(cpf)
+	validCPF, err := NewCPF(cpf)
 	if err != nil {
 		return fmt.Errorf("CPF inválido para o cliente: %w", err)
 	}

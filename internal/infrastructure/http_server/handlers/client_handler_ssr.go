@@ -1,4 +1,4 @@
-package http_server
+package handlers
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/application"
-	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
+	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server/utils"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/go-chi/chi/v5"
 )
@@ -48,7 +48,7 @@ func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 		BirthDay:         r.FormValue("birth_day"),
 		Email:            r.FormValue("email"),
 		Phone:            r.FormValue("phone"),
-		CreatorUserEmail: r.Context().Value(common_infrastructure.LoggedUserKey).(string),
+		CreatorUserEmail: r.Context().Value(utils.LoggedUserKey).(string),
 	}
 
 	// 4. Chamar o caso de uso
@@ -98,7 +98,7 @@ func (h *ClientHandler) UpdateClient(w http.ResponseWriter, r *http.Request) {
 		BirthDay:         r.FormValue("birth_day"),
 		Email:            r.FormValue("email"),
 		Phone:            r.FormValue("phone"),
-		CreatorUserEmail: r.Context().Value(common_infrastructure.LoggedUserKey).(string),
+		CreatorUserEmail: r.Context().Value(utils.LoggedUserKey).(string),
 	}
 
 	// 5. Chamar o caso de uso
@@ -152,7 +152,7 @@ func (h *ClientHandler) ImportClients(w http.ResponseWriter, r *http.Request) {
 	input := application.ImportClientsInput{
 		File:             fileBytes,
 		FileName:         handler.Filename,
-		CreatorUserEmail: r.Context().Value(common_infrastructure.LoggedUserKey).(string),
+		CreatorUserEmail: r.Context().Value(utils.LoggedUserKey).(string),
 	}
 
 	// 6. Chamar o caso de uso
@@ -184,7 +184,7 @@ func (h *ClientHandler) ListClients(w http.ResponseWriter, r *http.Request) {
 		Term:             term,
 		Page:             page,
 		PageSize:         pageSize,
-		CreatorUserEmail: r.Context().Value(common_infrastructure.LoggedUserKey).(string),
+		CreatorUserEmail: r.Context().Value(utils.LoggedUserKey).(string),
 	}
 
 	_, err := h.clientUseCase.ListClients(input)

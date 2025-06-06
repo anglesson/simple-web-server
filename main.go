@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/internal/application"
-	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/config"
-	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server"
+	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server/handlers"
 	"github.com/anglesson/simple-web-server/internal/infrastructure/persistence"
+	"github.com/anglesson/simple-web-server/internal/infrastructure/services"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -33,40 +33,40 @@ func main() {
 	// Public routes
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthGuard)
-		r.Get("/login", http_server.LoginView)
-		r.Post("/login", http_server.LoginSubmit)
-		r.Get("/register", http_server.RegisterView)
-		r.Post("/register", http_server.RegisterSubmit)
-		r.Get("/forget-password", http_server.ForgetPasswordView)
-		r.Post("/forget-password", http_server.ForgetPasswordSubmit)
-		r.Get("/purchase/download/{id}", http_server.PurchaseDownloadHandler)
+		r.Get("/login", handlers.LoginView)
+		r.Post("/login", handlers.LoginSubmit)
+		r.Get("/register", handlers.RegisterView)
+		r.Post("/register", handlers.RegisterSubmit)
+		r.Get("/forget-password", handlers.ForgetPasswordView)
+		r.Post("/forget-password", handlers.ForgetPasswordSubmit)
+		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
 	})
 
 	// Stripe routes
-	r.Post("/api/create-checkout-session", http_server.CreateCheckoutSession)
-	r.Post("/api/webhook", http_server.HandleStripeWebhook)
+	r.Post("/api/create-checkout-session", handlers.CreateCheckoutSession)
+	r.Post("/api/webhook", handlers.HandleStripeWebhook)
 
 	// Private routes
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware)
 		r.Use(middlewares.TrialMiddleware)
 
-		r.Post("/logout", http_server.LogoutSubmit)
-		r.Get("/dashboard", http_server.DashboardView)
-		r.Get("/settings", http_server.SettingsView)
+		r.Post("/logout", handlers.LogoutSubmit)
+		// r.Get("/dashboard", handlers.DashboardView)
+		// r.Get("/settings", handlers.SettingsView)
 
 		// Ebook routes
-		r.Get("/ebook", http_server.EbookIndexView)
-		r.Get("/ebook/create", http_server.EbookCreateView)
-		r.Post("/ebook/create", http_server.EbookCreateSubmit)
-		r.Get("/ebook/edit/{id}", http_server.EbookUpdateView)
-		r.Get("/ebook/view/{id}", http_server.EbookShowView)
-		r.Post("/ebook/update/{id}", http_server.EbookUpdateSubmit)
+		r.Get("/ebook", handlers.EbookIndexView)
+		r.Get("/ebook/create", handlers.EbookCreateView)
+		r.Post("/ebook/create", handlers.EbookCreateSubmit)
+		r.Get("/ebook/edit/{id}", handlers.EbookUpdateView)
+		r.Get("/ebook/view/{id}", handlers.EbookShowView)
+		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
 
 		// Client routes
-		clientHandler := http_server.NewClientSSRHandler(application.NewClientUseCase(
+		clientHandler := handlers.NewClientSSRHandler(application.NewClientUseCase(
 			persistence.NewClientRepository(),
-			common_infrastructure.NewHubDevService(config.AppConfig.HubDesenvolvedorApi, config.AppConfig.HubDesenvolvedorToken),
+			services.NewHubDevService(config.AppConfig.HubDesenvolvedorApi, config.AppConfig.HubDesenvolvedorToken),
 		))
 		r.Get("/client", clientHandler.ListClients)
 		r.Post("/client", clientHandler.CreateClient)
@@ -74,12 +74,12 @@ func main() {
 		r.Post("/client/import", clientHandler.ImportClients)
 
 		// Purchase routes
-		r.Post("/purchase/ebook/{id}", http_server.PurchaseCreateHandler)
-		r.Get("/purchase/download/{id}", http_server.PurchaseDownloadHandler)
-		r.Get("/send", http_server.SendViewHandler)
+		r.Post("/purchase/ebook/{id}", handlers.PurchaseCreateHandler)
+		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
+		r.Get("/send", handlers.SendViewHandler)
 	})
 
-	r.Get("/", http_server.HomeView) // Home page deve ser a ultima rota
+	// r.Get("/", handlers.HomeView) // Home page deve ser a ultima rota
 
 	// Start server
 	port := config.AppConfig.Port

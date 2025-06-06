@@ -1,14 +1,13 @@
 package application
 
 import (
-	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
 	"github.com/anglesson/simple-web-server/internal/domain"
 )
 
 type ClientRepositoryInterface interface {
 	Create(client *domain.Client) error
 	Update(client *domain.Client) error
-	FindByCPF(cpf common_domain.CPF) *domain.Client
+	FindByCPF(cpf domain.CPF) *domain.Client
 	FindByID(id uint) (*domain.Client, error)
 	FindByCreatorID(creatorID uint, query ClientQuery) ([]*domain.Client, error)
 	CreateBatch(clients []*domain.Client) error
@@ -26,4 +25,19 @@ type ClientQuery struct {
 	Term       string
 	Pagination *Pagination
 	CreatorID  uint
+}
+
+type CPFServicePort interface {
+	ConsultCPF(cpf domain.CPF, birthDay domain.BirthDate) (CPFOutput, error)
+}
+
+type CPFOutput struct {
+	NumeroDeCPF            string `json:"numero_de_cpf"`
+	NomeDaPF               string `json:"nome_da_pf"`
+	DataNascimento         string `json:"data_nascimento"`
+	SituacaoCadastral      string `json:"situacao_cadastral"`
+	DataInscricao          string `json:"data_inscricao"`
+	DigitoVerificador      string `json:"digito_verificador"`
+	ComprovanteEmitido     string `json:"comprovante_emitido"`
+	ComprovanteEmitidoData string `json:"comprovante_emitido_data"`
 }

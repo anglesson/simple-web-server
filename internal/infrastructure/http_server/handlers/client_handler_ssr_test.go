@@ -1,4 +1,4 @@
-package http_server_test
+package handlers_test
 
 import (
 	"bytes"
@@ -14,9 +14,9 @@ import (
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/application"
-	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/domain"
-	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server"
+	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server/handlers"
+	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -61,7 +61,7 @@ func (m *MockClientUseCase) ListClients(input application.ListClientsInput) (*ap
 type ClientHandlerTestSuite struct {
 	suite.Suite
 	mockUseCase *MockClientUseCase
-	handler     *http_server.ClientHandler
+	handler     *handlers.ClientHandler
 	tmpDir      string
 }
 
@@ -104,7 +104,7 @@ func (s *ClientHandlerTestSuite) TearDownSuite() {
 
 func (s *ClientHandlerTestSuite) SetupTest() {
 	s.mockUseCase = new(MockClientUseCase)
-	s.handler = http_server.NewClientSSRHandler(s.mockUseCase)
+	s.handler = handlers.NewClientSSRHandler(s.mockUseCase)
 }
 
 func (s *ClientHandlerTestSuite) TestCreateClient_Success() {
@@ -279,7 +279,7 @@ func (s *ClientHandlerTestSuite) createFormRequest(path string, formData map[str
 
 	req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	ctx := context.WithValue(req.Context(), common_infrastructure.LoggedUserKey, "creator@example.com")
+	ctx := context.WithValue(req.Context(), utils.LoggedUserKey, "creator@example.com")
 	return req.WithContext(ctx)
 }
 
@@ -294,7 +294,7 @@ func (s *ClientHandlerTestSuite) createMultipartRequest(path string, fileName st
 
 	req := httptest.NewRequest(http.MethodPost, path, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	ctx := context.WithValue(req.Context(), common_infrastructure.LoggedUserKey, "creator@example.com")
+	ctx := context.WithValue(req.Context(), utils.LoggedUserKey, "creator@example.com")
 	return req.WithContext(ctx)
 }
 
@@ -305,7 +305,7 @@ func (s *ClientHandlerTestSuite) createQueryRequest(path string, queryParams map
 		q.Add(key, value)
 	}
 	req.URL.RawQuery = q.Encode()
-	ctx := context.WithValue(req.Context(), common_infrastructure.LoggedUserKey, "creator@example.com")
+	ctx := context.WithValue(req.Context(), utils.LoggedUserKey, "creator@example.com")
 	return req.WithContext(ctx)
 }
 

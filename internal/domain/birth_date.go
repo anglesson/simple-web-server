@@ -1,4 +1,4 @@
-package common_domain
+package domain
 
 import (
 	"fmt"

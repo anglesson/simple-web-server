@@ -1,4 +1,4 @@
-package common_infrastructure
+package utils
 
 // UserContextKey é a chave usada para armazenar o User logado no context.Context.
 type UserContextKey string

@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	application "github.com/anglesson/simple-web-server/internal/application"
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
-	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
 	domain "github.com/anglesson/simple-web-server/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -27,7 +25,7 @@ func (m *MockClientRepository) Update(client *domain.Client) error {
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindByCPF(cpf common_domain.CPF) *domain.Client {
+func (m *MockClientRepository) FindByCPF(cpf domain.CPF) *domain.Client {
 	args := m.Called(cpf)
 	if args.Get(0) == nil {
 		return nil
@@ -66,9 +64,9 @@ type CPFService struct {
 	mock.Mock
 }
 
-func (m *CPFService) ConsultCPF(cpf common_domain.CPF, birthDay common_domain.BirthDate) (common_application.CPFOutput, error) {
+func (m *CPFService) ConsultCPF(cpf domain.CPF, birthDay domain.BirthDate) (application.CPFOutput, error) {
 	args := m.Called(cpf, birthDay)
-	return args.Get(0).(common_application.CPFOutput), args.Error(1)
+	return args.Get(0).(application.CPFOutput), args.Error(1)
 }
 
 type testSetup struct {
@@ -109,10 +107,10 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should create client successfully",
 			setupMocks: func(ts *testSetup) {
-				cpf, _ := common_domain.NewCPF(ts.defaultInput.CPF)
+				cpf, _ := domain.NewCPF(ts.defaultInput.CPF)
 				ts.mockRepo.On("FindByCPF", cpf).Return(nil)
-				birthDay, _ := common_domain.NewBirthDate(ts.defaultInput.BirthDay)
-				ts.mockRFService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{NomeDaPF: "name_rf"}, nil)
+				birthDay, _ := domain.NewBirthDate(ts.defaultInput.BirthDay)
+				ts.mockRFService.On("ConsultCPF", cpf, *birthDay).Return(application.CPFOutput{NomeDaPF: "name_rf"}, nil)
 				ts.mockRepo.On("Create", mock.Anything).Return(nil)
 			},
 			expectedError: false,
@@ -120,7 +118,7 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should return error if client already exists",
 			setupMocks: func(ts *testSetup) {
-				cpf, _ := common_domain.NewCPF(ts.defaultInput.CPF)
+				cpf, _ := domain.NewCPF(ts.defaultInput.CPF)
 				ts.mockRepo.On("FindByCPF", cpf).Return(&domain.Client{})
 			},
 			expectedError: true,
@@ -129,10 +127,10 @@ func TestCreateClientUseCase(t *testing.T) {
 		{
 			name: "should return error if Receita Federal service fails",
 			setupMocks: func(ts *testSetup) {
-				cpf, _ := common_domain.NewCPF(ts.defaultInput.CPF)
+				cpf, _ := domain.NewCPF(ts.defaultInput.CPF)
 				ts.mockRepo.On("FindByCPF", cpf).Return(nil)
-				birthDay, _ := common_domain.NewBirthDate(ts.defaultInput.BirthDay)
-				ts.mockRFService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{}, assert.AnError)
+				birthDay, _ := domain.NewBirthDate(ts.defaultInput.BirthDay)
+				ts.mockRFService.On("ConsultCPF", cpf, *birthDay).Return(application.CPFOutput{}, assert.AnError)
 			},
 			expectedError: true,
 			errorMessage:  "failed to validate CPF",
@@ -179,10 +177,10 @@ func TestClientUseCase_CreateClient(t *testing.T) {
 				CreatorUserEmail: "creator@example.com",
 			},
 			mockSetup: func(repo *MockClientRepository, cpfService *CPFService) {
-				cpf, _ := common_domain.NewCPF("461.371.640-39")
+				cpf, _ := domain.NewCPF("461.371.640-39")
 				repo.On("FindByCPF", cpf).Return(nil)
-				birthDay, _ := common_domain.NewBirthDate("1990-01-01")
-				cpfService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{
+				birthDay, _ := domain.NewBirthDate("1990-01-01")
+				cpfService.On("ConsultCPF", cpf, *birthDay).Return(application.CPFOutput{
 					NomeDaPF: "John Doe",
 				}, nil)
 				repo.On("Create", mock.Anything).Return(nil)
@@ -200,7 +198,7 @@ func TestClientUseCase_CreateClient(t *testing.T) {
 				CreatorUserEmail: "creator@example.com",
 			},
 			mockSetup: func(repo *MockClientRepository, cpfService *CPFService) {
-				cpf, _ := common_domain.NewCPF("461.371.640-39")
+				cpf, _ := domain.NewCPF("461.371.640-39")
 				repo.On("FindByCPF", cpf).Return(&domain.Client{})
 			},
 			expectedError: true,
@@ -247,9 +245,9 @@ func TestClientUseCase_UpdateClient(t *testing.T) {
 			mockSetup: func(repo *MockClientRepository, cpfService *CPFService) {
 				client, _ := domain.NewClient("Old Name", "461.371.640-39", "1990-01-01", "old@example.com", "1234567890")
 				repo.On("FindByID", uint(1)).Return(client, nil)
-				cpf, _ := common_domain.NewCPF("461.371.640-39")
-				birthDay, _ := common_domain.NewBirthDate("1990-01-01")
-				cpfService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{
+				cpf, _ := domain.NewCPF("461.371.640-39")
+				birthDay, _ := domain.NewBirthDate("1990-01-01")
+				cpfService.On("ConsultCPF", cpf, *birthDay).Return(application.CPFOutput{
 					NomeDaPF: "John Doe",
 				}, nil)
 				repo.On("Update", mock.Anything).Return(nil)
@@ -286,9 +284,9 @@ func TestClientUseCase_UpdateClient(t *testing.T) {
 			mockSetup: func(repo *MockClientRepository, cpfService *CPFService) {
 				client, _ := domain.NewClient("Old Name", "461.371.640-39", "1990-01-01", "old@example.com", "1234567890")
 				repo.On("FindByID", uint(1)).Return(client, nil)
-				cpf, _ := common_domain.NewCPF("461.371.640-39")
-				birthDay, _ := common_domain.NewBirthDate("1990-01-01")
-				cpfService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{}, fmt.Errorf("receita federal validation failed"))
+				cpf, _ := domain.NewCPF("461.371.640-39")
+				birthDay, _ := domain.NewBirthDate("1990-01-01")
+				cpfService.On("ConsultCPF", cpf, *birthDay).Return(application.CPFOutput{}, fmt.Errorf("receita federal validation failed"))
 			},
 			expectedError: true,
 		},
@@ -328,9 +326,9 @@ func TestClientUseCase_ImportClients(t *testing.T) {
 				CreatorUserEmail: "creator@example.com",
 			},
 			mockSetup: func(repo *MockClientRepository, cpfService *CPFService) {
-				cpf, _ := common_domain.NewCPF("461.371.640-39")
-				birthDay, _ := common_domain.NewBirthDate("1990-01-01")
-				cpfService.On("ConsultCPF", cpf, *birthDay).Return(common_application.CPFOutput{
+				cpf, _ := domain.NewCPF("461.371.640-39")
+				birthDay, _ := domain.NewBirthDate("1990-01-01")
+				cpfService.On("ConsultCPF", cpf, *birthDay).Return(application.CPFOutput{
 					NomeDaPF: "John Doe",
 				}, nil)
 				repo.On("CreateBatch", mock.Anything).Return(nil)

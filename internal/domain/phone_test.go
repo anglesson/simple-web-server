@@ -1,9 +1,9 @@
-package common_domain_test
+package domain_test
 
 import (
 	"testing"
 
-	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
+	"github.com/anglesson/simple-web-server/internal/domain"
 )
 
 func TestNewPhone(t *testing.T) {
@@ -18,7 +18,7 @@ func TestNewPhone(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := common_domain.NewPhone(test.input)
+		_, err := domain.NewPhone(test.input)
 		if (err == nil) != test.expected {
 			t.Errorf("NewPhone(%q) expected %v, got %v", test.input, test.expected, err == nil)
 		}

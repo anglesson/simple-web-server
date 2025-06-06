@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/internal/application"
+	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server/handlers"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -15,7 +16,7 @@ func NewRouter(useCase application.ClientUseCasePort) *chi.Mux {
 		http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 	})
 
-	handler := NewClientSSRHandler(useCase)
+	handler := handlers.NewClientSSRHandler(useCase)
 	r.Post("/client", handler.CreateClient)
 
 	return r

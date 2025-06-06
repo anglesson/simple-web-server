@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/anglesson/simple-web-server/internal/application"
-	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
 	"github.com/anglesson/simple-web-server/internal/domain"
 	"gorm.io/gorm"
 )
@@ -27,7 +26,7 @@ func (r *ClientRepository) Update(client *domain.Client) error {
 	return r.db.Save(client).Error
 }
 
-func (r *ClientRepository) FindByCPF(cpf common_domain.CPF) *domain.Client {
+func (r *ClientRepository) FindByCPF(cpf domain.CPF) *domain.Client {
 	var client domain.Client
 	if err := r.db.Where("cpf = ?", cpf).First(&client).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

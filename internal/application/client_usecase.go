@@ -5,17 +5,15 @@ import (
 	"errors"
 	"strings"
 
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
-	common_domain "github.com/anglesson/simple-web-server/internal/common/domain"
 	domain "github.com/anglesson/simple-web-server/internal/domain"
 )
 
 type ClientUseCase struct {
 	clientRepository      ClientRepositoryInterface
-	receitaFederalService common_application.CPFServicePort
+	receitaFederalService CPFServicePort
 }
 
-func NewClientUseCase(clientRepository ClientRepositoryInterface, receitaFederalService common_application.CPFServicePort) *ClientUseCase {
+func NewClientUseCase(clientRepository ClientRepositoryInterface, receitaFederalService CPFServicePort) *ClientUseCase {
 	return &ClientUseCase{
 		clientRepository:      clientRepository,
 		receitaFederalService: receitaFederalService,
@@ -23,7 +21,7 @@ func NewClientUseCase(clientRepository ClientRepositoryInterface, receitaFederal
 }
 
 func (cuc *ClientUseCase) CreateClient(input CreateClientInput) (*CreateClientOutput, error) {
-	cpf, err := common_domain.NewCPF(input.CPF)
+	cpf, err := domain.NewCPF(input.CPF)
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +56,12 @@ func (cuc *ClientUseCase) UpdateClient(input UpdateClientInput) (*UpdateClientOu
 		return nil, errors.New("client not found")
 	}
 
-	validCPF, err := common_domain.NewCPF(input.CPF)
+	validCPF, err := domain.NewCPF(input.CPF)
 	if err != nil {
 		return nil, err
 	}
 
-	validBirthDay, err := common_domain.NewBirthDate(input.BirthDay)
+	validBirthDay, err := domain.NewBirthDate(input.BirthDay)
 	if err != nil {
 		return nil, err
 	}
