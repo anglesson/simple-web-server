@@ -20,6 +20,13 @@ func Connect() {
 	migrate()
 }
 
+func GetDB() (*gorm.DB, error) {
+	if DB == nil {
+		Connect()
+	}
+	return DB, nil
+}
+
 func migrate() {
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.ClientCreator{})

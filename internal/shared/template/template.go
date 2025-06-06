@@ -89,7 +89,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Parse the template
-	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseGlob("internal/templates/layouts/*.html")
+	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseGlob("internal/infrastructure/http_server/templates/layouts/*.html")
 	if err != nil {
 		log.Printf("Erro ao carregar layouts: %v", err)
 		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
@@ -97,7 +97,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Parse partial templates
-	_, err = tmpl.ParseGlob("internal/templates/partials/*.html")
+	_, err = tmpl.ParseGlob("internal/infrastructure/http_server/templates/partials/*.html")
 	if err != nil {
 		log.Printf("Erro ao carregar parciais: %v", err)
 		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
@@ -105,7 +105,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Parse the page template
-	_, err = tmpl.ParseFiles("internal/templates/pages/" + page + ".html")
+	_, err = tmpl.ParseFiles("internal/infrastructure/http_server/templates/pages/" + page + ".html")
 	if err != nil {
 		log.Printf("Erro ao carregar página: %v", err)
 		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)

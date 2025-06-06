@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Sempre siga as boas práticas do Clean Code para nomear variaveis funções e classes.
+
+Sempre crie novas funcionalidade aplicando testes (Boas práticas do TDD).
+
+Sempre separe as camadas seguindo as boas práticas do Clean Archtecture.

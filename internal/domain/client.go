@@ -13,6 +13,7 @@ const (
 )
 
 type Client struct {
+	ID       uint
 	Name     string
 	Phone    string
 	BirthDay *common_domain.BirthDate
@@ -50,4 +51,32 @@ func NewClient(name, cpf, birthDay, email, phone string) (*Client, error) {
 		Phone:    phone,
 		BirthDay: birth,
 	}, nil
+}
+
+func (c *Client) Update(name, cpf, email, phone string) error {
+	if name == "" {
+		return errors.New("name is required")
+	}
+	if len(name) < 5 || len(name) > 255 {
+		return fmt.Errorf("o nome dever ter entre %v e %v caracteres", MinNameLength, MaxNameLength)
+	}
+
+	validCPF, err := common_domain.NewCPF(cpf)
+	if err != nil {
+		return fmt.Errorf("CPF inválido para o cliente: %w", err)
+	}
+
+	if email == "" {
+		return errors.New("email is required")
+	}
+	if phone == "" {
+		return errors.New("phone is required")
+	}
+
+	c.Name = name
+	c.CPF = validCPF
+	c.Email = email
+	c.Phone = phone
+
+	return nil
 }
