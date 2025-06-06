@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/internal/application"
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	common_infrastructure "github.com/anglesson/simple-web-server/internal/common/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/infrastructure/http_server"
 	"github.com/anglesson/simple-web-server/internal/infrastructure/persistence"
@@ -66,7 +66,7 @@ func main() {
 		// Client routes
 		clientHandler := http_server.NewClientSSRHandler(application.NewClientUseCase(
 			persistence.NewClientRepository(),
-			common_application.NewReceitaFederalService(),
+			common_infrastructure.NewHubDevService(config.AppConfig.HubDesenvolvedorApi, config.AppConfig.HubDesenvolvedorToken),
 		))
 		r.Get("/client", clientHandler.ListClients)
 		r.Post("/client", clientHandler.CreateClient)
