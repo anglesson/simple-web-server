@@ -2,6 +2,7 @@ package services
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -26,7 +27,7 @@ func (s *StripeService) CreateCustomer(user *models.User) error {
 		Email: stripe.String(user.Email),
 		Name:  stripe.String(user.Username),
 		Metadata: map[string]string{
-			"user_id": string(user.ID),
+			"user_id": strconv.FormatUint(uint64(user.ID), 10),
 		},
 	}
 
