@@ -15,6 +15,8 @@ func main() {
 	config.LoadConfigs()
 	database.Connect()
 
+	clientHandler := handlers.NewClientHandler()
+
 	r := chi.NewRouter()
 
 	fs := http.FileServer(http.Dir("web/assets"))
@@ -57,6 +59,7 @@ func main() {
 
 		// Client routes
 		r.Get("/client", handlers.ClientIndexView)
+		r.Get("/client/new", clientHandler.CreateView)
 		r.Post("/client", handlers.ClientCreateSubmit)
 		r.Post("/client/update/{id}", handlers.ClientUpdateSubmit)
 		r.Post("/client/import", handlers.ClientImportSubmit)

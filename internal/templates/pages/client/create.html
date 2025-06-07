@@ -1,0 +1,185 @@
+{{ define "title" }} Novo cliente {{ end }}
+{{ define "content" }}
+<!-- Container fluid -->
+<div class="container-fluid p-6">
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-12">
+            <!-- Page header -->
+            <div class="border-bottom pb-4 mb-4 ">
+                <h3 class="mb-0 fw-bold">Cadastro de Clientes</h3>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="client-form" action="/client" method="post" novalidate>
+                        <div class="mb-3">
+                          <label for="name" class="col-form-label">Nome <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" id="name" name="name" value="{{ .Form.Name }}" required />
+                          {{with .Errors.Name}}
+                          <p class="text-danger">{{.}}</p>{{end}}
+                        </div>
+                        <div class="mb-3">
+                          <label for="cpf" class="col-form-label">CPF <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" id="cpf" name="cpf" value="{{ .Form.CPF }}" 
+                                 placeholder="000.000.000-00" required />
+                          <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
+                          {{with .Errors.CPF}}
+                          <p class="text-danger">{{.}}</p>{{end}}
+                        </div>
+                        <div class="mb-3">
+                          <label for="data_nascimento" class="col-form-label">Data de Nascimento <span class="text-danger">*</span></label>
+                          <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ .Form.DataNascimento }}" required />
+                          {{with .Errors.DataNascimento}}
+                          <p class="text-danger">{{.}}</p>{{end}}
+                        </div>
+                        <div class="mb-3">
+                          <label for="email" class="col-form-label">Email <span class="text-danger">*</span></label>
+                          <input type="email" class="form-control" id="email" name="email" value="{{ .Form.Email }}" 
+                                 pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
+                          <div class="invalid-feedback">Por favor, insira um email válido.</div>
+                          {{with .Errors.Email}}
+                          <p class="text-danger">{{.}}</p>{{end}}
+                        </div>
+                        <div class="mb-3">
+                          <label for="phone" class="col-form-label">Telefone <span class="text-danger">*</span></label>
+                          <div class="input-group">
+                            <select class="form-select" id="country-code" name="country-code" style="max-width: 100px;">
+                              <option value="+55" data-flag="br" selected>+55</option>
+                              <option value="+1" data-flag="us">+1</option>
+                              <option value="+44" data-flag="gb">+44</option>
+                              <option value="+33" data-flag="fr">+33</option>
+                              <option value="+49" data-flag="de">+49</option>
+                              <option value="+34" data-flag="es">+34</option>
+                              <option value="+39" data-flag="it">+39</option>
+                              <option value="+351" data-flag="pt">+351</option>
+                              <option value="+54" data-flag="ar">+54</option>
+                              <option value="+56" data-flag="cl">+56</option>
+                              <option value="+57" data-flag="co">+57</option>
+                              <option value="+52" data-flag="mx">+52</option>
+                              <option value="+51" data-flag="pe">+51</option>
+                              <option value="+598" data-flag="uy">+598</option>
+                            </select>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ .Form.Phone }}" 
+                                   placeholder="(XX) XXXXX-XXXX" required />
+                            <div class="invalid-feedback">Por favor, insira um telefone válido.</div>
+                          </div>
+                          {{with .Errors.Phone}}
+                          <p class="text-danger">{{.}}</p>{{end}}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <a href="/client" class="btn btn-secondary">Cancelar</a>
+                    <button form="client-form" type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adiciona os estilos do flag-icons
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css';
+    document.head.appendChild(link);
+
+    // Estiliza o select de países
+    const countrySelect = document.getElementById('country-code');
+    const styleSelect = () => {
+        const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+        const flag = selectedOption.getAttribute('data-flag');
+        countrySelect.style.backgroundImage = `url('https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/flags/4x3/${flag}.svg')`;
+        countrySelect.style.backgroundRepeat = 'no-repeat';
+        countrySelect.style.backgroundPosition = '8px center';
+        countrySelect.style.backgroundSize = '20px';
+        countrySelect.style.paddingLeft = '35px';
+    };
+
+    // Aplica o estilo inicial
+    styleSelect();
+
+    // Atualiza o estilo quando o país é alterado
+    countrySelect.addEventListener('change', styleSelect);
+
+    // Máscara para CPF
+    const cpfInput = document.getElementById('cpf');
+    cpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) {
+            value = value.slice(0, 11);
+        }
+        if (value.length <= 11) {
+            value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            value = value.replace(/(\d{3})(\d{3})(\d{3})/, "$1.$2.$3");
+            value = value.replace(/(\d{3})(\d{3})/, "$1.$2");
+        }
+        e.target.value = value;
+    });
+
+    // Máscara para telefone
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Limita o tamanho do número
+        if (value.length > 11) {
+            value = value.slice(0, 11);
+        }
+        
+        // Formata o número
+        let formattedValue = '';
+        if (value.length > 0) {
+            // Adiciona o DDD
+            if (value.length > 0) {
+                formattedValue += '(' + value.slice(0, 2) + ')';
+                value = value.slice(2);
+            }
+            
+            // Adiciona o resto do número
+            if (value.length > 0) {
+                formattedValue += ' ' + value.slice(0, 5);
+                value = value.slice(5);
+            }
+            
+            if (value.length > 0) {
+                formattedValue += '-' + value.slice(0, 4);
+            }
+        }
+        
+        e.target.value = formattedValue;
+    });
+
+    // Validação de email
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('input', function(e) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(e.target.value)) {
+            e.target.setCustomValidity('Por favor, insira um email válido');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+
+    // Validação do formulário
+    const form = document.getElementById('client-form');
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        } else {
+            // Remove a máscara do telefone antes de enviar
+            const phoneInput = document.getElementById('phone');
+            const countryCode = document.getElementById('country-code').value;
+            const phoneValue = phoneInput.value.replace(/\D/g, '');
+            phoneInput.value = countryCode + phoneValue;
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{{end}}

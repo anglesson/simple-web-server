@@ -19,6 +19,23 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type ClientHandler struct {
+}
+
+func NewClientHandler() *ClientHandler {
+	return &ClientHandler{}
+}
+
+func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
+	loggedUser := middlewares.Auth(r)
+	if loggedUser.ID == 0 {
+		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
+		return
+	}
+
+	template.View(w, r, "client/create", nil, "admin")
+}
+
 func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	loggedUser := middlewares.Auth(r)
 	if loggedUser.ID == 0 {
