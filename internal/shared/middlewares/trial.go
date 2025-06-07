@@ -23,7 +23,7 @@ func TrialMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if !user.IsInTrialPeriod() {
+		if !user.IsInTrialPeriod() && !user.IsSubscribed() {
 			http.Redirect(w, r, "/settings", http.StatusSeeOther)
 			return
 		}
