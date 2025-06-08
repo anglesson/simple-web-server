@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/anglesson/simple-web-server/internal/application"
+	"github.com/anglesson/simple-web-server/internal/application/dtos"
+	"github.com/anglesson/simple-web-server/internal/application/ports"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -19,11 +20,11 @@ import (
 )
 
 type ClientHandler struct {
-	clientService       application.ClientServicePort
+	clientService       ports.ClientServicePort
 	flashMessageFactory infrastructure.FlashMessageFactory
 }
 
-func NewClientHandler(clientService application.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService ports.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		flashMessageFactory: flashMessageFactory,
@@ -67,7 +68,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := repositories.NewPagination(page, perPage)
+	pagination := dtos.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
@@ -77,7 +78,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 		redirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := repositories.NewClientRepository().FindClientsByCreator(creator, repositories.ClientQuery{
+	clients, err := repositories.NewClientRepository().FindClientsByCreator(creator, dtos.ClientQuery{
 		Term:       term,
 		Pagination: pagination,
 	})
@@ -101,7 +102,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := application.CreateClientInput{
+	input := dtos.CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
 		BirthDate: r.FormValue("birthdate"),
@@ -131,7 +132,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := application.UpdateClientInput{
+	input := dtos.UpdateClientInput{
 		CPF:          r.FormValue("cpf"),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),

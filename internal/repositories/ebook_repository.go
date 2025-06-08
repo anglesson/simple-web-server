@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/anglesson/simple-web-server/internal/application/dtos"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"gorm.io/gorm"
@@ -12,7 +13,7 @@ import (
 type EbookQuery struct {
 	Title       string
 	Description string
-	Pagination  *Pagination
+	Pagination  *dtos.Pagination
 }
 
 type EbookRepository struct {

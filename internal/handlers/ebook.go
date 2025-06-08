@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/anglesson/simple-web-server/internal/application/dtos"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
@@ -32,7 +33,7 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	title := r.URL.Query().Get("title")
-	pagination := repositories.NewPagination(page, perPage)
+	pagination := dtos.NewPagination(page, perPage)
 
 	ebookService := services.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
@@ -323,7 +324,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := repositories.NewPagination(page, perPage)
+	pagination := dtos.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
@@ -333,7 +334,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		redirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := repositories.NewClientRepository().FindByClientsWhereEbookWasSend(creator, repositories.ClientQuery{
+	clients, err := repositories.NewClientRepository().FindByClientsWhereEbookWasSend(creator, dtos.ClientQuery{
 		Term:       term,
 		EbookID:    ebook.ID,
 		Pagination: pagination,

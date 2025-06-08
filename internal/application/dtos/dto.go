@@ -1,4 +1,4 @@
-package application
+package dtos
 
 type CreateClientInput struct {
 	Name         string
@@ -14,4 +14,10 @@ type UpdateClientInput struct {
 	Phone        string
 	Email        string
 	EmailCreator string
+}
+
+type ClientQuery struct {
+	Term       string
+	EbookID    uint
+	Pagination *Pagination
 }

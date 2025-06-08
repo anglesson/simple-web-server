@@ -8,7 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/application"
+	"github.com/anglesson/simple-web-server/internal/application/dtos"
+	"github.com/anglesson/simple-web-server/internal/application/ports"
 	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -19,7 +20,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ application.ClientServicePort = (*MockClientService)(nil)
+var _ ports.ClientServicePort = (*MockClientService)(nil)
 
 type MockFlashMessage struct {
 	mock.Mock
@@ -43,7 +44,7 @@ func NewMockClientService() *MockClientService {
 	return &MockClientService{}
 }
 
-func (m *MockClientService) CreateClient(input application.CreateClientInput) (*models.Client, error) {
+func (m *MockClientService) CreateClient(input dtos.CreateClientInput) (*models.Client, error) {
 	args := m.Called(input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -59,7 +60,7 @@ func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail s
 	return args.Get(0).(*models.Client), args.Error(1)
 }
 
-func (m *MockClientService) Update(input application.UpdateClientInput) (*models.Client, error) {
+func (m *MockClientService) Update(input dtos.UpdateClientInput) (*models.Client, error) {
 	args := m.Called(input)
 	return args.Get(0).(*models.Client), args.Error(1)
 }
@@ -113,7 +114,7 @@ func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
 func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := application.CreateClientInput{
+	expectedInput := dtos.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -145,7 +146,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := application.CreateClientInput{
+	expectedInput := dtos.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -178,7 +179,7 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	creatorEmail := "creator@mail"
 	clientID := uint(1)
 
-	expectedInput := application.UpdateClientInput{
+	expectedInput := dtos.UpdateClientInput{
 		CPF:          "Updated CPF",
 		Email:        "updated@mail.com",
 		Phone:        "Updated Phone",

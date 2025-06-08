@@ -1,4 +1,4 @@
-package repositories
+package dtos
 
 type Pagination struct {
 	Page     int

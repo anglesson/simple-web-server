@@ -4,24 +4,24 @@ import (
 	"errors"
 	"log"
 
-	"github.com/anglesson/simple-web-server/internal/application"
+	"github.com/anglesson/simple-web-server/internal/application/dtos"
+	"github.com/anglesson/simple-web-server/internal/application/ports"
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
 )
 
 type ClientService struct {
-	clientRepository  *repositories.ClientRepository
-	creatorRepository *repositories.CreatorRepository
+	clientRepository  ports.ClientRepositoryPort
+	creatorRepository ports.CreatorRepositoryPort
 }
 
-func NewClientService(clientRepository *repositories.ClientRepository, creatorRepository *repositories.CreatorRepository) application.ClientServicePort {
+func NewClientService(clientRepository ports.ClientRepositoryPort, creatorRepository ports.CreatorRepositoryPort) *ClientService {
 	return &ClientService{
 		clientRepository:  clientRepository,
 		creatorRepository: creatorRepository,
 	}
 }
 
-func (cs *ClientService) CreateClient(input application.CreateClientInput) (*models.Client, error) {
+func (cs *ClientService) CreateClient(input dtos.CreateClientInput) (*models.Client, error) {
 	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail stri
 	return &client, nil
 }
 
-func (cs *ClientService) Update(input application.UpdateClientInput) (*models.Client, error) {
+func (cs *ClientService) Update(input dtos.UpdateClientInput) (*models.Client, error) {
 	client := &models.Client{}
 	if err := cs.validateReceita(client); err != nil {
 		return nil, err
