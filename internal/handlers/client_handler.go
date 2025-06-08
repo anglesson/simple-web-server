@@ -78,37 +78,6 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
-	// errors := make(map[string]string)
-	input := application.CreateClientInput{
-		Name:      r.FormValue("name"),
-		CPF:       r.FormValue("cpf"),
-		BirthDate: r.FormValue("birth_date"),
-		Email:     r.FormValue("email"),
-		Phone:     r.FormValue("phone"),
-	}
-
-	// errForm := utils.ValidateForm(input)
-	// for key, value := range errForm {
-	// 	errors[key] = value
-	// }
-
-	// if len(errors) > 0 {
-	// 	formJSON, _ := json.Marshal(input)
-	// 	errorsJSON, _ := json.Marshal(errors)
-
-	// 	http.SetCookie(w, &http.Cookie{
-	// 		Name:  "form",
-	// 		Value: url.QueryEscape(string(formJSON)),
-	// 		Path:  "/",
-	// 	})
-	// 	http.SetCookie(w, &http.Cookie{
-	// 		Name:  "errors",
-	// 		Value: url.QueryEscape(string(errorsJSON)),
-	// 		Path:  "/",
-	// 	})
-	// 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
-	// 	return
-	// }
 	flashMessage := ch.flashMessageFactory(w, r)
 
 	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
@@ -116,6 +85,14 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		flashMessage.Error("Unauthorized. Invalid user email")
 		http.Error(w, "Invalid user email", http.StatusUnauthorized)
 		return
+	}
+
+	input := application.CreateClientInput{
+		Name:      r.FormValue("name"),
+		CPF:       r.FormValue("cpf"),
+		BirthDate: r.FormValue("birth_date"),
+		Email:     r.FormValue("email"),
+		Phone:     r.FormValue("phone"),
 	}
 
 	input.EmailCreator = user_email
