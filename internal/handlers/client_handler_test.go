@@ -51,8 +51,8 @@ func (m *MockClientService) CreateClient(input application.CreateClientInput) (*
 	return args.Get(0).(*models.Client), args.Error(1)
 }
 
-func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorID uint) (*models.Client, error) {
-	args := m.Called(clientID, creatorID)
+func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {
+	args := m.Called(clientID, creatorEmail)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -121,7 +121,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 		EmailCreator: creatorEmail,
 	}
 
-	formData := strings.NewReader("email=client@mail&name=Any Name&phone=Any Phone&birth_date=2004-01-01")
+	formData := strings.NewReader("email=client@mail&name=Any Name&phone=Any Phone&birthdate=2004-01-01")
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -153,7 +153,7 @@ func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 		EmailCreator: creatorEmail,
 	}
 
-	formData := strings.NewReader("email=client@mail&name=Any Name&phone=Any Phone&birth_date=2004-01-01")
+	formData := strings.NewReader("email=client@mail&name=Any Name&phone=Any Phone&birthdate=2004-01-01")
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
