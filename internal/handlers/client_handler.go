@@ -15,7 +15,6 @@ import (
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
-	"github.com/go-chi/chi/v5"
 )
 
 type ClientHandler struct {
@@ -107,26 +106,10 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 }
 
 func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
+	flashMessage := ch.flashMessageFactory(w, r)
 	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
 	if !ok {
 		http.Error(w, "Invalid user email", http.StatusInternalServerError)
-		return
-	}
-
-	// creatorService := services.NewCreatorService()
-	// creator, err := creatorService.FindCreatorByEmail(user_email)
-	// if err != nil {
-	// 	http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
-	// 	return
-	// }
-
-	// errors := make(map[string]string)
-
-	clientID, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	log.Printf("ClientID: %v", clientID)
-	if clientID == 0 {
-		cookies.NotifyError(w, "O ID deve ser informado")
-		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 		return
 	}
 
@@ -137,45 +120,13 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 		EmailCreator: user_email,
 	}
 
-	// client, err := ch.clientService.FindCreatorsClientByID(form.ID, creator.ID)
-	// log.Printf("Id do client encontrado: %v", client.ID)
-	// if err != nil {
-	// 	cookies.NotifyError(w, err.Error())
-	// 	http.Redirect(w, r, r.Referer(), http.StatusNotFound)
-	// 	return
-	// }
-
-	// Move to a validatorService
-	// errForm := utils.ValidateForm(form)
-	// for key, value := range errForm {
-	// 	errors[key] = value
-	// }
-
-	// if len(errors) > 0 {
-	// 	formJSON, _ := json.Marshal(form)
-	// 	errorsJSON, _ := json.Marshal(errors)
-
-	// 	http.SetCookie(w, &http.Cookie{
-	// 		Name:  "form",
-	// 		Value: url.QueryEscape(string(formJSON)),
-	// 		Path:  "/",
-	// 	})
-	// 	http.SetCookie(w, &http.Cookie{
-	// 		Name:  "errors",
-	// 		Value: url.QueryEscape(string(errorsJSON)),
-	// 		Path:  "/",
-	// 	})
-	// 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
-	// 	return
-	// }
-
 	_, err := ch.clientService.Update(input)
 	if err != nil {
-		cookies.NotifyError(w, err.Error())
+		flashMessage.Error(err.Error())
 		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 		return
 	}
-	cookies.NotifySuccess(w, "Cliente foi atualizado!")
+	flashMessage.Success("Cliente foi atualizado!")
 
 	http.Redirect(w, r, "/client", http.StatusSeeOther)
 }

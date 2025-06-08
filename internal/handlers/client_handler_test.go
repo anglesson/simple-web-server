@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 )
 
 var _ application.ClientServicePort = (*MockClientService)(nil)
@@ -165,6 +166,42 @@ func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 	suite.mockFlashMessage.On("Success", "Cliente foi cadastrado!").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
+
+	assert.Equal(suite.T(), http.StatusSeeOther, rr.Code)
+	assert.Equal(suite.T(), "/client", rr.Header().Get("Location"))
+
+	suite.mockClientService.AssertExpectations(suite.T())
+	suite.mockFlashMessage.AssertExpectations(suite.T())
+}
+
+func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
+	creatorEmail := "creator@mail"
+	clientID := uint(1)
+
+	expectedInput := application.UpdateClientInput{
+		CPF:          "Updated CPF",
+		Email:        "updated@mail.com",
+		Phone:        "Updated Phone",
+		EmailCreator: creatorEmail,
+	}
+
+	expectedClient := &models.Client{
+		Model: gorm.Model{ID: clientID},
+	}
+
+	formData := strings.NewReader("cpf=Updated CPF&email=updated@mail.com&phone=Updated Phone")
+	req := httptest.NewRequest(http.MethodPost, "/client/update/1", formData)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	ctx := context.WithValue(req.Context(), middlewares.UserEmailKey, creatorEmail)
+	req = req.WithContext(ctx)
+
+	rr := httptest.NewRecorder()
+
+	suite.mockClientService.On("Update", expectedInput).Return(expectedClient, nil).Once()
+	suite.mockFlashMessage.On("Success", "Cliente foi atualizado!").Return().Once()
+
+	suite.sut.ClientUpdateSubmit(rr, req)
 
 	assert.Equal(suite.T(), http.StatusSeeOther, rr.Code)
 	assert.Equal(suite.T(), "/client", rr.Header().Get("Location"))
