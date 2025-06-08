@@ -6,16 +6,30 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
+	"github.com/anglesson/simple-web-server/internal/infrastructure"
+	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
 )
 
 func main() {
+	// ========== Infrastructure Initialization ==========
 	config.LoadConfigs()
 	database.Connect()
 
-	clientHandler := handlers.NewClientHandler()
+	flashServiceFactory := func(w http.ResponseWriter, r *http.Request) infrastructure.FlashMessagePort {
+		return infrastructure.NewFlashMessage(w, r)
+	}
+
+	// Repositories
+	creatorRepository := repositories.NewCreatorRepository()
+	clientRepository := repositories.NewClientRepository()
+
+	// ========== Application Initialization ==========
+	clientService := services.NewClientService(clientRepository, creatorRepository)
+	clientHandler := handlers.NewClientHandler(clientService, flashServiceFactory)
 
 	r := chi.NewRouter()
 
@@ -60,9 +74,9 @@ func main() {
 		// Client routes
 		r.Get("/client", handlers.ClientIndexView)
 		r.Get("/client/new", clientHandler.CreateView)
-		r.Post("/client", handlers.ClientCreateSubmit)
-		r.Post("/client/update/{id}", handlers.ClientUpdateSubmit)
-		r.Post("/client/import", handlers.ClientImportSubmit)
+		r.Post("/client", clientHandler.ClientCreateSubmit)
+		r.Post("/client/update/{id}", clientHandler.ClientUpdateSubmit)
+		r.Post("/client/import", clientHandler.ClientImportSubmit)
 
 		// Purchase routes
 		r.Post("/purchase/ebook/{id}", handlers.PurchaseCreateHandler)

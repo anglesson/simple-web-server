@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/anglesson/simple-web-server/internal/application"
+	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
@@ -20,10 +22,15 @@ import (
 )
 
 type ClientHandler struct {
+	clientService       application.ClientServicePort
+	flashMessageFactory infrastructure.FlashMessageFactory
 }
 
-func NewClientHandler() *ClientHandler {
-	return &ClientHandler{}
+func NewClientHandler(clientService application.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+	return &ClientHandler{
+		clientService:       clientService,
+		flashMessageFactory: flashMessageFactory,
+	}
 }
 
 func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
@@ -70,64 +77,62 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	}, "admin")
 }
 
-func ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
-	errors := make(map[string]string)
-
-	form := models.ClientRequest{
-		Name:           r.FormValue("name"),
-		CPF:            r.FormValue("cpf"),
-		DataNascimento: r.FormValue("data_nascimento"),
-		Email:          r.FormValue("email"),
-		Phone:          r.FormValue("phone"),
+func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
+	// errors := make(map[string]string)
+	input := application.CreateClientInput{
+		Name:      r.FormValue("name"),
+		CPF:       r.FormValue("cpf"),
+		BirthDate: r.FormValue("birth_date"),
+		Email:     r.FormValue("email"),
+		Phone:     r.FormValue("phone"),
 	}
 
-	errForm := utils.ValidateForm(form)
-	for key, value := range errForm {
-		errors[key] = value
-	}
+	// errForm := utils.ValidateForm(input)
+	// for key, value := range errForm {
+	// 	errors[key] = value
+	// }
 
-	if len(errors) > 0 {
-		formJSON, _ := json.Marshal(form)
-		errorsJSON, _ := json.Marshal(errors)
+	// if len(errors) > 0 {
+	// 	formJSON, _ := json.Marshal(input)
+	// 	errorsJSON, _ := json.Marshal(errors)
 
-		http.SetCookie(w, &http.Cookie{
-			Name:  "form",
-			Value: url.QueryEscape(string(formJSON)),
-			Path:  "/",
-		})
-		http.SetCookie(w, &http.Cookie{
-			Name:  "errors",
-			Value: url.QueryEscape(string(errorsJSON)),
-			Path:  "/",
-		})
-		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
-		return
-	}
+	// 	http.SetCookie(w, &http.Cookie{
+	// 		Name:  "form",
+	// 		Value: url.QueryEscape(string(formJSON)),
+	// 		Path:  "/",
+	// 	})
+	// 	http.SetCookie(w, &http.Cookie{
+	// 		Name:  "errors",
+	// 		Value: url.QueryEscape(string(errorsJSON)),
+	// 		Path:  "/",
+	// 	})
+	// 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+	// 	return
+	// }
+	flashMessage := ch.flashMessageFactory(w, r)
 
 	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
 	if !ok {
-		http.Error(w, "Invalid user email", http.StatusInternalServerError)
+		flashMessage.Error("Unauthorized. Invalid user email")
+		http.Error(w, "Invalid user email", http.StatusUnauthorized)
 		return
 	}
 
-	creatorService := services.NewCreatorService()
-	creator, err := creatorService.FindCreatorByEmail(user_email)
-	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
-	}
+	input.EmailCreator = user_email
 
 	// TODO: Validar se o cliente existe
-	clientService := services.NewClientService()
-	_, err = clientService.CreateClient(form.Name, form.CPF, form.DataNascimento, form.Email, form.Phone, creator)
+	_, err := ch.clientService.CreateClient(input)
 	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		flashMessage.Error(err.Error())
+		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+		return
 	}
-	cookies.NotifySuccess(w, "Cliente foi cadastrado!")
+	flashMessage.Success("Cliente foi cadastrado!")
 
 	http.Redirect(w, r, "/client", http.StatusSeeOther)
 }
 
-func ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
+func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
 	if !ok {
 		http.Error(w, "Invalid user email", http.StatusInternalServerError)
@@ -160,8 +165,7 @@ func ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 		Phone:          r.FormValue("phone"),
 	}
 
-	clientService := services.NewClientService()
-	client, err := clientService.FindCreatorsClientByID(form.ID, creator.ID)
+	client, err := ch.clientService.FindCreatorsClientByID(form.ID, creator.ID)
 	log.Printf("Id do client encontrado: %v", client.ID)
 	if err != nil {
 		cookies.NotifyError(w, err.Error())
@@ -193,7 +197,7 @@ func ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = clientService.Update(client, form)
+	err = ch.clientService.Update(client, form)
 	if err != nil {
 		cookies.NotifyError(w, err.Error())
 		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
@@ -204,7 +208,7 @@ func ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/client", http.StatusSeeOther)
 }
 
-func ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
+func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 	log.Println("Iniciando processamento de CSV")
 	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
 	if !ok {
@@ -257,8 +261,7 @@ func ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	clientService := services.NewClientService()
-	if err = clientService.CreateBatchClient(clients); err != nil {
+	if err = ch.clientService.CreateBatchClient(clients); err != nil {
 		redirectBackWithErrors(w, r, err.Error())
 		return
 	}
@@ -269,5 +272,5 @@ func ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 
 func redirectBackWithErrors(w http.ResponseWriter, r *http.Request, erroMessage string) {
 	cookies.NotifyError(w, erroMessage)
-	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+	http.Redirect(w, r, r.Referer(), http.StatusBadRequest)
 }

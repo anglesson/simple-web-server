@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/anglesson/simple-web-server/internal/config"
+	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 )
@@ -68,6 +69,22 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 		})
 	}
 
+	session, _ := infrastructure.SessionStore.Get(r, "SESSION_KEY")
+	successFlashes := session.Flashes("success")
+	errorFlashes := session.Flashes("error")
+	session.Save(r, w)
+
+	message := ""
+	messageType := ""
+	if len(successFlashes) > 0 {
+		log.Print(successFlashes)
+		message = successFlashes[0].(string) // Pega a primeira mensagem de sucesso
+		messageType = "success"
+	} else if len(errorFlashes) > 0 {
+		message = errorFlashes[0].(string) // Pega a primeira mensagem de erro
+		messageType = "error"
+	}
+
 	// Get CSRF token from context
 	if csrfToken := middlewares.GetCSRFToken(r); csrfToken != "" {
 		log.Printf("CSRF token encontrado no contexto: %s", csrfToken)
@@ -114,7 +131,9 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 
 	// Execute the template
 	err = tmpl.ExecuteTemplate(w, layout, map[string]interface{}{
-		"Data": data,
+		"Data":        data,
+		"Message":     message,
+		"MessageType": messageType,
 	})
 	if err != nil {
 		log.Printf("Erro ao renderizar template: %v", err)

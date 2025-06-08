@@ -4,29 +4,35 @@ import (
 	"errors"
 	"log"
 
+	"github.com/anglesson/simple-web-server/internal/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 )
 
 type ClientService struct {
-	clientRepository *repositories.ClientRepository
+	clientRepository  *repositories.ClientRepository
+	creatorRepository *repositories.CreatorRepository
 }
 
-func NewClientService() *ClientService {
-	r := repositories.NewClientRepository()
+func NewClientService(clientRepository *repositories.ClientRepository, creatorRepository *repositories.CreatorRepository) application.ClientServicePort {
 	return &ClientService{
-		clientRepository: r,
+		clientRepository:  clientRepository,
+		creatorRepository: creatorRepository,
 	}
 }
 
-func (cs *ClientService) CreateClient(name, cpf, dataNascimento, email, phone string, creator *models.Creator) (*models.Client, error) {
-	client := models.NewClient(name, cpf, dataNascimento, email, phone, creator)
+func (cs *ClientService) CreateClient(input application.CreateClientInput) (*models.Client, error) {
+	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
+	if err != nil {
+		return nil, err
+	}
+	client := models.NewClient(input.Name, input.CPF, input.BirthDate, input.Email, input.Phone, creator)
 
 	if err := cs.validateReceita(client); err != nil {
 		return nil, err
 	}
 
-	err := cs.clientRepository.Save(client)
+	err = cs.clientRepository.Save(client)
 	if err != nil {
 		return nil, err
 	}
