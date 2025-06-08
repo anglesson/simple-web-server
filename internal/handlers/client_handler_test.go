@@ -58,9 +58,9 @@ func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorID uint
 	return args.Get(0).(*models.Client), args.Error(1)
 }
 
-func (m *MockClientService) Update(client *models.Client, input models.ClientRequest) error {
-	args := m.Called(client, input)
-	return args.Error(1)
+func (m *MockClientService) Update(input application.UpdateClientInput) (*models.Client, error) {
+	args := m.Called(input)
+	return args.Get(0).(*models.Client), args.Error(1)
 }
 
 func (m *MockClientService) CreateBatchClient(clients []*models.Client) error {

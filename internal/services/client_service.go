@@ -53,17 +53,17 @@ func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorID uint) (
 	return &client, nil
 }
 
-func (cs *ClientService) Update(client *models.Client, input models.ClientRequest) error {
-	client.Update(input.Name, input.CPF, input.Email, input.Phone)
+func (cs *ClientService) Update(input application.UpdateClientInput) (*models.Client, error) {
+	client := &models.Client{}
 	if err := cs.validateReceita(client); err != nil {
-		return err
+		return nil, err
 	}
 
 	err := cs.clientRepository.Save(client)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return client, nil
 }
 
 func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {

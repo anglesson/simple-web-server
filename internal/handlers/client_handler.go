@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	"log"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -17,7 +15,6 @@ import (
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
-	"github.com/anglesson/simple-web-server/internal/shared/utils"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -116,14 +113,14 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	creatorService := services.NewCreatorService()
-	creator, err := creatorService.FindCreatorByEmail(user_email)
-	if err != nil {
-		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
-		return
-	}
+	// creatorService := services.NewCreatorService()
+	// creator, err := creatorService.FindCreatorByEmail(user_email)
+	// if err != nil {
+	// 	http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)
+	// 	return
+	// }
 
-	errors := make(map[string]string)
+	// errors := make(map[string]string)
 
 	clientID, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	log.Printf("ClientID: %v", clientID)
@@ -133,48 +130,46 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	form := models.ClientRequest{
-		ID:             uint(clientID),
-		Name:           r.FormValue("name"),
-		CPF:            r.FormValue("cpf"),
-		DataNascimento: r.FormValue("data_nascimento"),
-		Email:          r.FormValue("email"),
-		Phone:          r.FormValue("phone"),
+	input := application.UpdateClientInput{
+		CPF:          r.FormValue("cpf"),
+		Email:        r.FormValue("email"),
+		Phone:        r.FormValue("phone"),
+		EmailCreator: user_email,
 	}
 
-	client, err := ch.clientService.FindCreatorsClientByID(form.ID, creator.ID)
-	log.Printf("Id do client encontrado: %v", client.ID)
-	if err != nil {
-		cookies.NotifyError(w, err.Error())
-		http.Redirect(w, r, r.Referer(), http.StatusNotFound)
-		return
-	}
+	// client, err := ch.clientService.FindCreatorsClientByID(form.ID, creator.ID)
+	// log.Printf("Id do client encontrado: %v", client.ID)
+	// if err != nil {
+	// 	cookies.NotifyError(w, err.Error())
+	// 	http.Redirect(w, r, r.Referer(), http.StatusNotFound)
+	// 	return
+	// }
 
 	// Move to a validatorService
-	errForm := utils.ValidateForm(form)
-	for key, value := range errForm {
-		errors[key] = value
-	}
+	// errForm := utils.ValidateForm(form)
+	// for key, value := range errForm {
+	// 	errors[key] = value
+	// }
 
-	if len(errors) > 0 {
-		formJSON, _ := json.Marshal(form)
-		errorsJSON, _ := json.Marshal(errors)
+	// if len(errors) > 0 {
+	// 	formJSON, _ := json.Marshal(form)
+	// 	errorsJSON, _ := json.Marshal(errors)
 
-		http.SetCookie(w, &http.Cookie{
-			Name:  "form",
-			Value: url.QueryEscape(string(formJSON)),
-			Path:  "/",
-		})
-		http.SetCookie(w, &http.Cookie{
-			Name:  "errors",
-			Value: url.QueryEscape(string(errorsJSON)),
-			Path:  "/",
-		})
-		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
-		return
-	}
+	// 	http.SetCookie(w, &http.Cookie{
+	// 		Name:  "form",
+	// 		Value: url.QueryEscape(string(formJSON)),
+	// 		Path:  "/",
+	// 	})
+	// 	http.SetCookie(w, &http.Cookie{
+	// 		Name:  "errors",
+	// 		Value: url.QueryEscape(string(errorsJSON)),
+	// 		Path:  "/",
+	// 	})
+	// 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+	// 	return
+	// }
 
-	err = ch.clientService.Update(client, form)
+	_, err := ch.clientService.Update(input)
 	if err != nil {
 		cookies.NotifyError(w, err.Error())
 		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)

@@ -8,3 +8,10 @@ type CreateClientInput struct {
 	Email        string
 	EmailCreator string
 }
+
+type UpdateClientInput struct {
+	CPF          string
+	Phone        string
+	Email        string
+	EmailCreator string
+}
