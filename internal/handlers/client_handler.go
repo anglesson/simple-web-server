@@ -15,6 +15,7 @@ import (
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
+	"github.com/go-chi/chi/v5"
 )
 
 type ClientHandler struct {
@@ -37,6 +38,23 @@ func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	template.View(w, r, "client/create", nil, "admin")
+}
+
+func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
+	loggedUser := middlewares.Auth(r)
+	if loggedUser.ID == 0 {
+		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
+		return
+	}
+
+	clientID := chi.URLParam(r, "id")
+	id, _ := strconv.ParseUint(clientID, 10, 32)
+	client, err := ch.clientService.FindCreatorsClientByID(uint(id), loggedUser.Email)
+	if err != nil {
+		http.Redirect(w, r, r.Referer(), http.StatusNotFound)
+	}
+
+	template.View(w, r, "client/update", map[string]interface{}{"Client": client}, "admin")
 }
 
 func ClientIndexView(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +104,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 	input := application.CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
-		BirthDate: r.FormValue("birth_date"),
+		BirthDate: r.FormValue("birthdate"),
 		Email:     r.FormValue("email"),
 		Phone:     r.FormValue("phone"),
 	}

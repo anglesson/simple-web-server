@@ -1,4 +1,4 @@
-{{ define "title" }} Novo cliente {{ end }}
+{{ define "title" }} Atualizar cliente {{ end }}
 {{ define "content" }}
 <!-- Container fluid -->
 <div class="container-fluid p-6">
@@ -6,7 +6,7 @@
         <div class="col-lg-12 col-md-12 col-12">
             <!-- Page header -->
             <div class="border-bottom pb-4 mb-4 ">
-                <h3 class="mb-0 fw-bold">Cadastro de Clientes</h3>
+                <h3 class="mb-0 fw-bold">Editção de Clientes</h3>
             </div>
         </div>
     </div>
@@ -14,29 +14,29 @@
         <div class="col-lg-12 col-md-12 col-12">
             <div class="card">
                 <div class="card-body">
-                    <form id="client-form" action="/client" method="post" novalidate>
+                    <form id="client-form" action="/client/update/{{.Data.Client.ID}}" method="post" novalidate>
                         <div class="mb-3">
                             <label for="name" class="col-form-label">Nome <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ .Form.Name }}" />
+                            <input type="text" class="form-control" id="name" name="name" value="{{ .Data.Client.Name }}" />
                             {{with .Data.Errors.Name}}
                             <p class="text-danger">{{.}}</p>{{end}}
                         </div>
                         <div class="mb-3">
                             <label for="cpf" class="col-form-label">CPF <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ .Form.CPF }}" placeholder="000.000.000-00" required />
+                            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ .Data.Client.CPF }}" placeholder="000.000.000-00" required />
                             <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
                             {{with .Errors.CPF}}
                             <p class="text-danger">{{.}}</p>{{end}}
                         </div>
                         <div class="mb-3">
-                            <label for="data_nascimento" class="col-form-label">Data de Nascimento <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="data_nascimento" name="birthdate" value="{{ .Form.Birthdate }}" required />
+                            <label for="data_nascimento" class="col-form-label">Data de Nascimento<span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ .Data.Client.Birthdate }}" required />
                             {{with .Errors.Birthdate}}
                             <p class="text-danger">{{.}}</p>{{end}}
                         </div>
                         <div class="mb-3">
                             <label for="email" class="col-form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ .Form.Email }}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
+                            <input type="email" class="form-control" id="email" name="email" value="{{ .Data.Client.Contact.Email }}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
                             <div class="invalid-feedback">Por favor, insira um email válido.</div>
                             {{with .Errors.Email}}
                             <p class="text-danger">{{.}}</p>{{end}}
@@ -60,7 +60,7 @@
                                     <option value="+51" data-flag="pe">+51</option>
                                     <option value="+598" data-flag="uy">+598</option>
                                 </select>
-                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ .Form.Phone }}" placeholder="(XX) XXXXX-XXXX" required />
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ .Data.Client.Contact.Phone }}" placeholder="(XX) XXXXX-XXXX" required />
                                 <div class="invalid-feedback">Por favor, insira um telefone válido.</div>
                             </div>
                             {{with .Errors.Phone}}

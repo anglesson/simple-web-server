@@ -65,11 +65,14 @@ func ContainsNameCpfEmailOrPhoneWith(term string) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func (cr *ClientRepository) FindByIDAndCreators(client *models.Client, clientID, creatorID uint) error {
+func (cr *ClientRepository) FindByIDAndCreators(client *models.Client, clientID uint, creator string) error {
 	err := database.DB.
 		Preload("Contact").
 		Preload("Creators").
 		First(&client).
+		Joins("JOIN client_creators ON client_creators.client_id = clients.id AND client_creators.creator_id = creators.id").
+		Joins("JOIN contacts ON contacts.id = creators.contact_id").
+		Where("clients.id = ? AND contacts.email = ?", clientID, creator).
 		Error
 	if err != nil {
 		log.Printf("Erro na busca do client: %s", err)

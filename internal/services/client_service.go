@@ -39,14 +39,14 @@ func (cs *ClientService) CreateClient(input application.CreateClientInput) (*mod
 	return client, nil
 }
 
-func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorID uint) (*models.Client, error) {
-	if clientID == 0 || creatorID == 0 {
+func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {
+	if clientID == 0 || creatorEmail == "" {
 		return nil, errors.New("o id do cliente deve ser informado")
 	}
 
 	var client models.Client
 
-	err := cs.clientRepository.FindByIDAndCreators(&client, clientID, creatorID)
+	err := cs.clientRepository.FindByIDAndCreators(&client, clientID, creatorEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
 
 func (cs *ClientService) validateReceita(client *models.Client) error {
 	rfs := NewReceitaFederalService()
-	response := rfs.ConsultaCPF(client.CPF, client.DataNascimento)
+	response := rfs.ConsultaCPF(client.CPF, client.Birthdate)
 
 	if response == nil || !response.Status {
 		return errors.New("dados não encontrados na receita federal")
