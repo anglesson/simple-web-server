@@ -1,20 +1,20 @@
-package services
+package client
 
 import (
 	"errors"
 	"log"
 
 	"github.com/anglesson/simple-web-server/internal/application/dtos"
-	"github.com/anglesson/simple-web-server/internal/application/ports"
+	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
 type ClientService struct {
-	clientRepository  ports.ClientRepositoryPort
-	creatorRepository ports.CreatorRepositoryPort
+	clientRepository  ClientRepositoryPort
+	creatorRepository CreatorRepositoryPort
 }
 
-func NewClientService(clientRepository ports.ClientRepositoryPort, creatorRepository ports.CreatorRepositoryPort) *ClientService {
+func NewClientService(clientRepository ClientRepositoryPort, creatorRepository CreatorRepositoryPort) *ClientService {
 	return &ClientService{
 		clientRepository:  clientRepository,
 		creatorRepository: creatorRepository,
@@ -75,7 +75,7 @@ func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
 }
 
 func (cs *ClientService) validateReceita(client *models.Client) error {
-	rfs := NewReceitaFederalService()
+	rfs := common.NewReceitaFederalService()
 	response := rfs.ConsultaCPF(client.CPF, client.Birthdate)
 
 	if response == nil || !response.Status {

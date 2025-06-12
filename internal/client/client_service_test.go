@@ -1,16 +1,15 @@
-package services_test
+package client_test
 
 import (
 	"github.com/anglesson/simple-web-server/internal/application/dtos"
-	"github.com/anglesson/simple-web-server/internal/application/ports"
+	"github.com/anglesson/simple-web-server/internal/client"
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-var _ ports.ClientRepositoryPort = (*MockClientRepository)(nil)
-var _ ports.CreatorRepositoryPort = (*MockCreatorRepository)(nil)
+var _ client.ClientRepositoryPort = (*MockClientRepository)(nil)
+var _ client.CreatorRepositoryPort = (*MockCreatorRepository)(nil)
 
 type MockCreatorRepository struct {
 	mock.Mock
@@ -67,13 +66,13 @@ func (m *MockClientRepository) InsertBatch(clients []*models.Client) error {
 
 type ClientServiceTestSuite struct {
 	suite.Suite
-	sut                   *services.ClientService
-	mockClientRepository  ports.ClientRepositoryPort
-	mockCreatorRepository ports.CreatorRepositoryPort
+	sut                   *client.ClientService
+	mockClientRepository  client.ClientRepositoryPort
+	mockCreatorRepository client.CreatorRepositoryPort
 }
 
 func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(MockClientRepository)
 	suite.mockCreatorRepository = new(MockCreatorRepository)
-	suite.sut = services.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository)
+	suite.sut = client.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository)
 }

@@ -1,4 +1,4 @@
-package ports
+package client
 
 import (
 	"github.com/anglesson/simple-web-server/internal/application/dtos"

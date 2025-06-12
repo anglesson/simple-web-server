@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/application/dtos"
-	"github.com/anglesson/simple-web-server/internal/application/ports"
 	"github.com/anglesson/simple-web-server/internal/client"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -20,7 +19,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ ports.ClientServicePort = (*MockClientService)(nil)
+var _ client.ClientServicePort = (*MockClientService)(nil)
 
 type MockFlashMessage struct {
 	mock.Mock

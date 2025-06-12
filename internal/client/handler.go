@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/application/dtos"
-	"github.com/anglesson/simple-web-server/internal/application/ports"
 	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -21,11 +20,11 @@ import (
 )
 
 type ClientHandler struct {
-	clientService       ports.ClientServicePort
+	clientService       ClientServicePort
 	flashMessageFactory infrastructure.FlashMessageFactory
 }
 
-func NewClientHandler(clientService ports.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		flashMessageFactory: flashMessageFactory,

@@ -9,7 +9,6 @@ import (
 	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/repositories"
-	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -29,7 +28,7 @@ func main() {
 	clientRepository := repositories.NewClientRepository()
 
 	// ========== Application Initialization ==========
-	clientService := services.NewClientService(clientRepository, creatorRepository)
+	clientService := client.NewClientService(clientRepository, creatorRepository)
 	clientHandler := client.NewClientHandler(clientService, flashServiceFactory)
 
 	r := chi.NewRouter()
