@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/application/dtos"
+	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
@@ -27,7 +28,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	creatorRepository := repositories.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	viewData := map[string]any{
@@ -64,7 +65,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "send_ebook", viewData, "admin")

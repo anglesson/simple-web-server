@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/application/dtos"
+	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
@@ -114,7 +115,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	creator, err := services.NewCreatorService().FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
-		redirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
+		common.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
 		return
 	}
 
@@ -331,7 +332,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 	creatorRepository := repositories.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	clients, err := repositories.NewClientRepository().FindByClientsWhereEbookWasSend(creator, dtos.ClientQuery{
@@ -340,7 +341,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		Pagination: pagination,
 	})
 	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "view_ebook", map[string]any{

@@ -1,4 +1,4 @@
-package handlers
+package client
 
 import (
 	"encoding/csv"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/application/dtos"
 	"github.com/anglesson/simple-web-server/internal/application/ports"
+	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -75,7 +76,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	creatorRepository := repositories.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	clients, err := repositories.NewClientRepository().FindClientsByCreator(creator, dtos.ClientQuery{
@@ -83,7 +84,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 		Pagination: pagination,
 	})
 	if err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "client", map[string]any{
@@ -174,13 +175,13 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		redirectBackWithErrors(w, r, "Erro ao ler o arquivo")
+		common.RedirectBackWithErrors(w, r, "Erro ao ler o arquivo")
 	}
 	defer file.Close()
 
 	// Verifica a extensão do arquivo (opcional)
 	if !strings.HasSuffix(handler.Filename, ".csv") {
-		redirectBackWithErrors(w, r, "Arquivo não é CSV")
+		common.RedirectBackWithErrors(w, r, "Arquivo não é CSV")
 	}
 
 	log.Println("Arquivo validado!")
@@ -189,7 +190,7 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 	rows, err := reader.ReadAll()
 	if err != nil {
 		log.Printf("Erro na leitura do CSV: %s", err.Error())
-		redirectBackWithErrors(w, r, "Erro na leitura do CSV")
+		common.RedirectBackWithErrors(w, r, "Erro na leitura do CSV")
 	}
 
 	// Validate header
@@ -204,15 +205,10 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err = ch.clientService.CreateBatchClient(clients); err != nil {
-		redirectBackWithErrors(w, r, err.Error())
+		common.RedirectBackWithErrors(w, r, err.Error())
 		return
 	}
 
 	cookies.NotifySuccess(w, "Clientes foram importados!")
 	http.Redirect(w, r, "/client", http.StatusSeeOther)
-}
-
-func redirectBackWithErrors(w http.ResponseWriter, r *http.Request, erroMessage string) {
-	cookies.NotifyError(w, erroMessage)
-	http.Redirect(w, r, r.Referer(), http.StatusBadRequest)
 }

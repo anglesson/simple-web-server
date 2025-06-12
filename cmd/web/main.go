@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/anglesson/simple-web-server/internal/client"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
@@ -29,7 +30,7 @@ func main() {
 
 	// ========== Application Initialization ==========
 	clientService := services.NewClientService(clientRepository, creatorRepository)
-	clientHandler := handlers.NewClientHandler(clientService, flashServiceFactory)
+	clientHandler := client.NewClientHandler(clientService, flashServiceFactory)
 
 	r := chi.NewRouter()
 
@@ -72,7 +73,7 @@ func main() {
 		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
 
 		// Client routes
-		r.Get("/client", handlers.ClientIndexView)
+		r.Get("/client", client.ClientIndexView)
 		r.Get("/client/new", clientHandler.CreateView)
 		r.Post("/client", clientHandler.ClientCreateSubmit)
 		r.Get("/client/update/{id}", clientHandler.UpdateView)

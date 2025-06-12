@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -37,7 +38,7 @@ func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
 	ebookId, err := strconv.Atoi(ebookIdStr)
 	if err != nil {
 		log.Printf("Invalid client ID: %v", ebookIdStr)
-		redirectBackWithErrors(w, r, "Invalid EbookID")
+		common.RedirectBackWithErrors(w, r, "Invalid EbookID")
 	}
 
 	for _, idStr := range r.Form["clients[]"] {
