@@ -25,7 +25,7 @@ func main() {
 
 	// Repositories
 	creatorRepository := repositories.NewCreatorRepository()
-	clientRepository := repositories.NewClientRepository()
+	clientRepository := client.NewClientRepository()
 
 	// ========== Application Initialization ==========
 	clientService := client.NewClientService(clientRepository, creatorRepository)

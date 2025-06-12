@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/anglesson/simple-web-server/internal/application/dtos"
 	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -68,7 +67,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := dtos.NewPagination(page, perPage)
+	pagination := common.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
@@ -78,7 +77,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := repositories.NewClientRepository().FindClientsByCreator(creator, dtos.ClientQuery{
+	clients, err := NewClientRepository().FindClientsByCreator(creator, ClientQuery{
 		Term:       term,
 		Pagination: pagination,
 	})
@@ -102,7 +101,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := dtos.CreateClientInput{
+	input := CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
 		BirthDate: r.FormValue("birthdate"),
@@ -132,7 +131,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := dtos.UpdateClientInput{
+	input := UpdateClientInput{
 		CPF:          r.FormValue("cpf"),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),

@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/application/dtos"
 	"github.com/anglesson/simple-web-server/internal/client"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -43,7 +42,7 @@ func NewMockClientService() *MockClientService {
 	return &MockClientService{}
 }
 
-func (m *MockClientService) CreateClient(input dtos.CreateClientInput) (*models.Client, error) {
+func (m *MockClientService) CreateClient(input client.CreateClientInput) (*models.Client, error) {
 	args := m.Called(input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -59,7 +58,7 @@ func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail s
 	return args.Get(0).(*models.Client), args.Error(1)
 }
 
-func (m *MockClientService) Update(input dtos.UpdateClientInput) (*models.Client, error) {
+func (m *MockClientService) Update(input client.UpdateClientInput) (*models.Client, error) {
 	args := m.Called(input)
 	return args.Get(0).(*models.Client), args.Error(1)
 }
@@ -113,7 +112,7 @@ func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
 func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := dtos.CreateClientInput{
+	expectedInput := client.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -145,7 +144,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := dtos.CreateClientInput{
+	expectedInput := client.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -178,7 +177,7 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	creatorEmail := "creator@mail"
 	clientID := uint(1)
 
-	expectedInput := dtos.UpdateClientInput{
+	expectedInput := client.UpdateClientInput{
 		CPF:          "Updated CPF",
 		Email:        "updated@mail.com",
 		Phone:        "Updated Phone",

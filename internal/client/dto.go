@@ -1,4 +1,6 @@
-package dtos
+package client
+
+import "github.com/anglesson/simple-web-server/internal/common"
 
 type CreateClientInput struct {
 	Name         string
@@ -19,5 +21,5 @@ type UpdateClientInput struct {
 type ClientQuery struct {
 	Term       string
 	EbookID    uint
-	Pagination *Pagination
+	Pagination *common.Pagination
 }

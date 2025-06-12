@@ -1,7 +1,6 @@
 package client_test
 
 import (
-	"github.com/anglesson/simple-web-server/internal/application/dtos"
 	"github.com/anglesson/simple-web-server/internal/client"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
@@ -39,7 +38,7 @@ func (m *MockClientRepository) Save(client *models.Client) error {
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
@@ -49,12 +48,12 @@ func (m *MockClientRepository) FindByIDAndCreators(client *models.Client, client
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
 	args := m.Called()
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }

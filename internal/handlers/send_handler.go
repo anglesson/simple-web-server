@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/application/dtos"
+	"github.com/anglesson/simple-web-server/internal/client"
 	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
@@ -34,14 +34,14 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	viewData := map[string]any{
 		"Ebooks":         nil,
 		"Clients":        nil,
-		"Pagination":     dtos.NewPagination(1, 1000),
+		"Pagination":     common.NewPagination(1, 1000),
 		"EbookID":        nil,
 		"ClientsCreator": len(creator.Clients),
 	}
 
 	ebookService := services.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
-		Pagination: viewData["Pagination"].(*dtos.Pagination),
+		Pagination: viewData["Pagination"].(*common.Pagination),
 	})
 	if err != nil {
 		cookies.NotifyError(w, "Ocorre um erro ao listar seus ebooks")
@@ -55,9 +55,9 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	if ebookID != 0 {
 		viewData["EbookID"] = ebookID
 	}
-	clients, err := repositories.NewClientRepository().FindByClientsWhereEbookNotSend(creator, dtos.ClientQuery{
+	clients, err := client.NewClientRepository().FindByClientsWhereEbookNotSend(creator, client.ClientQuery{
 		EbookID:    uint(ebookID),
-		Pagination: viewData["Pagination"].(*dtos.Pagination),
+		Pagination: viewData["Pagination"].(*common.Pagination),
 		Term:       r.URL.Query().Get("term"),
 	})
 	if clients != nil && len(*clients) > 0 {

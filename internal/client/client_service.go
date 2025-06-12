@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 
-	"github.com/anglesson/simple-web-server/internal/application/dtos"
 	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
@@ -21,7 +20,7 @@ func NewClientService(clientRepository ClientRepositoryPort, creatorRepository C
 	}
 }
 
-func (cs *ClientService) CreateClient(input dtos.CreateClientInput) (*models.Client, error) {
+func (cs *ClientService) CreateClient(input CreateClientInput) (*models.Client, error) {
 	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
 	if err != nil {
 		return nil, err
@@ -53,7 +52,7 @@ func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail stri
 	return &client, nil
 }
 
-func (cs *ClientService) Update(input dtos.UpdateClientInput) (*models.Client, error) {
+func (cs *ClientService) Update(input UpdateClientInput) (*models.Client, error) {
 	client := &models.Client{}
 	if err := cs.validateReceita(client); err != nil {
 		return nil, err
