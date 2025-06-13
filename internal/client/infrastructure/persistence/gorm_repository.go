@@ -1,9 +1,10 @@
-package client
+package client_persistence
 
 import (
 	"errors"
 	"log"
 
+	client_application "github.com/anglesson/simple-web-server/internal/client/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"gorm.io/gorm"
@@ -26,7 +27,7 @@ func (cr *ClientRepository) Save(client *models.Client) error {
 	return nil
 }
 
-func (cr *ClientRepository) FindClientsByCreator(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+func (cr *ClientRepository) FindClientsByCreator(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
 	var clients []models.Client
 
 	err := database.DB.
@@ -84,7 +85,7 @@ func (cr *ClientRepository) InsertBatch(clients []*models.Client) error {
 	return nil
 }
 
-func (cr *ClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+func (cr *ClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
 	var clients []models.Client
 	err := database.DB.Debug().
 		Offset(query.Pagination.GetOffset()).
@@ -105,7 +106,7 @@ func (cr *ClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creat
 	return &clients, nil
 }
 
-func (cr *ClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+func (cr *ClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
 	var clients []models.Client
 	err := database.DB.Debug().
 		Offset(query.Pagination.GetOffset()).

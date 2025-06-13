@@ -1,4 +1,4 @@
-package client
+package client_application
 
 import "github.com/anglesson/simple-web-server/internal/common"
 

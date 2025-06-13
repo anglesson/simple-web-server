@@ -1,4 +1,4 @@
-package client_test
+package client_http_test
 
 import (
 	"context"
@@ -8,7 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/client"
+	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	client_http "github.com/anglesson/simple-web-server/internal/client/infrastructure/http_server"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
@@ -18,7 +19,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ client.ClientServicePort = (*MockClientService)(nil)
+var _ client_application.ClientServicePort = (*MockClientService)(nil)
 
 type MockFlashMessage struct {
 	mock.Mock
@@ -42,7 +43,7 @@ func NewMockClientService() *MockClientService {
 	return &MockClientService{}
 }
 
-func (m *MockClientService) CreateClient(input client.CreateClientInput) (*models.Client, error) {
+func (m *MockClientService) CreateClient(input client_application.CreateClientInput) (*models.Client, error) {
 	args := m.Called(input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -58,7 +59,7 @@ func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail s
 	return args.Get(0).(*models.Client), args.Error(1)
 }
 
-func (m *MockClientService) Update(input client.UpdateClientInput) (*models.Client, error) {
+func (m *MockClientService) Update(input client_application.UpdateClientInput) (*models.Client, error) {
 	args := m.Called(input)
 	return args.Get(0).(*models.Client), args.Error(1)
 }
@@ -70,7 +71,7 @@ func (m *MockClientService) CreateBatchClient(clients []*models.Client) error {
 
 type ClientHandlerTestSuite struct {
 	suite.Suite
-	sut               *client.ClientHandler
+	sut               *client_http.ClientHandler
 	mockClientService *MockClientService
 	mockFlashMessage  *MockFlashMessage
 	flashFactory      infrastructure.FlashMessageFactory
@@ -84,7 +85,7 @@ func (suite *ClientHandlerTestSuite) SetupTest() {
 		return suite.mockFlashMessage
 	}
 
-	suite.sut = client.NewClientHandler(suite.mockClientService, suite.flashFactory)
+	suite.sut = client_http.NewClientHandler(suite.mockClientService, suite.flashFactory)
 }
 
 func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
@@ -112,7 +113,7 @@ func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
 func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := client.CreateClientInput{
+	expectedInput := client_application.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -144,7 +145,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := client.CreateClientInput{
+	expectedInput := client_application.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -177,7 +178,7 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	creatorEmail := "creator@mail"
 	clientID := uint(1)
 
-	expectedInput := client.UpdateClientInput{
+	expectedInput := client_application.UpdateClientInput{
 		CPF:          "Updated CPF",
 		Email:        "updated@mail.com",
 		Phone:        "Updated Phone",

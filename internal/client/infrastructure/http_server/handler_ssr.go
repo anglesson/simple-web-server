@@ -1,4 +1,4 @@
-package client
+package client_http
 
 import (
 	"encoding/csv"
@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
 	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -19,11 +21,11 @@ import (
 )
 
 type ClientHandler struct {
-	clientService       ClientServicePort
+	clientService       client_application.ClientServicePort
 	flashMessageFactory infrastructure.FlashMessageFactory
 }
 
-func NewClientHandler(clientService ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService client_application.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		flashMessageFactory: flashMessageFactory,
@@ -77,7 +79,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := NewClientRepository().FindClientsByCreator(creator, ClientQuery{
+	clients, err := client_persistence.NewClientRepository().FindClientsByCreator(creator, client_application.ClientQuery{
 		Term:       term,
 		Pagination: pagination,
 	})
@@ -101,7 +103,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := CreateClientInput{
+	input := client_application.CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
 		BirthDate: r.FormValue("birthdate"),
@@ -131,7 +133,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := UpdateClientInput{
+	input := client_application.UpdateClientInput{
 		CPF:          r.FormValue("cpf"),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),

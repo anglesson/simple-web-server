@@ -10,7 +10,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/client"
+	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
 	"github.com/anglesson/simple-web-server/internal/common"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -335,7 +336,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		common.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := client.NewClientRepository().FindByClientsWhereEbookWasSend(creator, client.ClientQuery{
+	clients, err := client_persistence.NewClientRepository().FindByClientsWhereEbookWasSend(creator, client_application.ClientQuery{
 		Term:       term,
 		EbookID:    ebook.ID,
 		Pagination: pagination,
