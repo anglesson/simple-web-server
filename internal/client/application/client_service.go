@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/anglesson/simple-web-server/internal/common"
+	common_service "github.com/anglesson/simple-web-server/internal/common/infrastructure/service"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
@@ -74,7 +74,7 @@ func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
 }
 
 func (cs *ClientService) validateReceita(client *models.Client) error {
-	rfs := common.NewReceitaFederalService()
+	rfs := common_service.NewHubDevService()
 	response := rfs.ConsultaCPF(client.CPF, client.Birthdate)
 
 	if response == nil || !response.Status {

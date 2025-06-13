@@ -1,6 +1,8 @@
 package client_application_test
 
 import (
+	"testing"
+
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
@@ -20,13 +22,13 @@ func (m *MockCreatorRepository) FindCreatorByUserID(userID uint) (*models.Creato
 }
 
 func (m *MockCreatorRepository) FindCreatorByUserEmail(email string) (*models.Creator, error) {
-	args := m.Called()
+	args := m.Called(email) // Fixed argument passing
 	return args.Get(0).(*models.Creator), args.Error(1)
 }
 
 func (m *MockCreatorRepository) Create(creator *models.Creator) error {
-	args := m.Called()
-	return args.Error(1)
+	args := m.Called(creator) // Fixed argument passing
+	return args.Error(0)      // Fixed error index
 }
 
 type MockClientRepository struct {
@@ -54,12 +56,12 @@ func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Cr
 }
 
 func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
-	args := m.Called()
+	args := m.Called(creator, query) // Fixed argument passing
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
 
 func (m *MockClientRepository) InsertBatch(clients []*models.Client) error {
-	args := m.Called()
+	args := m.Called(clients) // Fixed argument passing
 	return args.Error(0)
 }
 
@@ -70,10 +72,34 @@ type ClientServiceTestSuite struct {
 	mockCreatorRepository client_application.CreatorRepositoryPort
 }
 
-func (suite *ClientServiceTestSuite) TestCreateClient() {}
-
 func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(MockClientRepository)
 	suite.mockCreatorRepository = new(MockCreatorRepository)
 	suite.sut = client_application.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository)
+}
+
+func (suite *ClientServiceTestSuite) TestCreateClient() {
+	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
+	client := &models.Client{Name: "Oi"}
+
+	suite.mockCreatorRepository.(*MockCreatorRepository).
+		On("FindCreatorByUserEmail", creator.Contact.Email).
+		Return(creator, nil)
+
+	suite.mockClientRepository.(*MockClientRepository).
+		On("Save", client).
+		Return(nil)
+
+	input := client_application.CreateClientInput{
+		EmailCreator: creator.Contact.Email,
+	}
+	_, err := suite.sut.CreateClient(input) // Fixed return value handling
+
+	suite.NoError(err)
+	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserID", creator.UserID)
+	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "Save", client)
+}
+
+func TestClientHandlerTestSuite(t *testing.T) {
+	suite.Run(t, new(ClientServiceTestSuite))
 }

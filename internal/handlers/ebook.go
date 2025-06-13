@@ -12,7 +12,8 @@ import (
 
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
 	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
-	"github.com/anglesson/simple-web-server/internal/common"
+	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
@@ -35,7 +36,7 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	title := r.URL.Query().Get("title")
-	pagination := common.NewPagination(page, perPage)
+	pagination := common_application.NewPagination(page, perPage)
 
 	ebookService := services.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
@@ -116,7 +117,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	creator, err := services.NewCreatorService().FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
-		common.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
+		common_http.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
 		return
 	}
 
@@ -326,14 +327,14 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := common.NewPagination(page, perPage)
+	pagination := common_application.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
 	creatorRepository := repositories.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	clients, err := client_persistence.NewClientRepository().FindByClientsWhereEbookWasSend(creator, client_application.ClientQuery{
@@ -342,7 +343,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		Pagination: pagination,
 	})
 	if err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "view_ebook", map[string]any{

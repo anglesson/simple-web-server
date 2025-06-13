@@ -6,7 +6,8 @@ import (
 
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
 	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
-	"github.com/anglesson/simple-web-server/internal/common"
+	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
@@ -29,20 +30,20 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	creatorRepository := repositories.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	viewData := map[string]any{
 		"Ebooks":         nil,
 		"Clients":        nil,
-		"Pagination":     common.NewPagination(1, 1000),
+		"Pagination":     common_application.NewPagination(1, 1000),
 		"EbookID":        nil,
 		"ClientsCreator": len(creator.Clients),
 	}
 
 	ebookService := services.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
-		Pagination: viewData["Pagination"].(*common.Pagination),
+		Pagination: viewData["Pagination"].(*common_application.Pagination),
 	})
 	if err != nil {
 		cookies.NotifyError(w, "Ocorre um erro ao listar seus ebooks")
@@ -58,7 +59,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	clients, err := client_persistence.NewClientRepository().FindByClientsWhereEbookNotSend(creator, client_application.ClientQuery{
 		EbookID:    uint(ebookID),
-		Pagination: viewData["Pagination"].(*common.Pagination),
+		Pagination: viewData["Pagination"].(*common_application.Pagination),
 		Term:       r.URL.Query().Get("term"),
 	})
 	if clients != nil && len(*clients) > 0 {
@@ -66,7 +67,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "send_ebook", viewData, "admin")

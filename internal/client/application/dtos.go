@@ -1,6 +1,8 @@
 package client_application
 
-import "github.com/anglesson/simple-web-server/internal/common"
+import (
+	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+)
 
 type CreateClientInput struct {
 	Name         string
@@ -21,5 +23,5 @@ type UpdateClientInput struct {
 type ClientQuery struct {
 	Term       string
 	EbookID    uint
-	Pagination *common.Pagination
+	Pagination *common_application.Pagination
 }

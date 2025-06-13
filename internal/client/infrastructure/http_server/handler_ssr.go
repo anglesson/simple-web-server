@@ -9,7 +9,8 @@ import (
 
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
 	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
-	"github.com/anglesson/simple-web-server/internal/common"
+	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -69,14 +70,14 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := common.NewPagination(page, perPage)
+	pagination := common_application.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
 	creatorRepository := repositories.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	clients, err := client_persistence.NewClientRepository().FindClientsByCreator(creator, client_application.ClientQuery{
@@ -84,7 +85,7 @@ func ClientIndexView(w http.ResponseWriter, r *http.Request) {
 		Pagination: pagination,
 	})
 	if err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "client", map[string]any{
@@ -175,13 +176,13 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		common.RedirectBackWithErrors(w, r, "Erro ao ler o arquivo")
+		common_http.RedirectBackWithErrors(w, r, "Erro ao ler o arquivo")
 	}
 	defer file.Close()
 
 	// Verifica a extensão do arquivo (opcional)
 	if !strings.HasSuffix(handler.Filename, ".csv") {
-		common.RedirectBackWithErrors(w, r, "Arquivo não é CSV")
+		common_http.RedirectBackWithErrors(w, r, "Arquivo não é CSV")
 	}
 
 	log.Println("Arquivo validado!")
@@ -190,7 +191,7 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 	rows, err := reader.ReadAll()
 	if err != nil {
 		log.Printf("Erro na leitura do CSV: %s", err.Error())
-		common.RedirectBackWithErrors(w, r, "Erro na leitura do CSV")
+		common_http.RedirectBackWithErrors(w, r, "Erro na leitura do CSV")
 	}
 
 	// Validate header
@@ -205,7 +206,7 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err = ch.clientService.CreateBatchClient(clients); err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 		return
 	}
 

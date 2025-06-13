@@ -1,4 +1,4 @@
-package common
+package common_application
 
 type Pagination struct {
 	Page     int

@@ -1,4 +1,4 @@
-package common
+package common_service
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/config"
 )
 
-type ReceitaFederalService struct {
+type HubDevService struct {
 }
 
 type ConsultaData struct {
@@ -31,11 +31,11 @@ type HubDevResponse struct {
 	Result   ConsultaData `json:"result"`
 }
 
-func NewReceitaFederalService() *ReceitaFederalService {
-	return &ReceitaFederalService{}
+func NewHubDevService() *HubDevService {
+	return &HubDevService{}
 }
 
-func (rf *ReceitaFederalService) ConsultaCPF(cpf, dataNascimento string) *HubDevResponse {
+func (rf *HubDevService) ConsultaCPF(cpf, dataNascimento string) *HubDevResponse {
 	uri := fmt.Sprintf("%s/v2/cpf/?cpf=%s&data=%s&token=%s", config.AppConfig.HubDesenvolvedorApi, cpf, dataNascimento, config.AppConfig.HubDesenvolvedorToken)
 	request, err := http.NewRequest(http.MethodGet, uri, nil)
 	if err != nil {

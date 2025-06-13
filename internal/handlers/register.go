@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/common"
+	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -94,7 +94,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
 	if err := repositories.NewUserRepository().Save(user); err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 		return
 	}
 
@@ -102,21 +102,21 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	stripeService := services.NewStripeService()
 	if err := stripeService.CreateCustomer(user); err != nil {
 		log.Printf("Error creating Stripe customer: %v", err)
-		common.RedirectBackWithErrors(w, r, "Erro ao criar cliente no Stripe")
+		common_http.RedirectBackWithErrors(w, r, "Erro ao criar cliente no Stripe")
 		return
 	}
 
 	// Save user with StripeCustomerID
 	if err := repositories.NewUserRepository().Save(user); err != nil {
 		log.Printf("Error saving user with StripeCustomerID: %v", err)
-		common.RedirectBackWithErrors(w, r, "Erro ao salvar dados do usuário")
+		common_http.RedirectBackWithErrors(w, r, "Erro ao salvar dados do usuário")
 		return
 	}
 
 	creatorRepository := repositories.NewCreatorRepository()
 	creator := models.NewCreator(user.Username, user.Email, "", user.ID)
 	if err := creatorRepository.Create(creator); err != nil {
-		common.RedirectBackWithErrors(w, r, err.Error())
+		common_http.RedirectBackWithErrors(w, r, err.Error())
 		return
 	}
 
