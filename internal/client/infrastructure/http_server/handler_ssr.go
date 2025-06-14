@@ -134,8 +134,11 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	clientID := chi.URLParam(r, "id")
+	id, _ := strconv.ParseUint(clientID, 10, 32)
+
 	input := client_application.UpdateClientInput{
-		CPF:          r.FormValue("cpf"),
+		ID:           uint(id),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),
 		EmailCreator: user_email,

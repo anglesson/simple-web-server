@@ -14,9 +14,9 @@ type CreateClientInput struct {
 }
 
 type UpdateClientInput struct {
-	CPF          string
-	Phone        string
+	ID           uint
 	Email        string
+	Phone        string
 	EmailCreator string
 }
 

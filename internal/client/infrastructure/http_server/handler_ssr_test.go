@@ -13,6 +13,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -179,7 +180,7 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	clientID := uint(1)
 
 	expectedInput := client_application.UpdateClientInput{
-		CPF:          "Updated CPF",
+		ID:           clientID,
 		Email:        "updated@mail.com",
 		Phone:        "Updated Phone",
 		EmailCreator: creatorEmail,
@@ -192,6 +193,11 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	formData := strings.NewReader("cpf=Updated CPF&email=updated@mail.com&phone=Updated Phone")
 	req := httptest.NewRequest(http.MethodPost, "/client/update/1", formData)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Set chi route context for URL param
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "1")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 	ctx := context.WithValue(req.Context(), middlewares.UserEmailKey, creatorEmail)
 	req = req.WithContext(ctx)

@@ -58,12 +58,22 @@ func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail stri
 }
 
 func (cs *ClientService) Update(input UpdateClientInput) (*models.Client, error) {
+	if input.ID == 0 || input.EmailCreator == "" {
+		return nil, errors.New("id do cliente e email do criador são obrigatórios")
+	}
+
+	// Find the existing client
 	client := &models.Client{}
-	if err := cs.validateReceita(client); err != nil {
+	err := cs.clientRepository.FindByIDAndCreators(client, input.ID, input.EmailCreator)
+	if err != nil {
 		return nil, err
 	}
 
-	err := cs.clientRepository.Save(client)
+	// Update only email and phone
+	client.Contact.Email = input.Email
+	client.Contact.Phone = input.Phone
+
+	err = cs.clientRepository.Save(client)
 	if err != nil {
 		return nil, err
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 )
 
 var _ client_application.ClientRepositoryPort = (*MockClientRepository)(nil)
@@ -153,6 +154,69 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 
 	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
 	suite.mockRFService.(*MockRFService).AssertCalled(suite.T(), "ConsultaCPF", expectedClient.CPF, expectedClient.Birthdate)
+	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "Save", mock.Anything)
+}
+
+func (suite *ClientServiceTestSuite) TestUpdateClient() {
+	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
+	existingClient := &models.Client{
+		Model:     gorm.Model{ID: 1},
+		Name:      "John Doe",
+		CPF:       "52998224725",
+		Birthdate: "1990-01-01",
+		Contact: models.Contact{
+			Email: "old.email@mail.com",
+			Phone: "11987654321",
+		},
+		Creators:  []*models.Creator{creator},
+		Validated: true,
+	}
+
+	// Mock finding the existing client
+	suite.mockClientRepository.(*MockClientRepository).
+		On("FindByIDAndCreators", mock.Anything, existingClient.ID, creator.Contact.Email).
+		Return(nil).
+		Run(func(args mock.Arguments) {
+			client := args.Get(0).(*models.Client)
+			*client = *existingClient
+		})
+
+	// Mock saving the updated client
+	suite.mockClientRepository.(*MockClientRepository).
+		On("Save", mock.MatchedBy(func(client *models.Client) bool {
+			return client.ID == existingClient.ID &&
+				client.Name == existingClient.Name && // Name should remain unchanged
+				client.CPF == existingClient.CPF && // CPF should remain unchanged
+				client.Birthdate == existingClient.Birthdate && // Birthdate should remain unchanged
+				client.Contact.Email == "new.email@mail.com" && // Email should be updated
+				client.Contact.Phone == "11999999999" && // Phone should be updated
+				len(client.Creators) == 1 &&
+				client.Creators[0] == creator &&
+				client.Validated
+		})).
+		Return(nil)
+
+	input := client_application.UpdateClientInput{
+		ID:           existingClient.ID,
+		Email:        "new.email@mail.com",
+		Phone:        "11999999999",
+		EmailCreator: creator.Contact.Email,
+	}
+
+	client, err := suite.sut.Update(input)
+
+	suite.NoError(err)
+	suite.NotNil(client)
+	suite.Equal(existingClient.ID, client.ID)
+	suite.Equal(existingClient.Name, client.Name)           // Name should remain unchanged
+	suite.Equal(existingClient.CPF, client.CPF)             // CPF should remain unchanged
+	suite.Equal(existingClient.Birthdate, client.Birthdate) // Birthdate should remain unchanged
+	suite.Equal("new.email@mail.com", client.Contact.Email) // Email should be updated
+	suite.Equal("11999999999", client.Contact.Phone)        // Phone should be updated
+	suite.Equal(creator, client.Creators[0])
+	suite.True(client.Validated)
+
+	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "FindByIDAndCreators", mock.Anything, existingClient.ID, creator.Contact.Email)
 	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "Save", mock.Anything)
 }
 
