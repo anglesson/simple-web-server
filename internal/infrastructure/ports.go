@@ -29,7 +29,7 @@ type GorillaFlashMessage struct {
 	r            *http.Request
 }
 
-func NewFlashMessage(w http.ResponseWriter, r *http.Request) FlashMessagePort {
+func NewGorillaFlashMessage(w http.ResponseWriter, r *http.Request) FlashMessagePort {
 	return &GorillaFlashMessage{
 		w:            w,
 		r:            r,

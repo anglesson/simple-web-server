@@ -23,7 +23,7 @@ func main() {
 	database.Connect()
 
 	flashServiceFactory := func(w http.ResponseWriter, r *http.Request) infrastructure.FlashMessagePort {
-		return infrastructure.NewFlashMessage(w, r)
+		return infrastructure.NewGorillaFlashMessage(w, r)
 	}
 
 	// Repositories
