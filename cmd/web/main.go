@@ -7,6 +7,7 @@ import (
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
 	client_http "github.com/anglesson/simple-web-server/internal/client/infrastructure/http_server"
 	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
+	common_service "github.com/anglesson/simple-web-server/internal/common/infrastructure/service"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
@@ -30,7 +31,8 @@ func main() {
 	clientRepository := client_persistence.NewClientRepository()
 
 	// ========== Application Initialization ==========
-	clientService := client_application.NewClientService(clientRepository, creatorRepository)
+	commonRFService := common_service.NewHubDevService()
+	clientService := client_application.NewClientService(clientRepository, creatorRepository, commonRFService)
 	clientHandler := client_http.NewClientHandler(clientService, flashServiceFactory)
 
 	r := chi.NewRouter()

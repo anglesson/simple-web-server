@@ -2,21 +2,26 @@ package client_application
 
 import (
 	"errors"
-	"log"
 
-	common_service "github.com/anglesson/simple-web-server/internal/common/infrastructure/service"
+	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
 type ClientService struct {
-	clientRepository  ClientRepositoryPort
-	creatorRepository CreatorRepositoryPort
+	clientRepository      ClientRepositoryPort
+	creatorRepository     CreatorRepositoryPort
+	receitaFederalService common_application.ReceitaFederalServicePort
 }
 
-func NewClientService(clientRepository ClientRepositoryPort, creatorRepository CreatorRepositoryPort) *ClientService {
+func NewClientService(
+	clientRepository ClientRepositoryPort,
+	creatorRepository CreatorRepositoryPort,
+	receitaFederalService common_application.ReceitaFederalServicePort,
+) *ClientService {
 	return &ClientService{
-		clientRepository:  clientRepository,
-		creatorRepository: creatorRepository,
+		clientRepository:      clientRepository,
+		creatorRepository:     creatorRepository,
+		receitaFederalService: receitaFederalService,
 	}
 }
 
@@ -74,14 +79,12 @@ func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
 }
 
 func (cs *ClientService) validateReceita(client *models.Client) error {
-	rfs := common_service.NewHubDevService()
-	response := rfs.ConsultaCPF(client.CPF, client.Birthdate)
+	response, err := cs.receitaFederalService.ConsultaCPF(client.CPF, client.Birthdate)
 
-	if response == nil || !response.Status {
-		return errors.New("dados não encontrados na receita federal")
+	if err != nil {
+		return err
 	}
 
-	log.Printf("Erro validateReceita: %v", response)
 	client.Name = response.Result.NomeDaPF
 	client.Validated = true
 	return nil
