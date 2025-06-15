@@ -12,6 +12,7 @@ type AppConfiguration struct {
 	AppMode               string
 	Host                  string
 	Port                  string
+	DatabaseURL           string
 	MailHost              string
 	MailPort              string
 	MailUsername          string
@@ -31,6 +32,10 @@ type AppConfiguration struct {
 	StripeWebhookSecret   string
 }
 
+func (ac *AppConfiguration) IsProdcution() bool {
+	return ac.AppMode == "production"
+}
+
 var AppConfig AppConfiguration
 
 func LoadConfigs() {
@@ -46,6 +51,7 @@ func LoadConfigs() {
 	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Docffy")
 	AppConfig.Host = GetEnv("HOST", "http://localhost")
 	AppConfig.Port = GetEnv("PORT", "8080")
+	AppConfig.DatabaseURL = GetEnv("DATABASE_URL", "./mydb.db")
 	AppConfig.MailHost = GetEnv("MAIL_HOST", "sandbox.smtp.mailtrap.io")
 	AppConfig.MailPort = GetEnv("MAIL_PORT", "2525")
 	AppConfig.MailUsername = GetEnv("MAIL_USERNAME", "cc54bb91ec44b9")
