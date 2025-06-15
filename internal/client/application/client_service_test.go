@@ -1,6 +1,7 @@
 package client_application_test
 
 import (
+	"errors"
 	"testing"
 
 	client_application "github.com/anglesson/simple-web-server/internal/client/application"
@@ -74,6 +75,9 @@ type MockRFService struct {
 
 func (m *MockRFService) ConsultaCPF(cpf, dataNascimento string) (*common_application.ReceitaFederalResponse, error) {
 	args := m.Called(cpf, dataNascimento)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*common_application.ReceitaFederalResponse), args.Error(1)
 }
 
@@ -218,6 +222,91 @@ func (suite *ClientServiceTestSuite) TestUpdateClient() {
 
 	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "FindByIDAndCreators", mock.Anything, existingClient.ID, creator.Contact.Email)
 	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "Save", mock.Anything)
+}
+
+func (suite *ClientServiceTestSuite) TestCreateClientWithReceitaValidationError() {
+	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
+	expectedClient := &models.Client{
+		Name:      "John Doe",
+		CPF:       "52998224725",
+		Birthdate: "1990-01-01",
+		Contact: models.Contact{
+			Email: "client@mail.com",
+			Phone: "11987654321",
+		},
+		Creators: []*models.Creator{creator},
+	}
+
+	suite.mockCreatorRepository.(*MockCreatorRepository).
+		On("FindCreatorByUserEmail", creator.Contact.Email).
+		Return(creator, nil)
+
+	suite.mockRFService.(*MockRFService).
+		On("ConsultaCPF", expectedClient.CPF, expectedClient.Birthdate).
+		Return(nil, errors.New("erro ao consultar receita federal"))
+
+	input := client_application.CreateClientInput{
+		Name:         expectedClient.Name,
+		CPF:          expectedClient.CPF,
+		BirthDate:    expectedClient.Birthdate,
+		Email:        expectedClient.Contact.Email,
+		Phone:        expectedClient.Contact.Phone,
+		EmailCreator: creator.Contact.Email,
+	}
+
+	client, err := suite.sut.CreateClient(input)
+
+	suite.Error(err)
+	suite.Nil(client)
+	suite.Equal("erro ao consultar receita federal", err.Error())
+
+	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
+	suite.mockRFService.(*MockRFService).AssertCalled(suite.T(), "ConsultaCPF", expectedClient.CPF, expectedClient.Birthdate)
+	suite.mockClientRepository.(*MockClientRepository).AssertNotCalled(suite.T(), "Save", mock.Anything)
+}
+
+func (suite *ClientServiceTestSuite) TestCreateClientWithReceitaValidationFailed() {
+	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
+	expectedClient := &models.Client{
+		Name:      "John Doe",
+		CPF:       "52998224725",
+		Birthdate: "1990-01-01",
+		Contact: models.Contact{
+			Email: "client@mail.com",
+			Phone: "11987654321",
+		},
+		Creators: []*models.Creator{creator},
+	}
+
+	suite.mockCreatorRepository.(*MockCreatorRepository).
+		On("FindCreatorByUserEmail", creator.Contact.Email).
+		Return(creator, nil)
+
+	suite.mockRFService.(*MockRFService).
+		On("ConsultaCPF", expectedClient.CPF, expectedClient.Birthdate).
+		Return(&common_application.ReceitaFederalResponse{
+			Status: false,
+			Result: common_application.ConsultaData{},
+		}, nil)
+
+	input := client_application.CreateClientInput{
+		Name:         expectedClient.Name,
+		CPF:          expectedClient.CPF,
+		BirthDate:    expectedClient.Birthdate,
+		Email:        expectedClient.Contact.Email,
+		Phone:        expectedClient.Contact.Phone,
+		EmailCreator: creator.Contact.Email,
+	}
+
+	client, err := suite.sut.CreateClient(input)
+
+	suite.Error(err)
+	suite.Nil(client)
+	suite.Equal("CPF inválido ou não encontrado na receita federal", err.Error())
+
+	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
+	suite.mockRFService.(*MockRFService).AssertCalled(suite.T(), "ConsultaCPF", expectedClient.CPF, expectedClient.Birthdate)
+	suite.mockClientRepository.(*MockClientRepository).AssertNotCalled(suite.T(), "Save", mock.Anything)
 }
 
 func TestClientHandlerTestSuite(t *testing.T) {

@@ -89,10 +89,21 @@ func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
 }
 
 func (cs *ClientService) validateReceita(client *models.Client) error {
-	response, err := cs.receitaFederalService.ConsultaCPF(client.CPF, client.Birthdate)
+	if cs.receitaFederalService == nil {
+		return errors.New("serviço da receita federal não está disponível")
+	}
 
+	response, err := cs.receitaFederalService.ConsultaCPF(client.CPF, client.Birthdate)
 	if err != nil {
 		return err
+	}
+
+	if !response.Status {
+		return errors.New("CPF inválido ou não encontrado na receita federal")
+	}
+
+	if response.Result.NomeDaPF == "" {
+		return errors.New("nome não encontrado na receita federal")
 	}
 
 	client.Name = response.Result.NomeDaPF
