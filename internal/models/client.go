@@ -1,6 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+	"strings"
+
+	"gorm.io/gorm"
+)
 
 type Client struct {
 	gorm.Model
@@ -53,4 +58,9 @@ func (c *Client) TotalDownladsByEbook(ebookID uint) int {
 		}
 	}
 	return count
+}
+
+func (c *Client) GetBirthdateBR() string {
+	partsDate := strings.Split(c.Birthdate, "-")
+	return fmt.Sprintf("%s/%s/%s", partsDate[2], partsDate[1], partsDate[0])
 }

@@ -93,7 +93,7 @@ func (cs *ClientService) validateReceita(client *models.Client) error {
 		return errors.New("serviço da receita federal não está disponível")
 	}
 
-	response, err := cs.receitaFederalService.ConsultaCPF(client.CPF, client.Birthdate)
+	response, err := cs.receitaFederalService.ConsultaCPF(client.CPF, client.GetBirthdateBR())
 	if err != nil {
 		return err
 	}
