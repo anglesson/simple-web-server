@@ -18,10 +18,34 @@ func NewClientRepository() *ClientRepository {
 }
 
 func (cr *ClientRepository) Save(client *models.Client) error {
-	result := database.DB.Save(&client)
-	if result.Error != nil {
-		log.Printf("Erro ao salvar client %s", result.Error)
+	// Start a transaction
+	tx := database.DB.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	// Save the contact first
+	if err := tx.Save(&client.Contact).Error; err != nil {
+		tx.Rollback()
+		log.Printf("Erro ao salvar contato: %s", err)
+		return errors.New("erro ao salvar contato")
+	}
+
+	// Update the client's ContactID
+	client.ContactID = client.Contact.ID
+
+	// Save the client
+	if err := tx.Save(client).Error; err != nil {
+		tx.Rollback()
+		log.Printf("Erro ao salvar client: %s", err)
 		return errors.New("erro ao salvar cliente")
+	}
+
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		log.Printf("Erro ao commitar transação: %s", err)
+		return errors.New("erro ao salvar dados")
 	}
 
 	return nil
