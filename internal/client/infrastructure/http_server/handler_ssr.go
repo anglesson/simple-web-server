@@ -60,7 +60,7 @@ func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
 	template.View(w, r, "client/update", map[string]interface{}{"Client": client}, "admin")
 }
 
-func ClientIndexView(w http.ResponseWriter, r *http.Request) {
+func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request) {
 	loggedUser := middlewares.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)

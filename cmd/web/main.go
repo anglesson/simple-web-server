@@ -23,7 +23,7 @@ func main() {
 	database.Connect()
 
 	flashServiceFactory := func(w http.ResponseWriter, r *http.Request) infrastructure.FlashMessagePort {
-		return infrastructure.NewGorillaFlashMessage(w, r)
+		return infrastructure.NewCookieFlashMessage(w, r)
 	}
 
 	// Repositories
@@ -76,7 +76,7 @@ func main() {
 		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
 
 		// Client routes
-		r.Get("/client", client_http.ClientIndexView)
+		r.Get("/client", clientHandler.ClientIndexView)
 		r.Get("/client/new", clientHandler.CreateView)
 		r.Post("/client", clientHandler.ClientCreateSubmit)
 		r.Get("/client/update/{id}", clientHandler.UpdateView)
