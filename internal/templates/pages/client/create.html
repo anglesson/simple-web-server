@@ -44,22 +44,6 @@
                         <div class="mb-3">
                             <label for="phone" class="col-form-label">Telefone <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <select class="form-select" id="country-code" name="country-code" style="max-width: 100px;">
-                                    <option value="+55" data-flag="br" selected>+55</option>
-                                    <option value="+1" data-flag="us">+1</option>
-                                    <option value="+44" data-flag="gb">+44</option>
-                                    <option value="+33" data-flag="fr">+33</option>
-                                    <option value="+49" data-flag="de">+49</option>
-                                    <option value="+34" data-flag="es">+34</option>
-                                    <option value="+39" data-flag="it">+39</option>
-                                    <option value="+351" data-flag="pt">+351</option>
-                                    <option value="+54" data-flag="ar">+54</option>
-                                    <option value="+56" data-flag="cl">+56</option>
-                                    <option value="+57" data-flag="co">+57</option>
-                                    <option value="+52" data-flag="mx">+52</option>
-                                    <option value="+51" data-flag="pe">+51</option>
-                                    <option value="+598" data-flag="uy">+598</option>
-                                </select>
                                 <input type="tel" class="form-control" id="phone" name="phone" value="{{ .Form.Phone }}" placeholder="(XX) XXXXX-XXXX" required />
                                 <div class="invalid-feedback">Por favor, insira um telefone válido.</div>
                             </div>
