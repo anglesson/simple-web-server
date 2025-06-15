@@ -24,21 +24,52 @@ func (cr *ClientRepository) Save(client *models.Client) error {
 		return tx.Error
 	}
 
-	// Save the contact first
-	if err := tx.Save(&client.Contact).Error; err != nil {
-		tx.Rollback()
-		log.Printf("Erro ao salvar contato: %s", err)
-		return errors.New("erro ao salvar contato")
+	var existingClient models.Client
+	if client.ID != 0 {
+		// Check if client exists
+		if err := tx.First(&existingClient, client.ID).Error; err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				tx.Rollback()
+				log.Printf("Erro ao buscar cliente: %s", err)
+				return errors.New("erro ao buscar cliente")
+			}
+		}
+	}
+
+	// Handle contact
+	if existingClient.ContactID != 0 {
+		// Update existing contact
+		client.Contact.ID = existingClient.ContactID
+		if err := tx.Model(&models.Contact{}).Where("id = ?", existingClient.ContactID).Updates(client.Contact).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Erro ao atualizar contato: %s", err)
+			return errors.New("erro ao atualizar contato")
+		}
+	} else {
+		// Create new contact
+		if err := tx.Save(&client.Contact).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Erro ao salvar contato: %s", err)
+			return errors.New("erro ao salvar contato")
+		}
 	}
 
 	// Update the client's ContactID
 	client.ContactID = client.Contact.ID
 
-	// Save the client
-	if err := tx.Save(client).Error; err != nil {
-		tx.Rollback()
-		log.Printf("Erro ao salvar client: %s", err)
-		return errors.New("erro ao salvar cliente")
+	// Save or update the client
+	if existingClient.ID != 0 {
+		if err := tx.Model(&models.Client{}).Where("id = ?", existingClient.ID).Updates(client).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Erro ao atualizar cliente: %s", err)
+			return errors.New("erro ao atualizar cliente")
+		}
+	} else {
+		if err := tx.Save(client).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Erro ao salvar cliente: %s", err)
+			return errors.New("erro ao salvar cliente")
+		}
 	}
 
 	// Commit the transaction
