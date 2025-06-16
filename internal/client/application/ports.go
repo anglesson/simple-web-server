@@ -5,7 +5,7 @@ import (
 )
 
 type ClientServicePort interface {
-	CreateClient(input CreateClientInput) (*models.Client, error)
+	CreateClient(input CreateClientInput) (*CreateClientOutput, error)
 	FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error)
 	Update(input UpdateClientInput) (*models.Client, error)
 	CreateBatchClient(clients []*models.Client) error

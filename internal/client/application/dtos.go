@@ -13,6 +13,17 @@ type CreateClientInput struct {
 	EmailCreator string
 }
 
+type CreateClientOutput struct {
+	ID        int
+	Name      string
+	CPF       string
+	Phone     string
+	BirthDate string
+	Email     string
+	CreatedAt string
+	UpdatedAt string
+}
+
 type UpdateClientInput struct {
 	ID           uint
 	Email        string

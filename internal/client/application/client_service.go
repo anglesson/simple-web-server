@@ -25,7 +25,7 @@ func NewClientService(
 	}
 }
 
-func (cs *ClientService) CreateClient(input CreateClientInput) (*models.Client, error) {
+func (cs *ClientService) CreateClient(input CreateClientInput) (*CreateClientOutput, error) {
 	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,16 @@ func (cs *ClientService) CreateClient(input CreateClientInput) (*models.Client, 
 	if err != nil {
 		return nil, err
 	}
-	return client, nil
+	return &CreateClientOutput{
+		ID:        int(client.ID),
+		Name:      client.Name,
+		CPF:       client.CPF,
+		Phone:     client.Contact.Phone,
+		Email:     client.Contact.Email,
+		BirthDate: client.Birthdate,
+		UpdatedAt: client.UpdatedAt.String(),
+		CreatedAt: client.CreatedAt.String(),
+	}, nil
 }
 
 func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {

@@ -44,12 +44,12 @@ func NewMockClientService() *MockClientService {
 	return &MockClientService{}
 }
 
-func (m *MockClientService) CreateClient(input client_application.CreateClientInput) (*models.Client, error) {
+func (m *MockClientService) CreateClient(input client_application.CreateClientInput) (*client_application.CreateClientOutput, error) {
 	args := m.Called(input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*models.Client), args.Error(1)
+	return args.Get(0).(*client_application.CreateClientOutput), args.Error(1)
 }
 
 func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {
@@ -132,7 +132,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	rr := httptest.NewRecorder()
 
 	suite.mockClientService.On("CreateClient", expectedInput).Return(
-		(*models.Client)(nil), errors.New("failed to create client due to service error")).Once()
+		(*client_application.CreateClientOutput)(nil), errors.New("failed to create client due to service error")).Once()
 	suite.mockFlashMessage.On("Error", "failed to create client due to service error").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
@@ -163,7 +163,7 @@ func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 
 	rr := httptest.NewRecorder()
 
-	suite.mockClientService.On("CreateClient", expectedInput).Return(&models.Client{}, nil).Once()
+	suite.mockClientService.On("CreateClient", expectedInput).Return(&client_application.CreateClientOutput{}, nil).Once()
 	suite.mockFlashMessage.On("Success", "Cliente foi cadastrado!").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
