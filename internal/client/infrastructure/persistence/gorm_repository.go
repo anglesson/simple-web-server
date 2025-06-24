@@ -183,3 +183,23 @@ func (cr *ClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creat
 
 	return &clients, nil
 }
+
+func (cr *ClientRepository) FindByEmail(email string) (*models.Client, error) {
+	var client models.Client
+	err := database.DB.
+		Model(&models.Client{}).
+		Joins("JOIN contacts ON contacts.id = clients.contact_id").
+		Preload("Contact").
+		Preload("Creators").
+		Where("contacts.email = ?", email).
+		First(&client).
+		Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		log.Printf("Erro na busca do cliente: %s", err)
+		return nil, errors.New("erro na busca do cliente")
+	}
+	return &client, nil
+}

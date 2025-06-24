@@ -18,6 +18,7 @@ type ClientRepositoryPort interface {
 	FindByClientsWhereEbookNotSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error)
 	FindByClientsWhereEbookWasSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error)
 	InsertBatch(clients []*models.Client) error
+	FindByEmail(email string) (*models.Client, error)
 }
 
 type CreatorRepositoryPort interface {

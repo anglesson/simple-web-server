@@ -30,6 +30,15 @@ func (cs *ClientService) CreateClient(input CreateClientInput) (*CreateClientOut
 	if err != nil {
 		return nil, err
 	}
+
+	clientExists, err := cs.clientRepository.FindByEmail(input.Email)
+	if err != nil {
+		return nil, err
+	}
+	if clientExists != nil {
+		return nil, errors.New("cliente já existe")
+	}
+
 	client := models.NewClient(input.Name, input.CPF, input.BirthDate, input.Email, input.Phone, creator)
 
 	if err := cs.validateReceita(client); err != nil {
