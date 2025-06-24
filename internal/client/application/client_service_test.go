@@ -24,13 +24,13 @@ func (m *MockCreatorRepository) FindCreatorByUserID(userID uint) (*models.Creato
 }
 
 func (m *MockCreatorRepository) FindCreatorByUserEmail(email string) (*models.Creator, error) {
-	args := m.Called(email) // Fixed argument passing
+	args := m.Called(email)
 	return args.Get(0).(*models.Creator), args.Error(1)
 }
 
 func (m *MockCreatorRepository) Create(creator *models.Creator) error {
-	args := m.Called(creator) // Fixed argument passing
-	return args.Error(0)      // Fixed error index
+	args := m.Called(creator)
+	return args.Error(0)
 }
 
 type MockClientRepository struct {
@@ -58,13 +58,21 @@ func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Cr
 }
 
 func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
-	args := m.Called(creator, query) // Fixed argument passing
+	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
 
 func (m *MockClientRepository) InsertBatch(clients []*models.Client) error {
-	args := m.Called(clients) // Fixed argument passing
+	args := m.Called(clients)
 	return args.Error(0)
+}
+
+func (m *MockClientRepository) FindByEmail(email string) (*models.Client, error) {
+	args := m.Called(email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Client), args.Error(1)
 }
 
 type MockRFService struct {
@@ -128,14 +136,65 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 		Return(creator, nil)
 
 	suite.mockClientRepository.(*MockClientRepository).
+		On("FindByEmail", input.Email).
+		Return(nil, nil)
+
+	suite.mockClientRepository.(*MockClientRepository).
 		On("Save", client).
 		Return(nil)
 
-	_, err := suite.sut.CreateClient(input) // Fixed return value handling
+	_, err := suite.sut.CreateClient(input)
 
 	suite.NoError(err)
 	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
 	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "Save", client)
+}
+
+func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
+	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
+
+	input := client_application.CreateClientInput{
+		Name:         "Name User",
+		CPF:          "000.000.000-00",
+		BirthDate:    "2012-12-12",
+		EmailCreator: creator.Contact.Email,
+	}
+
+	expectedName := "Name Receita Federal"
+	expectedBirthDay := "12/12/2012"
+
+	client := &models.Client{
+		Validated: true,
+		Name:      expectedName,
+		CPF:       input.CPF,
+		Birthdate: input.BirthDate,
+		Creators:  []*models.Creator{creator},
+	}
+
+	suite.mockRFService.(*MockRFService).
+		On("ConsultaCPF", "000.000.000-00", "12/12/2012").
+		Return(&common_application.ReceitaFederalResponse{
+			Status: true,
+			Result: common_application.ConsultaData{
+				NomeDaPF:       expectedName,
+				NumeroDeCPF:    input.CPF,
+				DataNascimento: expectedBirthDay,
+			},
+		}, nil)
+
+	suite.mockCreatorRepository.(*MockCreatorRepository).
+		On("FindCreatorByUserEmail", creator.Contact.Email).
+		Return(creator, nil)
+
+	suite.mockClientRepository.(*MockClientRepository).
+		On("FindByEmail", input.Email).
+		Return(client, nil)
+
+	_, err := suite.sut.CreateClient(input)
+
+	suite.Error(err)
+	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
+	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "FindByEmail", client.Contact.Email)
 }
 
 func TestClientHandlerTestSuite(t *testing.T) {
