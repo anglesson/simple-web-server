@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
@@ -41,8 +42,12 @@ func (cs *ClientService) CreateClient(input CreateClientInput) (*CreateClientOut
 
 	client := models.NewClient(input.Name, input.CPF, input.BirthDate, input.Email, input.Phone, creator)
 
-	if err := cs.validateReceita(client); err != nil {
-		return nil, err
+	if config.AppConfig.AppMode != "development" {
+		if err := cs.validateReceita(client); err != nil {
+			return nil, err
+		}
+	} else {
+		client.Validated = true
 	}
 
 	err = cs.clientRepository.Save(client)
