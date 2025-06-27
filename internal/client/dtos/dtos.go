@@ -1,4 +1,4 @@
-package client_application
+package dtos
 
 import (
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"

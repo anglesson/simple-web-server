@@ -1,4 +1,4 @@
-package client_domain
+package entities
 
 import (
 	"errors"

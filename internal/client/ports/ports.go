@@ -1,22 +1,23 @@
-package client_application
+package ports
 
 import (
+	"github.com/anglesson/simple-web-server/internal/client/dtos"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
 type ClientServicePort interface {
-	CreateClient(input CreateClientInput) (*CreateClientOutput, error)
+	CreateClient(input dtos.CreateClientInput) (*dtos.CreateClientOutput, error)
 	FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error)
-	Update(input UpdateClientInput) (*models.Client, error)
+	Update(input dtos.UpdateClientInput) (*models.Client, error)
 	CreateBatchClient(clients []*models.Client) error
 }
 
 type ClientRepositoryPort interface {
 	Save(client *models.Client) error
-	FindClientsByCreator(creator *models.Creator, query ClientQuery) (*[]models.Client, error)
+	FindClientsByCreator(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error)
 	FindByIDAndCreators(client *models.Client, clientID uint, creator string) error
-	FindByClientsWhereEbookNotSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error)
-	FindByClientsWhereEbookWasSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error)
+	FindByClientsWhereEbookNotSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error)
+	FindByClientsWhereEbookWasSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error)
 	InsertBatch(clients []*models.Client) error
 	FindByEmail(email string) (*models.Client, error)
 }

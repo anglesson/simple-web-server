@@ -1,4 +1,4 @@
-package client_http
+package http_server
 
 import (
 	"encoding/csv"
@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	client_application "github.com/anglesson/simple-web-server/internal/client/application"
-	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
+	"github.com/anglesson/simple-web-server/internal/client/dtos"
+	"github.com/anglesson/simple-web-server/internal/client/ports"
+	client_repo "github.com/anglesson/simple-web-server/internal/client/repositories"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
@@ -22,11 +23,11 @@ import (
 )
 
 type ClientHandler struct {
-	clientService       client_application.ClientServicePort
+	clientService       ports.ClientServicePort
 	flashMessageFactory infrastructure.FlashMessageFactory
 }
 
-func NewClientHandler(clientService client_application.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService ports.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		flashMessageFactory: flashMessageFactory,
@@ -80,15 +81,12 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := client_persistence.NewClientRepository().FindClientsByCreator(creator, client_application.ClientQuery{
+	clients, err := client_repo.NewClientRepository().FindClientsByCreator(creator, dtos.ClientQuery{
 		Term:       term,
 		Pagination: pagination,
 	})
 	if err != nil {
 		common_http.RedirectBackWithErrors(w, r, err.Error())
-	}
-	if clients != nil && len(*clients) == 0 {
-		clients = nil
 	}
 
 	template.View(w, r, "client", map[string]any{
@@ -107,7 +105,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := client_application.CreateClientInput{
+	input := dtos.CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
 		BirthDate: r.FormValue("birthdate"),
@@ -140,7 +138,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 	clientID := chi.URLParam(r, "id")
 	id, _ := strconv.ParseUint(clientID, 10, 32)
 
-	input := client_application.UpdateClientInput{
+	input := dtos.UpdateClientInput{
 		ID:           uint(id),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),

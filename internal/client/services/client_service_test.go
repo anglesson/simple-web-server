@@ -1,17 +1,19 @@
-package client_application_test
+package services_test
 
 import (
 	"testing"
 
-	client_application "github.com/anglesson/simple-web-server/internal/client/application"
+	"github.com/anglesson/simple-web-server/internal/client/dtos"
+	"github.com/anglesson/simple-web-server/internal/client/ports"
+	"github.com/anglesson/simple-web-server/internal/client/services"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-var _ client_application.ClientRepositoryPort = (*MockClientRepository)(nil)
-var _ client_application.CreatorRepositoryPort = (*MockCreatorRepository)(nil)
+var _ ports.ClientRepositoryPort = (*MockClientRepository)(nil)
+var _ ports.CreatorRepositoryPort = (*MockCreatorRepository)(nil)
 var _ common_application.ReceitaFederalServicePort = (*MockRFService)(nil)
 
 type MockCreatorRepository struct {
@@ -42,7 +44,7 @@ func (m *MockClientRepository) Save(client *models.Client) error {
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
@@ -52,12 +54,12 @@ func (m *MockClientRepository) FindByIDAndCreators(client *models.Client, client
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query client_application.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
@@ -86,9 +88,9 @@ func (m *MockRFService) ConsultaCPF(cpf, dataNascimento string) (*common_applica
 
 type ClientServiceTestSuite struct {
 	suite.Suite
-	sut                   *client_application.ClientService
-	mockClientRepository  client_application.ClientRepositoryPort
-	mockCreatorRepository client_application.CreatorRepositoryPort
+	sut                   *services.ClientService
+	mockClientRepository  ports.ClientRepositoryPort
+	mockCreatorRepository ports.CreatorRepositoryPort
 	mockRFService         common_application.ReceitaFederalServicePort
 }
 
@@ -96,13 +98,13 @@ func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(MockClientRepository)
 	suite.mockCreatorRepository = new(MockCreatorRepository)
 	suite.mockRFService = new(MockRFService)
-	suite.sut = client_application.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
+	suite.sut = services.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
 }
 
 func (suite *ClientServiceTestSuite) TestCreateClient() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := client_application.CreateClientInput{
+	input := dtos.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
@@ -153,7 +155,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := client_application.CreateClientInput{
+	input := dtos.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",

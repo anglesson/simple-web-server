@@ -1,22 +1,23 @@
-package client_application
+package services
 
 import (
 	"errors"
 
+	"github.com/anglesson/simple-web-server/internal/client/dtos"
+	"github.com/anglesson/simple-web-server/internal/client/ports"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
-	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
 type ClientService struct {
-	clientRepository      ClientRepositoryPort
-	creatorRepository     CreatorRepositoryPort
+	clientRepository      ports.ClientRepositoryPort
+	creatorRepository     ports.CreatorRepositoryPort
 	receitaFederalService common_application.ReceitaFederalServicePort
 }
 
 func NewClientService(
-	clientRepository ClientRepositoryPort,
-	creatorRepository CreatorRepositoryPort,
+	clientRepository ports.ClientRepositoryPort,
+	creatorRepository ports.CreatorRepositoryPort,
 	receitaFederalService common_application.ReceitaFederalServicePort,
 ) *ClientService {
 	return &ClientService{
@@ -26,7 +27,7 @@ func NewClientService(
 	}
 }
 
-func (cs *ClientService) CreateClient(input CreateClientInput) (*CreateClientOutput, error) {
+func (cs *ClientService) CreateClient(input dtos.CreateClientInput) (*dtos.CreateClientOutput, error) {
 	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
 	if err != nil {
 		return nil, err
@@ -42,19 +43,15 @@ func (cs *ClientService) CreateClient(input CreateClientInput) (*CreateClientOut
 
 	client := models.NewClient(input.Name, input.CPF, input.BirthDate, input.Email, input.Phone, creator)
 
-	if config.AppConfig.AppMode != "development" {
-		if err := cs.validateReceita(client); err != nil {
-			return nil, err
-		}
-	} else {
-		client.Validated = true
+	if err := cs.validateReceita(client); err != nil {
+		return nil, err
 	}
 
 	err = cs.clientRepository.Save(client)
 	if err != nil {
 		return nil, err
 	}
-	return &CreateClientOutput{
+	return &dtos.CreateClientOutput{
 		ID:        int(client.ID),
 		Name:      client.Name,
 		CPF:       client.CPF,
@@ -80,7 +77,7 @@ func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail stri
 	return &client, nil
 }
 
-func (cs *ClientService) Update(input UpdateClientInput) (*models.Client, error) {
+func (cs *ClientService) Update(input dtos.UpdateClientInput) (*models.Client, error) {
 	if input.ID == 0 || input.EmailCreator == "" {
 		return nil, errors.New("id do cliente e email do criador são obrigatórios")
 	}

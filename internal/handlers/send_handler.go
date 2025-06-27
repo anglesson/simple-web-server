@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	client_application "github.com/anglesson/simple-web-server/internal/client/application"
-	client_persistence "github.com/anglesson/simple-web-server/internal/client/infrastructure/persistence"
+	client_dtos "github.com/anglesson/simple-web-server/internal/client/dtos"
+	client_repo "github.com/anglesson/simple-web-server/internal/client/repositories"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -57,7 +57,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	if ebookID != 0 {
 		viewData["EbookID"] = ebookID
 	}
-	clients, err := client_persistence.NewClientRepository().FindByClientsWhereEbookNotSend(creator, client_application.ClientQuery{
+	clients, err := client_repo.NewClientRepository().FindByClientsWhereEbookNotSend(creator, client_dtos.ClientQuery{
 		EbookID:    uint(ebookID),
 		Pagination: viewData["Pagination"].(*common_application.Pagination),
 		Term:       r.URL.Query().Get("term"),
