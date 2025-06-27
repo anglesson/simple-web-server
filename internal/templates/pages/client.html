@@ -115,8 +115,10 @@
               </tbody>
             </table>
           </div>
-          {{ else }} {{ template "empty-table" . }} {{ end }} {{ template
-          "table-footer" . }}
+          {{ template "table-footer" . }}
+          {{ else }} 
+            {{ template "empty-table" . }}
+          {{ end }} 
         </div>
       </div>
     </div>

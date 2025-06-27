@@ -87,6 +87,9 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
+	if clients != nil && len(*clients) == 0 {
+		clients = nil
+	}
 
 	template.View(w, r, "client", map[string]any{
 		"Clients":    clients,
