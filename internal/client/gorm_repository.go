@@ -9,14 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type ClientRepository struct {
+type GormRepository struct {
 }
 
-func NewClientRepository() *ClientRepository {
-	return &ClientRepository{}
+func NewGormRepository() *GormRepository {
+	return &GormRepository{}
 }
 
-func (cr *ClientRepository) Save(client *models.Client) error {
+func (cr *GormRepository) Save(client *models.Client) error {
 	// Start a transaction
 	tx := database.DB.Begin()
 	if tx.Error != nil {
@@ -81,7 +81,7 @@ func (cr *ClientRepository) Save(client *models.Client) error {
 	return nil
 }
 
-func (cr *ClientRepository) FindClientsByCreator(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+func (cr *GormRepository) FindClientsByCreator(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
 	var clients []models.Client
 
 	err := database.DB.
@@ -114,7 +114,7 @@ func ContainsNameCpfEmailOrPhoneWith(term string) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func (cr *ClientRepository) FindByIDAndCreators(client *models.Client, clientID uint, creator string) error {
+func (cr *GormRepository) FindByIDAndCreators(client *models.Client, clientID uint, creator string) error {
 	err := database.DB.
 		Preload("Contact").
 		Preload("Creators").
@@ -130,7 +130,7 @@ func (cr *ClientRepository) FindByIDAndCreators(client *models.Client, clientID 
 	return nil
 }
 
-func (cr *ClientRepository) InsertBatch(clients []*models.Client) error {
+func (cr *GormRepository) InsertBatch(clients []*models.Client) error {
 	err := database.DB.CreateInBatches(clients, 1000).Error
 	if err != nil {
 		log.Printf("[CLIENT-REPOSITORY] ERROR: %s", err)
@@ -139,7 +139,7 @@ func (cr *ClientRepository) InsertBatch(clients []*models.Client) error {
 	return nil
 }
 
-func (cr *ClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+func (cr *GormRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
 	var clients []models.Client
 	err := database.DB.Debug().
 		Offset(query.Pagination.GetOffset()).
@@ -160,7 +160,7 @@ func (cr *ClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creat
 	return &clients, nil
 }
 
-func (cr *ClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
+func (cr *GormRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query ClientQuery) (*[]models.Client, error) {
 	var clients []models.Client
 	err := database.DB.Debug().
 		Offset(query.Pagination.GetOffset()).
@@ -183,7 +183,7 @@ func (cr *ClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creat
 	return &clients, nil
 }
 
-func (cr *ClientRepository) FindByEmail(email string) (*models.Client, error) {
+func (cr *GormRepository) FindByEmail(email string) (*models.Client, error) {
 	var client models.Client
 	err := database.DB.
 		Model(&models.Client{}).

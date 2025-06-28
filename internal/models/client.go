@@ -50,7 +50,7 @@ func (c *Client) TotalPurchasesByEbook(ebookID uint) int {
 	return count
 }
 
-func (c *Client) TotalDownladsByEbook(ebookID uint) int {
+func (c *Client) TotalDownloadsByEbook(ebookID uint) int {
 	var count int
 	for _, purchase := range c.Purchases {
 		if purchase.EbookID == ebookID {

@@ -78,7 +78,7 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := NewClientRepository().FindClientsByCreator(creator, ClientQuery{
+	clients, err := NewGormRepository().FindClientsByCreator(creator, ClientQuery{
 		Term:       term,
 		Pagination: pagination,
 	})

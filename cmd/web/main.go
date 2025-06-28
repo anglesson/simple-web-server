@@ -26,7 +26,7 @@ func main() {
 
 	// Repositories
 	creatorRepository := repositories.NewCreatorRepository()
-	clientRepository := client.NewClientRepository()
+	clientRepository := client.NewGormRepository()
 
 	// ========== Application Initialization ==========
 	commonRFService := common_service.NewHubDevService()

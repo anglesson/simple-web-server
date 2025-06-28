@@ -336,7 +336,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := client.NewClientRepository().FindByClientsWhereEbookWasSend(creator, client.ClientQuery{
+	clients, err := client.NewGormRepository().FindByClientsWhereEbookWasSend(creator, client.ClientQuery{
 		Term:       term,
 		EbookID:    ebook.ID,
 		Pagination: pagination,

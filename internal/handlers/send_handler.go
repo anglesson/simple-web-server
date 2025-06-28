@@ -56,7 +56,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	if ebookID != 0 {
 		viewData["EbookID"] = ebookID
 	}
-	clients, err := client.NewClientRepository().FindByClientsWhereEbookNotSend(creator, client.ClientQuery{
+	clients, err := client.NewGormRepository().FindByClientsWhereEbookNotSend(creator, client.ClientQuery{
 		EbookID:    uint(ebookID),
 		Pagination: viewData["Pagination"].(*common_application.Pagination),
 		Term:       r.URL.Query().Get("term"),
