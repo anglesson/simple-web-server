@@ -1,19 +1,17 @@
-package services_test
+package client_test
 
 import (
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/client/dtos"
-	"github.com/anglesson/simple-web-server/internal/client/ports"
-	"github.com/anglesson/simple-web-server/internal/client/services"
+	"github.com/anglesson/simple-web-server/internal/client"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-var _ ports.ClientRepositoryPort = (*MockClientRepository)(nil)
-var _ ports.CreatorRepositoryPort = (*MockCreatorRepository)(nil)
+var _ client.ClientRepositoryPort = (*MockClientRepository)(nil)
+var _ client.CreatorRepositoryPort = (*MockCreatorRepository)(nil)
 var _ common_application.ReceitaFederalServicePort = (*MockRFService)(nil)
 
 type MockCreatorRepository struct {
@@ -44,7 +42,7 @@ func (m *MockClientRepository) Save(client *models.Client) error {
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
@@ -54,12 +52,12 @@ func (m *MockClientRepository) FindByIDAndCreators(client *models.Client, client
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query dtos.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
@@ -88,9 +86,9 @@ func (m *MockRFService) ConsultaCPF(cpf, dataNascimento string) (*common_applica
 
 type ClientServiceTestSuite struct {
 	suite.Suite
-	sut                   *services.ClientService
-	mockClientRepository  ports.ClientRepositoryPort
-	mockCreatorRepository ports.CreatorRepositoryPort
+	sut                   *client.ClientService
+	mockClientRepository  client.ClientRepositoryPort
+	mockCreatorRepository client.CreatorRepositoryPort
 	mockRFService         common_application.ReceitaFederalServicePort
 }
 
@@ -98,13 +96,13 @@ func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(MockClientRepository)
 	suite.mockCreatorRepository = new(MockCreatorRepository)
 	suite.mockRFService = new(MockRFService)
-	suite.sut = services.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
+	suite.sut = client.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
 }
 
 func (suite *ClientServiceTestSuite) TestCreateClient() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := dtos.CreateClientInput{
+	input := client.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
@@ -155,7 +153,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := dtos.CreateClientInput{
+	input := client.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
@@ -199,6 +197,6 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "FindByEmail", client.Contact.Email)
 }
 
-func TestClientHandlerTestSuite(t *testing.T) {
+func TestClientServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(ClientServiceTestSuite))
 }

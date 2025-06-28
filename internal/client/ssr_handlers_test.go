@@ -1,4 +1,4 @@
-package http_server_test
+package client_test
 
 import (
 	"context"
@@ -8,9 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/client/dtos"
-	"github.com/anglesson/simple-web-server/internal/client/ports"
-	http_server "github.com/anglesson/simple-web-server/internal/client/web"
+	"github.com/anglesson/simple-web-server/internal/client"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
@@ -21,7 +19,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ ports.ClientServicePort = (*MockClientService)(nil)
+var _ client.ClientServicePort = (*MockClientService)(nil)
 
 type MockFlashMessage struct {
 	mock.Mock
@@ -45,12 +43,12 @@ func NewMockClientService() *MockClientService {
 	return &MockClientService{}
 }
 
-func (m *MockClientService) CreateClient(input dtos.CreateClientInput) (*dtos.CreateClientOutput, error) {
+func (m *MockClientService) CreateClient(input client.CreateClientInput) (*client.CreateClientOutput, error) {
 	args := m.Called(input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*dtos.CreateClientOutput), args.Error(1)
+	return args.Get(0).(*client.CreateClientOutput), args.Error(1)
 }
 
 func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {
@@ -61,7 +59,7 @@ func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail s
 	return args.Get(0).(*models.Client), args.Error(1)
 }
 
-func (m *MockClientService) Update(input dtos.UpdateClientInput) (*models.Client, error) {
+func (m *MockClientService) Update(input client.UpdateClientInput) (*models.Client, error) {
 	args := m.Called(input)
 	return args.Get(0).(*models.Client), args.Error(1)
 }
@@ -73,7 +71,7 @@ func (m *MockClientService) CreateBatchClient(clients []*models.Client) error {
 
 type ClientHandlerTestSuite struct {
 	suite.Suite
-	sut               *http_server.ClientHandler
+	sut               *client.ClientHandler
 	mockClientService *MockClientService
 	mockFlashMessage  *MockFlashMessage
 	flashFactory      infrastructure.FlashMessageFactory
@@ -87,7 +85,7 @@ func (suite *ClientHandlerTestSuite) SetupTest() {
 		return suite.mockFlashMessage
 	}
 
-	suite.sut = http_server.NewClientHandler(suite.mockClientService, suite.flashFactory)
+	suite.sut = client.NewClientHandler(suite.mockClientService, suite.flashFactory)
 }
 
 func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
@@ -115,7 +113,7 @@ func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
 func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := dtos.CreateClientInput{
+	expectedInput := client.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -133,7 +131,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	rr := httptest.NewRecorder()
 
 	suite.mockClientService.On("CreateClient", expectedInput).Return(
-		(*dtos.CreateClientOutput)(nil), errors.New("failed to create client due to service error")).Once()
+		(*client.CreateClientOutput)(nil), errors.New("failed to create client due to service error")).Once()
 	suite.mockFlashMessage.On("Error", "failed to create client due to service error").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
@@ -147,7 +145,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := dtos.CreateClientInput{
+	expectedInput := client.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -164,7 +162,7 @@ func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 
 	rr := httptest.NewRecorder()
 
-	suite.mockClientService.On("CreateClient", expectedInput).Return(&dtos.CreateClientOutput{}, nil).Once()
+	suite.mockClientService.On("CreateClient", expectedInput).Return(&client.CreateClientOutput{}, nil).Once()
 	suite.mockFlashMessage.On("Success", "Cliente foi cadastrado!").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
@@ -180,7 +178,7 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	creatorEmail := "creator@mail"
 	clientID := uint(1)
 
-	expectedInput := dtos.UpdateClientInput{
+	expectedInput := client.UpdateClientInput{
 		ID:           clientID,
 		Email:        "updated@mail.com",
 		Phone:        "Updated Phone",

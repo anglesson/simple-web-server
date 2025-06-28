@@ -1,4 +1,4 @@
-package http_server
+package client
 
 import (
 	"encoding/csv"
@@ -7,9 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/anglesson/simple-web-server/internal/client/dtos"
-	"github.com/anglesson/simple-web-server/internal/client/ports"
-	client_repo "github.com/anglesson/simple-web-server/internal/client/repositories"
 	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
@@ -23,11 +20,11 @@ import (
 )
 
 type ClientHandler struct {
-	clientService       ports.ClientServicePort
+	clientService       ClientServicePort
 	flashMessageFactory infrastructure.FlashMessageFactory
 }
 
-func NewClientHandler(clientService ports.ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		flashMessageFactory: flashMessageFactory,
@@ -81,7 +78,7 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := client_repo.NewClientRepository().FindClientsByCreator(creator, dtos.ClientQuery{
+	clients, err := NewClientRepository().FindClientsByCreator(creator, ClientQuery{
 		Term:       term,
 		Pagination: pagination,
 	})
@@ -105,7 +102,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := dtos.CreateClientInput{
+	input := CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
 		BirthDate: r.FormValue("birthdate"),
@@ -138,7 +135,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 	clientID := chi.URLParam(r, "id")
 	id, _ := strconv.ParseUint(clientID, 10, 32)
 
-	input := dtos.UpdateClientInput{
+	input := UpdateClientInput{
 		ID:           uint(id),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),

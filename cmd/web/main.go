@@ -4,9 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	client_repo "github.com/anglesson/simple-web-server/internal/client/repositories"
-	client_services "github.com/anglesson/simple-web-server/internal/client/services"
-	client_http "github.com/anglesson/simple-web-server/internal/client/web"
+	"github.com/anglesson/simple-web-server/internal/client"
 	common_service "github.com/anglesson/simple-web-server/internal/common/infrastructure/service"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
@@ -28,12 +26,12 @@ func main() {
 
 	// Repositories
 	creatorRepository := repositories.NewCreatorRepository()
-	clientRepository := client_repo.NewClientRepository()
+	clientRepository := client.NewClientRepository()
 
 	// ========== Application Initialization ==========
 	commonRFService := common_service.NewHubDevService()
-	clientService := client_services.NewClientService(clientRepository, creatorRepository, commonRFService)
-	clientHandler := client_http.NewClientHandler(clientService, flashServiceFactory)
+	clientService := client.NewClientService(clientRepository, creatorRepository, commonRFService)
+	clientHandler := client.NewClientHandler(clientService, flashServiceFactory)
 
 	r := chi.NewRouter()
 
