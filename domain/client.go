@@ -1,4 +1,4 @@
-package client
+package domain
 
 import (
 	"errors"

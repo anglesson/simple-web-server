@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"log"
 	"net/http"
 	"net/url"
@@ -113,7 +114,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creatorRepository := repositories.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository()
 	creator := models.NewCreator(user.Username, user.Email, "", user.ID)
 	if err := creatorRepository.Create(creator); err != nil {
 		common_http.RedirectBackWithErrors(w, r, err.Error())

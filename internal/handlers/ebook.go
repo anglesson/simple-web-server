@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"io"
 	"log"
 	"mime/multipart"
@@ -10,8 +12,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/client"
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
@@ -35,7 +35,7 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	title := r.URL.Query().Get("title")
-	pagination := common_application.NewPagination(page, perPage)
+	pagination := domain.NewPagination(page, perPage)
 
 	ebookService := services.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
@@ -326,17 +326,17 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := common_application.NewPagination(page, perPage)
+	pagination := domain.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
-	creatorRepository := repositories.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := client.NewGormRepository().FindByClientsWhereEbookWasSend(creator, client.ClientQuery{
+	clients, err := gorm.NewClientGormRepository().FindByClientsWhereEbookWasSend(creator, domain.ClientFilter{
 		Term:       term,
 		EbookID:    ebook.ID,
 		Pagination: pagination,

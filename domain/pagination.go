@@ -1,4 +1,4 @@
-package common_application
+package domain
 
 type Pagination struct {
 	Page     int

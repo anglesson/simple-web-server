@@ -1,17 +1,17 @@
-package client
+package handlers
 
 import (
 	"encoding/csv"
+	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
@@ -20,11 +20,11 @@ import (
 )
 
 type ClientHandler struct {
-	clientService       ClientServicePort
+	clientService       services.ClientService
 	flashMessageFactory infrastructure.FlashMessageFactory
 }
 
-func NewClientHandler(clientService ClientServicePort, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService services.ClientService, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		flashMessageFactory: flashMessageFactory,
@@ -68,17 +68,17 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := common_application.NewPagination(page, perPage)
+	pagination := domain.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
-	creatorRepository := repositories.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		common_http.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := NewGormRepository().FindClientsByCreator(creator, ClientQuery{
+	clients, err := gorm.NewClientGormRepository().FindClientsByCreator(creator, domain.ClientFilter{
 		Term:       term,
 		Pagination: pagination,
 	})
@@ -102,7 +102,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := CreateClientInput{
+	input := services.CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
 		BirthDate: r.FormValue("birthdate"),
@@ -135,7 +135,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 	clientID := chi.URLParam(r, "id")
 	id, _ := strconv.ParseUint(clientID, 10, 32)
 
-	input := UpdateClientInput{
+	input := services.UpdateClientInput{
 		ID:           uint(id),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),

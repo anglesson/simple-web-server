@@ -2,19 +2,19 @@ package services
 
 import (
 	"errors"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"log"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
 )
 
 type CreatorService struct {
-	creatorRepository *repositories.CreatorRepository
+	creatorRepository *gorm.CreatorRepository
 }
 
 func NewCreatorService() *CreatorService {
 	return &CreatorService{
-		creatorRepository: repositories.NewCreatorRepository(),
+		creatorRepository: gorm.NewCreatorRepository(),
 	}
 }
 

@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"net/http"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/client"
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
@@ -26,7 +26,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creatorRepository := repositories.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		common_http.RedirectBackWithErrors(w, r, err.Error())
@@ -35,14 +35,14 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	viewData := map[string]any{
 		"Ebooks":         nil,
 		"Clients":        nil,
-		"Pagination":     common_application.NewPagination(1, 1000),
+		"Pagination":     domain.NewPagination(1, 1000),
 		"EbookID":        nil,
 		"ClientsCreator": len(creator.Clients),
 	}
 
 	ebookService := services.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
-		Pagination: viewData["Pagination"].(*common_application.Pagination),
+		Pagination: viewData["Pagination"].(*domain.Pagination),
 	})
 	if err != nil {
 		cookies.NotifyError(w, "Ocorre um erro ao listar seus ebooks")
@@ -56,9 +56,9 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	if ebookID != 0 {
 		viewData["EbookID"] = ebookID
 	}
-	clients, err := client.NewGormRepository().FindByClientsWhereEbookNotSend(creator, client.ClientQuery{
+	clients, err := gorm.NewClientGormRepository().FindByClientsWhereEbookNotSend(creator, domain.ClientFilter{
 		EbookID:    uint(ebookID),
-		Pagination: viewData["Pagination"].(*common_application.Pagination),
+		Pagination: viewData["Pagination"].(*domain.Pagination),
 		Term:       r.URL.Query().Get("term"),
 	})
 	if clients != nil && len(*clients) > 0 {

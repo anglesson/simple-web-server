@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"errors"
+	common_application "github.com/anglesson/simple-web-server/domain"
 	"log"
 
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"gorm.io/gorm"

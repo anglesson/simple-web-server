@@ -1,31 +1,66 @@
-package client
+package services
 
 import (
 	"errors"
+	"github.com/anglesson/simple-web-server/internal/common/application"
+	"github.com/anglesson/simple-web-server/internal/repositories"
 
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
-type ClientService struct {
-	clientRepository      ClientRepositoryPort
-	creatorRepository     CreatorRepositoryPort
-	receitaFederalService common_application.ReceitaFederalServicePort
+type ClientService interface {
+	CreateClient(input CreateClientInput) (*CreateClientOutput, error)
+	FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error)
+	Update(input UpdateClientInput) (*models.Client, error)
+	CreateBatchClient(clients []*models.Client) error
+}
+
+type CreateClientInput struct {
+	Name         string
+	CPF          string
+	Phone        string
+	BirthDate    string
+	Email        string
+	EmailCreator string
+}
+
+type CreateClientOutput struct {
+	ID        int
+	Name      string
+	CPF       string
+	Phone     string
+	BirthDate string
+	Email     string
+	CreatedAt string
+	UpdatedAt string
+}
+
+type UpdateClientInput struct {
+	ID           uint
+	Email        string
+	Phone        string
+	EmailCreator string
+}
+
+type clientServiceImpl struct {
+	clientRepository      repositories.ClientRepository
+	creatorRepository     repositories.CreatorRepository
+	receitaFederalService common_application.ReceitaFederalService
 }
 
 func NewClientService(
-	clientRepository ClientRepositoryPort,
-	creatorRepository CreatorRepositoryPort,
-	receitaFederalService common_application.ReceitaFederalServicePort,
-) *ClientService {
-	return &ClientService{
+	clientRepository repositories.ClientRepository,
+	creatorRepository repositories.CreatorRepository,
+	receitaFederalService common_application.ReceitaFederalService,
+) ClientService {
+	return &clientServiceImpl{
 		clientRepository:      clientRepository,
 		creatorRepository:     creatorRepository,
 		receitaFederalService: receitaFederalService,
 	}
 }
 
-func (cs *ClientService) CreateClient(input CreateClientInput) (*CreateClientOutput, error) {
+func (cs *clientServiceImpl) CreateClient(input CreateClientInput) (*CreateClientOutput, error) {
 	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
 	if err != nil {
 		return nil, err
@@ -61,7 +96,7 @@ func (cs *ClientService) CreateClient(input CreateClientInput) (*CreateClientOut
 	}, nil
 }
 
-func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {
+func (cs *clientServiceImpl) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {
 	if clientID == 0 || creatorEmail == "" {
 		return nil, errors.New("o id do cliente deve ser informado")
 	}
@@ -75,7 +110,7 @@ func (cs *ClientService) FindCreatorsClientByID(clientID uint, creatorEmail stri
 	return &client, nil
 }
 
-func (cs *ClientService) Update(input UpdateClientInput) (*models.Client, error) {
+func (cs *clientServiceImpl) Update(input UpdateClientInput) (*models.Client, error) {
 	if input.ID == 0 || input.EmailCreator == "" {
 		return nil, errors.New("id do cliente e email do criador são obrigatórios")
 	}
@@ -98,7 +133,7 @@ func (cs *ClientService) Update(input UpdateClientInput) (*models.Client, error)
 	return client, nil
 }
 
-func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
+func (cs *clientServiceImpl) CreateBatchClient(clients []*models.Client) error {
 	err := cs.clientRepository.InsertBatch(clients)
 	if err != nil {
 		return err
@@ -106,7 +141,7 @@ func (cs *ClientService) CreateBatchClient(clients []*models.Client) error {
 	return nil
 }
 
-func (cs *ClientService) validateReceita(client *models.Client) error {
+func (cs *clientServiceImpl) validateReceita(client *models.Client) error {
 	if cs.receitaFederalService == nil {
 		return errors.New("serviço da receita federal não está disponível")
 	}

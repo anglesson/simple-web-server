@@ -1,15 +1,15 @@
 package main
 
 import (
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+	"github.com/anglesson/simple-web-server/internal/services"
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/client"
 	common_service "github.com/anglesson/simple-web-server/internal/common/infrastructure/service"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/infrastructure"
-	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -25,13 +25,13 @@ func main() {
 	}
 
 	// Repositories
-	creatorRepository := repositories.NewCreatorRepository()
-	clientRepository := client.NewGormRepository()
+	creatorRepository := gorm.NewCreatorRepository()
+	clientRepository := gorm.NewClientGormRepository()
 
 	// ========== Application Initialization ==========
 	commonRFService := common_service.NewHubDevService()
-	clientService := client.NewClientService(clientRepository, creatorRepository, commonRFService)
-	clientHandler := client.NewClientHandler(clientService, flashServiceFactory)
+	clientService := services.NewClientService(clientRepository, creatorRepository, commonRFService)
+	clientHandler := handlers.NewClientHandler(clientService, flashServiceFactory)
 
 	r := chi.NewRouter()
 

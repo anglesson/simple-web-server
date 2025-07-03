@@ -15,7 +15,7 @@ import (
 type HubDevService struct {
 }
 
-func NewHubDevService() common_application.ReceitaFederalServicePort {
+func NewHubDevService() common_application.ReceitaFederalService {
 	return &HubDevService{}
 }
 

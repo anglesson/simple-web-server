@@ -1,18 +1,20 @@
-package client_test
+package services_test
 
 import (
+	"github.com/anglesson/simple-web-server/domain"
+	common_application "github.com/anglesson/simple-web-server/internal/common/application"
+	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/services"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/client"
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-var _ client.ClientRepositoryPort = (*MockClientRepository)(nil)
-var _ client.CreatorRepositoryPort = (*MockCreatorRepository)(nil)
-var _ common_application.ReceitaFederalServicePort = (*MockRFService)(nil)
+var _ repositories.ClientRepository = (*MockClientRepository)(nil)
+var _ repositories.CreatorRepository = (*MockCreatorRepository)(nil)
+var _ common_application.ReceitaFederalService = (*MockRFService)(nil)
 
 type MockCreatorRepository struct {
 	mock.Mock
@@ -42,7 +44,7 @@ func (m *MockClientRepository) Save(client *models.Client) error {
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindClientsByCreator(creator *models.Creator, query domain.ClientFilter) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
@@ -52,12 +54,12 @@ func (m *MockClientRepository) FindByIDAndCreators(client *models.Client, client
 	return args.Error(0)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookNotSend(creator *models.Creator, query domain.ClientFilter) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
 
-func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query client.ClientQuery) (*[]models.Client, error) {
+func (m *MockClientRepository) FindByClientsWhereEbookWasSend(creator *models.Creator, query domain.ClientFilter) (*[]models.Client, error) {
 	args := m.Called(creator, query)
 	return args.Get(0).(*[]models.Client), args.Error(1)
 }
@@ -86,23 +88,23 @@ func (m *MockRFService) ConsultaCPF(cpf, dataNascimento string) (*common_applica
 
 type ClientServiceTestSuite struct {
 	suite.Suite
-	sut                   *client.ClientService
-	mockClientRepository  client.ClientRepositoryPort
-	mockCreatorRepository client.CreatorRepositoryPort
-	mockRFService         common_application.ReceitaFederalServicePort
+	sut                   services.ClientService
+	mockClientRepository  repositories.ClientRepository
+	mockCreatorRepository repositories.CreatorRepository
+	mockRFService         common_application.ReceitaFederalService
 }
 
 func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(MockClientRepository)
 	suite.mockCreatorRepository = new(MockCreatorRepository)
 	suite.mockRFService = new(MockRFService)
-	suite.sut = client.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
+	suite.sut = services.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
 }
 
 func (suite *ClientServiceTestSuite) TestCreateClient() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := client.CreateClientInput{
+	input := services.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
@@ -153,7 +155,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := client.CreateClientInput{
+	input := services.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
