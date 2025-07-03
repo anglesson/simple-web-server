@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
-	"github.com/anglesson/simple-web-server/internal/services"
 	"log"
 	"net/http"
 
-	common_service "github.com/anglesson/simple-web-server/internal/common/infrastructure/service"
+	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/pkg/gov"
+
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
-	"github.com/anglesson/simple-web-server/internal/infrastructure"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -20,8 +21,8 @@ func main() {
 	config.LoadConfigs()
 	database.Connect()
 
-	flashServiceFactory := func(w http.ResponseWriter, r *http.Request) infrastructure.FlashMessagePort {
-		return infrastructure.NewCookieFlashMessage(w, r)
+	flashServiceFactory := func(w http.ResponseWriter, r *http.Request) web.FlashMessagePort {
+		return web.NewCookieFlashMessage(w, r)
 	}
 
 	// Repositories
@@ -29,7 +30,7 @@ func main() {
 	clientRepository := gorm.NewClientGormRepository()
 
 	// ========== Application Initialization ==========
-	commonRFService := common_service.NewHubDevService()
+	commonRFService := gov.NewHubDevService()
 	clientService := services.NewClientService(clientRepository, creatorRepository, commonRFService)
 	clientHandler := handlers.NewClientHandler(clientService, flashServiceFactory)
 

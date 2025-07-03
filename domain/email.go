@@ -1,4 +1,4 @@
-package common_vo
+package domain
 
 import (
 	"fmt"

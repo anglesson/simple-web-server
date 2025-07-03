@@ -1,7 +1,9 @@
-package common_vo
+package domain_test
 
 import (
 	"testing"
+
+	"github.com/anglesson/simple-web-server/domain"
 )
 
 func TestNewPhone(t *testing.T) {
@@ -54,7 +56,7 @@ func TestNewPhone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			phone, err := NewPhone(tt.input)
+			phone, err := domain.NewPhone(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewPhone() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -86,7 +88,7 @@ func TestPhone_String(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			phone, err := NewPhone(tt.input)
+			phone, err := domain.NewPhone(tt.input)
 			if err != nil {
 				t.Fatalf("NewPhone() error = %v", err)
 			}
@@ -98,14 +100,14 @@ func TestPhone_String(t *testing.T) {
 }
 
 func TestPhone_Equal(t *testing.T) {
-	phone1, _ := NewPhone("(11) 98765-4321")
-	phone2, _ := NewPhone("(11) 98765-4321")
-	phone3, _ := NewPhone("(21) 98765-4321")
+	phone1, _ := domain.NewPhone("(11) 98765-4321")
+	phone2, _ := domain.NewPhone("(11) 98765-4321")
+	phone3, _ := domain.NewPhone("(21) 98765-4321")
 
 	tests := []struct {
 		name     string
-		phone1   *Phone
-		phone2   *Phone
+		phone1   *domain.Phone
+		phone2   *domain.Phone
 		expected bool
 	}{
 		{
@@ -138,7 +140,7 @@ func TestPhone_Equal(t *testing.T) {
 }
 
 func TestPhone_AreaCodeAndNumber(t *testing.T) {
-	phone, err := NewPhone("(11) 98765-4321")
+	phone, err := domain.NewPhone("(11) 98765-4321")
 	if err != nil {
 		t.Fatalf("NewPhone() error = %v", err)
 	}
@@ -189,7 +191,7 @@ func TestPhone_IsMobile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			phone, err := NewPhone(tt.input)
+			phone, err := domain.NewPhone(tt.input)
 			if err != nil {
 				// Skip test if the number is invalid (like landline)
 				if tt.expected {

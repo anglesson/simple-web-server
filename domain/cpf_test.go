@@ -1,9 +1,9 @@
-package common_vo_test
+package domain_test
 
 import (
 	"testing"
 
-	common_vo "github.com/anglesson/simple-web-server/internal/common/domain/valueobjects"
+	"github.com/anglesson/simple-web-server/domain"
 )
 
 func TestNewCPF(t *testing.T) {
@@ -46,7 +46,7 @@ func TestNewCPF(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cpf, err := common_vo.NewCPF(tt.input)
+			cpf, err := domain.NewCPF(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewCPF() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -78,7 +78,7 @@ func TestCPF_String(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cpf, err := common_vo.NewCPF(tt.input)
+			cpf, err := domain.NewCPF(tt.input)
 			if err != nil {
 				t.Fatalf("NewCPF() error = %v", err)
 			}
@@ -90,14 +90,14 @@ func TestCPF_String(t *testing.T) {
 }
 
 func TestCPF_Equal(t *testing.T) {
-	cpf1, _ := common_vo.NewCPF("529.982.247-25")
-	cpf2, _ := common_vo.NewCPF("529.982.247-25")
-	cpf3, _ := common_vo.NewCPF("123.456.789-09")
+	cpf1, _ := domain.NewCPF("529.982.247-25")
+	cpf2, _ := domain.NewCPF("529.982.247-25")
+	cpf3, _ := domain.NewCPF("123.456.789-09")
 
 	tests := []struct {
 		name     string
-		cpf1     *common_vo.CPF
-		cpf2     *common_vo.CPF
+		cpf1     *domain.CPF
+		cpf2     *domain.CPF
 		expected bool
 	}{
 		{
@@ -130,7 +130,7 @@ func TestCPF_Equal(t *testing.T) {
 }
 
 func TestCPF_Value(t *testing.T) {
-	cpf, err := common_vo.NewCPF("529.982.247-25")
+	cpf, err := domain.NewCPF("529.982.247-25")
 	if err != nil {
 		t.Fatalf("NewCPF() error = %v", err)
 	}

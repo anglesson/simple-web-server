@@ -1,4 +1,4 @@
-package common_service
+package gov
 
 import (
 	"encoding/json"
@@ -8,18 +8,17 @@ import (
 	"log"
 	"net/http"
 
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/config"
 )
 
 type HubDevService struct {
 }
 
-func NewHubDevService() common_application.ReceitaFederalService {
+func NewHubDevService() ReceitaFederalService {
 	return &HubDevService{}
 }
 
-func (rf *HubDevService) ConsultaCPF(cpf, dataNascimento string) (*common_application.ReceitaFederalResponse, error) {
+func (rf *HubDevService) ConsultaCPF(cpf, dataNascimento string) (*ReceitaFederalResponse, error) {
 	uri := fmt.Sprintf("%s/v2/cpf/?cpf=%s&data=%s&token=%s", config.AppConfig.HubDesenvolvedorApi, cpf, dataNascimento, config.AppConfig.HubDesenvolvedorToken)
 	request, err := http.NewRequest(http.MethodGet, uri, nil)
 	if err != nil {
@@ -64,7 +63,7 @@ func (rf *HubDevService) ConsultaCPF(cpf, dataNascimento string) (*common_applic
 	}
 
 	if !status {
-		return &common_application.ReceitaFederalResponse{
+		return &ReceitaFederalResponse{
 			Status: false,
 		}, nil
 	}
@@ -77,11 +76,11 @@ func (rf *HubDevService) ConsultaCPF(cpf, dataNascimento string) (*common_applic
 	}
 
 	// Criar e popular o objeto
-	response := &common_application.ReceitaFederalResponse{
+	response := &ReceitaFederalResponse{
 		Status:   status,
 		Return:   fmt.Sprintf("%v", responseMap["return"]),
 		Consumed: int(responseMap["consumed"].(float64)),
-		Result: common_application.ConsultaData{
+		Result: ConsultaData{
 			NumeroDeCPF:            fmt.Sprintf("%v", resultMap["numero_de_cpf"]),
 			NomeDaPF:               fmt.Sprintf("%v", resultMap["nome_da_pf"]),
 			DataNascimento:         fmt.Sprintf("%v", resultMap["data_nascimento"]),

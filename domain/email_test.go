@@ -1,9 +1,9 @@
-package common_vo_test
+package domain_test
 
 import (
 	"testing"
 
-	common_vo "github.com/anglesson/simple-web-server/internal/common/domain/valueobjects"
+	"github.com/anglesson/simple-web-server/domain"
 )
 
 func TestNewEmail(t *testing.T) {
@@ -56,7 +56,7 @@ func TestNewEmail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			email, err := common_vo.NewEmail(tt.input)
+			email, err := domain.NewEmail(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEmail() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -69,7 +69,7 @@ func TestNewEmail(t *testing.T) {
 }
 
 func TestEmail_String(t *testing.T) {
-	email, err := common_vo.NewEmail("user@example.com")
+	email, err := domain.NewEmail("user@example.com")
 	if err != nil {
 		t.Fatalf("NewEmail() error = %v", err)
 	}
@@ -81,14 +81,14 @@ func TestEmail_String(t *testing.T) {
 }
 
 func TestEmail_Equal(t *testing.T) {
-	email1, _ := common_vo.NewEmail("user@example.com")
-	email2, _ := common_vo.NewEmail("user@example.com")
-	email3, _ := common_vo.NewEmail("other@example.com")
+	email1, _ := domain.NewEmail("user@example.com")
+	email2, _ := domain.NewEmail("user@example.com")
+	email3, _ := domain.NewEmail("other@example.com")
 
 	tests := []struct {
 		name     string
-		email1   *common_vo.Email
-		email2   *common_vo.Email
+		email1   *domain.Email
+		email2   *domain.Email
 		expected bool
 	}{
 		{
@@ -121,7 +121,7 @@ func TestEmail_Equal(t *testing.T) {
 }
 
 func TestEmail_DomainAndLocalPart(t *testing.T) {
-	email, err := common_vo.NewEmail("user@example.com")
+	email, err := domain.NewEmail("user@example.com")
 	if err != nil {
 		t.Fatalf("NewEmail() error = %v", err)
 	}

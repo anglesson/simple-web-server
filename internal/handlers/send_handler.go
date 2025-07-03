@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"github.com/anglesson/simple-web-server/domain"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"net/http"
 	"strconv"
 
-	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
+	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
@@ -29,7 +30,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	creatorRepository := gorm.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		common_http.RedirectBackWithErrors(w, r, err.Error())
+		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	viewData := map[string]any{
@@ -66,7 +67,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		common_http.RedirectBackWithErrors(w, r, err.Error())
+		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "send_ebook", viewData, "admin")

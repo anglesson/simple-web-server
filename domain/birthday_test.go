@@ -1,10 +1,10 @@
-package common_vo_test
+package domain_test
 
 import (
 	"testing"
 	"time"
 
-	common_vo "github.com/anglesson/simple-web-server/internal/common/domain/valueobjects"
+	"github.com/anglesson/simple-web-server/domain"
 )
 
 func TestNewBirthDay(t *testing.T) {
@@ -78,7 +78,7 @@ func TestNewBirthDay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			birthday, err := common_vo.NewBirthDay(tt.year, tt.month, tt.day)
+			birthday, err := domain.NewBirthDay(tt.year, tt.month, tt.day)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewBirthDay() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -91,7 +91,7 @@ func TestNewBirthDay(t *testing.T) {
 }
 
 func TestBirthDay_String(t *testing.T) {
-	birthday, err := common_vo.NewBirthDay(1990, 1, 1)
+	birthday, err := domain.NewBirthDay(1990, 1, 1)
 	if err != nil {
 		t.Fatalf("NewBirthDay() error = %v", err)
 	}
@@ -103,14 +103,14 @@ func TestBirthDay_String(t *testing.T) {
 }
 
 func TestBirthDay_Equal(t *testing.T) {
-	birthday1, _ := common_vo.NewBirthDay(1990, 1, 1)
-	birthday2, _ := common_vo.NewBirthDay(1990, 1, 1)
-	birthday3, _ := common_vo.NewBirthDay(1991, 1, 1)
+	birthday1, _ := domain.NewBirthDay(1990, 1, 1)
+	birthday2, _ := domain.NewBirthDay(1990, 1, 1)
+	birthday3, _ := domain.NewBirthDay(1991, 1, 1)
 
 	tests := []struct {
 		name      string
-		birthday1 *common_vo.BirthDay
-		birthday2 *common_vo.BirthDay
+		birthday1 *domain.BirthDay
+		birthday2 *domain.BirthDay
 		expected  bool
 	}{
 		{
@@ -178,7 +178,7 @@ func TestBirthDay_Age(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			birthday, err := common_vo.NewBirthDay(tt.year, tt.month, tt.day)
+			birthday, err := domain.NewBirthDay(tt.year, tt.month, tt.day)
 			if err != nil {
 				t.Fatalf("NewBirthDay() error = %v", err)
 			}
@@ -224,7 +224,7 @@ func TestBirthDay_IsAdult(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			birthday, err := common_vo.NewBirthDay(tt.year, tt.month, tt.day)
+			birthday, err := domain.NewBirthDay(tt.year, tt.month, tt.day)
 			if err != nil {
 				t.Fatalf("NewBirthDay() error = %v", err)
 			}
@@ -236,7 +236,7 @@ func TestBirthDay_IsAdult(t *testing.T) {
 }
 
 func TestBirthDay_Format(t *testing.T) {
-	birthday, err := common_vo.NewBirthDay(1990, 1, 1)
+	birthday, err := domain.NewBirthDay(1990, 1, 1)
 	if err != nil {
 		t.Fatalf("NewBirthDay() error = %v", err)
 	}

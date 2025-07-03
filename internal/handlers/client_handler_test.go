@@ -3,14 +3,15 @@ package handlers_test
 import (
 	"context"
 	"errors"
-	"github.com/anglesson/simple-web-server/internal/handlers"
-	"github.com/anglesson/simple-web-server/internal/services"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/infrastructure"
+	"github.com/anglesson/simple-web-server/internal/handlers"
+	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/services"
+
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -26,7 +27,7 @@ type MockFlashMessage struct {
 	mock.Mock
 }
 
-var _ infrastructure.FlashMessagePort = (*MockFlashMessage)(nil)
+var _ web.FlashMessagePort = (*MockFlashMessage)(nil)
 
 func (m *MockFlashMessage) Success(message string) {
 	m.Called(message)
@@ -75,14 +76,14 @@ type ClientHandlerTestSuite struct {
 	sut               *handlers.ClientHandler
 	mockClientService *MockClientService
 	mockFlashMessage  *MockFlashMessage
-	flashFactory      infrastructure.FlashMessageFactory
+	flashFactory      web.FlashMessageFactory
 }
 
 func (suite *ClientHandlerTestSuite) SetupTest() {
 	suite.mockClientService = NewMockClientService()
 	suite.mockFlashMessage = new(MockFlashMessage)
 
-	suite.flashFactory = func(w http.ResponseWriter, r *http.Request) infrastructure.FlashMessagePort {
+	suite.flashFactory = func(w http.ResponseWriter, r *http.Request) web.FlashMessagePort {
 		return suite.mockFlashMessage
 	}
 

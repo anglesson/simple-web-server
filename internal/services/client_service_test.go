@@ -1,11 +1,12 @@
 package services_test
 
 import (
+	"testing"
+
 	"github.com/anglesson/simple-web-server/domain"
-	common_application "github.com/anglesson/simple-web-server/internal/common/application"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
-	"testing"
+	"github.com/anglesson/simple-web-server/pkg/gov"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
@@ -14,7 +15,7 @@ import (
 
 var _ repositories.ClientRepository = (*MockClientRepository)(nil)
 var _ repositories.CreatorRepository = (*MockCreatorRepository)(nil)
-var _ common_application.ReceitaFederalService = (*MockRFService)(nil)
+var _ gov.ReceitaFederalService = (*MockRFService)(nil)
 
 type MockCreatorRepository struct {
 	mock.Mock
@@ -81,9 +82,9 @@ type MockRFService struct {
 	mock.Mock
 }
 
-func (m *MockRFService) ConsultaCPF(cpf, dataNascimento string) (*common_application.ReceitaFederalResponse, error) {
+func (m *MockRFService) ConsultaCPF(cpf, dataNascimento string) (*gov.ReceitaFederalResponse, error) {
 	args := m.Called(cpf, dataNascimento)
-	return args.Get(0).(*common_application.ReceitaFederalResponse), args.Error(1)
+	return args.Get(0).(*gov.ReceitaFederalResponse), args.Error(1)
 }
 
 type ClientServiceTestSuite struct {
@@ -91,7 +92,7 @@ type ClientServiceTestSuite struct {
 	sut                   services.ClientService
 	mockClientRepository  repositories.ClientRepository
 	mockCreatorRepository repositories.CreatorRepository
-	mockRFService         common_application.ReceitaFederalService
+	mockRFService         gov.ReceitaFederalService
 }
 
 func (suite *ClientServiceTestSuite) SetupTest() {
@@ -124,9 +125,9 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 
 	suite.mockRFService.(*MockRFService).
 		On("ConsultaCPF", "000.000.000-00", "12/12/2012").
-		Return(&common_application.ReceitaFederalResponse{
+		Return(&gov.ReceitaFederalResponse{
 			Status: true,
-			Result: common_application.ConsultaData{
+			Result: gov.ConsultaData{
 				NomeDaPF:       expectedName,
 				NumeroDeCPF:    input.CPF,
 				DataNascimento: expectedBirthDay,
@@ -175,9 +176,9 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 
 	suite.mockRFService.(*MockRFService).
 		On("ConsultaCPF", "000.000.000-00", "12/12/2012").
-		Return(&common_application.ReceitaFederalResponse{
+		Return(&gov.ReceitaFederalResponse{
 			Status: true,
-			Result: common_application.ConsultaData{
+			Result: gov.ConsultaData{
 				NomeDaPF:       expectedName,
 				NumeroDeCPF:    input.CPF,
 				DataNascimento: expectedBirthDay,

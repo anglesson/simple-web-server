@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/anglesson/simple-web-server/domain"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"io"
 	"log"
 	"mime/multipart"
@@ -12,7 +10,10 @@ import (
 	"net/url"
 	"strconv"
 
-	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
+	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
@@ -116,7 +117,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	creator, err := services.NewCreatorService().FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
-		common_http.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
+		web.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
 		return
 	}
 
@@ -333,7 +334,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 	creatorRepository := gorm.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		common_http.RedirectBackWithErrors(w, r, err.Error())
+		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	clients, err := gorm.NewClientGormRepository().FindByClientsWhereEbookWasSend(creator, domain.ClientFilter{
@@ -342,7 +343,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		Pagination: pagination,
 	})
 	if err != nil {
-		common_http.RedirectBackWithErrors(w, r, err.Error())
+		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "view_ebook", map[string]any{

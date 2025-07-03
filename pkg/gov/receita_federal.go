@@ -1,4 +1,8 @@
-package common_application
+package gov
+
+type ReceitaFederalService interface {
+	ConsultaCPF(cpf, dataNascimento string) (*ReceitaFederalResponse, error)
+}
 
 type ConsultaData struct {
 	NumeroDeCPF            string `json:"numero_de_cpf"`

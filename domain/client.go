@@ -2,34 +2,31 @@ package domain
 
 import (
 	"errors"
-
-	common_entities "github.com/anglesson/simple-web-server/internal/common/domain/entities"
-	common_vo "github.com/anglesson/simple-web-server/internal/common/domain/valueobjects"
 )
 
 type Client struct {
 	ID       string
 	Name     string
-	Cpf      *common_vo.CPF
-	Birthday *common_vo.BirthDay
-	contact  *common_entities.Contact
+	Cpf      *CPF
+	Birthday *BirthDay
+	contact  *Contact
 }
 
 func NewClient(id, name, cpf, birthday, email, phone string) (*Client, error) {
 	if id == "" {
 		return nil, errors.New("id is empty")
 	}
-	voCpf, err := common_vo.NewCPF(cpf)
+	voCpf, err := NewCPF(cpf)
 	if err != nil {
 		return nil, err
 	}
 
-	voBirthDay, err := common_vo.NewBirthDay(2020, 9, 2)
+	voBirthDay, err := NewBirthDay(2020, 9, 2)
 	if err != nil {
 		return nil, err
 	}
 
-	contactEntity, err := common_entities.NewContact(email, phone)
+	contactEntity, err := NewContact(email, phone)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +41,7 @@ func NewClient(id, name, cpf, birthday, email, phone string) (*Client, error) {
 }
 
 func (c *Client) UpdateContact(email, phone string) error {
-	contactEntity, err := common_entities.NewContact(email, phone)
+	contactEntity, err := NewContact(email, phone)
 	if err != nil {
 		return err
 	}

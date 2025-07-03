@@ -2,15 +2,15 @@ package handlers
 
 import (
 	"encoding/csv"
-	"github.com/anglesson/simple-web-server/domain"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
-	common_http "github.com/anglesson/simple-web-server/internal/common/infrastructure/http_serve"
-	"github.com/anglesson/simple-web-server/internal/infrastructure"
+	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
@@ -21,10 +21,10 @@ import (
 
 type ClientHandler struct {
 	clientService       services.ClientService
-	flashMessageFactory infrastructure.FlashMessageFactory
+	flashMessageFactory web.FlashMessageFactory
 }
 
-func NewClientHandler(clientService services.ClientService, flashMessageFactory infrastructure.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService services.ClientService, flashMessageFactory web.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		flashMessageFactory: flashMessageFactory,
@@ -75,7 +75,7 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	creatorRepository := gorm.NewCreatorRepository()
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
-		common_http.RedirectBackWithErrors(w, r, err.Error())
+		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	clients, err := gorm.NewClientGormRepository().FindClientsByCreator(creator, domain.ClientFilter{
@@ -83,7 +83,7 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 		Pagination: pagination,
 	})
 	if err != nil {
-		common_http.RedirectBackWithErrors(w, r, err.Error())
+		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
 	template.View(w, r, "client", map[string]any{
@@ -177,13 +177,13 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		common_http.RedirectBackWithErrors(w, r, "Erro ao ler o arquivo")
+		web.RedirectBackWithErrors(w, r, "Erro ao ler o arquivo")
 	}
 	defer file.Close()
 
 	// Verifica a extensão do arquivo (opcional)
 	if !strings.HasSuffix(handler.Filename, ".csv") {
-		common_http.RedirectBackWithErrors(w, r, "Arquivo não é CSV")
+		web.RedirectBackWithErrors(w, r, "Arquivo não é CSV")
 	}
 
 	log.Println("Arquivo validado!")
@@ -192,7 +192,7 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 	rows, err := reader.ReadAll()
 	if err != nil {
 		log.Printf("Erro na leitura do CSV: %s", err.Error())
-		common_http.RedirectBackWithErrors(w, r, "Erro na leitura do CSV")
+		web.RedirectBackWithErrors(w, r, "Erro na leitura do CSV")
 	}
 
 	// Validate header
@@ -207,7 +207,7 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err = ch.clientService.CreateBatchClient(clients); err != nil {
-		common_http.RedirectBackWithErrors(w, r, err.Error())
+		web.RedirectBackWithErrors(w, r, err.Error())
 		return
 	}
 
