@@ -2,11 +2,12 @@ package gorm
 
 import (
 	"errors"
-	"github.com/anglesson/simple-web-server/domain"
 	"log"
 
+	"github.com/anglesson/simple-web-server/domain"
+
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/shared/database"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"gorm.io/gorm"
 )
 

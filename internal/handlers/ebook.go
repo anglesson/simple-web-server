@@ -19,9 +19,9 @@ import (
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
-	"github.com/anglesson/simple-web-server/internal/shared/database"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/storage"
 	"github.com/go-chi/chi/v5"
 )

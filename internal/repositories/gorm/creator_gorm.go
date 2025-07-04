@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/shared/database"
+	"github.com/anglesson/simple-web-server/pkg/database"
 )
 
 type CreatorRepository struct {

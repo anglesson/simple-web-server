@@ -12,7 +12,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
 	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
-	"github.com/anglesson/simple-web-server/internal/shared/database"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/go-chi/chi/v5"
 )
 
