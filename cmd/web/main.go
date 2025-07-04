@@ -11,8 +11,8 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers"
+	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
-	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -43,7 +43,7 @@ func main() {
 
 	// Public routes
 	r.Group(func(r chi.Router) {
-		r.Use(middlewares.AuthGuard)
+		r.Use(middleware.AuthGuard)
 		r.Get("/login", handlers.LoginView)
 		r.Post("/login", handlers.LoginSubmit)
 		r.Get("/register", handlers.RegisterView)
@@ -59,8 +59,8 @@ func main() {
 
 	// Private routes
 	r.Group(func(r chi.Router) {
-		r.Use(middlewares.AuthMiddleware)
-		r.Use(middlewares.TrialMiddleware)
+		r.Use(middleware.AuthMiddleware)
+		r.Use(middleware.TrialMiddleware)
 
 		r.Post("/logout", handlers.LogoutSubmit)
 		r.Get("/dashboard", handlers.DashboardView)

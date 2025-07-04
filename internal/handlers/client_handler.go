@@ -11,10 +11,10 @@ import (
 	"github.com/anglesson/simple-web-server/internal/handlers/web"
 	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 
+	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
-	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/go-chi/chi/v5"
 )
@@ -32,7 +32,7 @@ func NewClientHandler(clientService services.ClientService, flashMessageFactory 
 }
 
 func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middlewares.Auth(r)
+	loggedUser := middleware.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
@@ -42,7 +42,7 @@ func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middlewares.Auth(r)
+	loggedUser := middleware.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
@@ -59,7 +59,7 @@ func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middlewares.Auth(r)
+	loggedUser := middleware.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
@@ -95,7 +95,7 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	flashMessage := ch.flashMessageFactory(w, r)
 
-	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
+	user_email, ok := r.Context().Value(middleware.UserEmailKey).(string)
 	if !ok {
 		flashMessage.Error("Unauthorized. Invalid user email")
 		http.Error(w, "Invalid user email", http.StatusUnauthorized)
@@ -126,7 +126,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 
 func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	flashMessage := ch.flashMessageFactory(w, r)
-	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
+	user_email, ok := r.Context().Value(middleware.UserEmailKey).(string)
 	if !ok {
 		http.Error(w, "Invalid user email", http.StatusInternalServerError)
 		return
@@ -155,7 +155,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 
 func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 	log.Println("Iniciando processamento de CSV")
-	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
+	user_email, ok := r.Context().Value(middleware.UserEmailKey).(string)
 	if !ok {
 		http.Error(w, "Invalid user email", http.StatusInternalServerError)
 		return

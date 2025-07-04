@@ -14,20 +14,20 @@ import (
 	"github.com/anglesson/simple-web-server/internal/handlers/web"
 	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 
+	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
 	"github.com/anglesson/simple-web-server/internal/shared/database"
-	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
-	"github.com/anglesson/simple-web-server/internal/shared/storage"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
+	"github.com/anglesson/simple-web-server/pkg/storage"
 	"github.com/go-chi/chi/v5"
 )
 
 func EbookIndexView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middlewares.Auth(r)
+	loggedUser := middleware.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
@@ -59,7 +59,7 @@ func EbookCreateView(w http.ResponseWriter, r *http.Request) {
 }
 
 func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middlewares.Auth(r)
+	loggedUser := middleware.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
@@ -296,7 +296,7 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 
 // TODO: Move GetSession to a service
 func GetSessionUser(r *http.Request) *models.User {
-	user_email, ok := r.Context().Value(middlewares.UserEmailKey).(string)
+	user_email, ok := r.Context().Value(middleware.UserEmailKey).(string)
 	if !ok {
 		log.Fatalf("Erro ao recuperar usuário da sessão: %s", user_email)
 		return nil
@@ -305,7 +305,7 @@ func GetSessionUser(r *http.Request) *models.User {
 }
 
 func EbookShowView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middlewares.Auth(r)
+	loggedUser := middleware.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return

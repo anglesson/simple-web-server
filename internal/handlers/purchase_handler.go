@@ -8,10 +8,10 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers/web"
-	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
+	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/go-chi/chi/v5"
 )
 

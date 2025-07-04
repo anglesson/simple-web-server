@@ -11,12 +11,12 @@ import (
 	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/config"
-	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 	"github.com/anglesson/simple-web-server/internal/shared/utils"
+	"github.com/anglesson/simple-web-server/pkg/mail"
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {

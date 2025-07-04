@@ -8,9 +8,9 @@ import (
 	"net/url"
 
 	"github.com/anglesson/simple-web-server/internal/config"
+	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
-	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 )
 
 type PageData struct {
@@ -24,7 +24,7 @@ func TemplateFunctions(r *http.Request) template.FuncMap {
 			return config.AppConfig.AppName
 		},
 		"user": func() *models.User {
-			return middlewares.Auth(r)
+			return middleware.Auth(r)
 		},
 		"json": func(data any) (template.JS, error) {
 			jsonData, err := json.Marshal(data)
@@ -79,7 +79,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Get CSRF token from context
-	if csrfToken := middlewares.GetCSRFToken(r); csrfToken != "" {
+	if csrfToken := middleware.GetCSRFToken(r); csrfToken != "" {
 		log.Printf("CSRF token encontrado no contexto: %s", csrfToken)
 		data["csrf_token"] = csrfToken
 	} else {
@@ -87,7 +87,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Get user from context
-	if user := middlewares.Auth(r); user != nil {
+	if user := middleware.Auth(r); user != nil {
 		log.Printf("Usuário encontrado no contexto: %s", user.Email)
 		data["user"] = user
 		if user.CSRFToken != "" {

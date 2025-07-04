@@ -8,10 +8,10 @@ import (
 	"github.com/anglesson/simple-web-server/internal/handlers/web"
 	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 
+	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
-	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/anglesson/simple-web-server/internal/shared/template"
 )
 
@@ -21,7 +21,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loggedUser := middlewares.Auth(r)
+	loggedUser := middleware.Auth(r)
 	if loggedUser.ID == 0 {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return

@@ -3,10 +3,10 @@ package services
 import (
 	"errors"
 
-	"github.com/anglesson/simple-web-server/internal/mail"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
-	"github.com/anglesson/simple-web-server/internal/shared/storage"
+	"github.com/anglesson/simple-web-server/pkg/mail"
+	"github.com/anglesson/simple-web-server/pkg/storage"
 )
 
 type PurchaseService struct {

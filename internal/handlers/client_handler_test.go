@@ -9,11 +9,11 @@ import (
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/handlers"
+	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/handlers/web"
 	"github.com/anglesson/simple-web-server/internal/services"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/shared/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -95,7 +95,7 @@ func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	ctx := context.WithValue(req.Context(), middlewares.UserEmailKey, nil)
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, nil)
 	req = req.WithContext(ctx)
 
 	rr := httptest.NewRecorder()
@@ -127,7 +127,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	ctx := context.WithValue(req.Context(), middlewares.UserEmailKey, creatorEmail)
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, creatorEmail)
 	req = req.WithContext(ctx)
 
 	rr := httptest.NewRecorder()
@@ -159,7 +159,7 @@ func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 	req := httptest.NewRequest(http.MethodPost, "/client", formData)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	ctx := context.WithValue(req.Context(), middlewares.UserEmailKey, creatorEmail)
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, creatorEmail)
 	req = req.WithContext(ctx)
 
 	rr := httptest.NewRecorder()
@@ -200,7 +200,7 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	rctx.URLParams.Add("id", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
-	ctx := context.WithValue(req.Context(), middlewares.UserEmailKey, creatorEmail)
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, creatorEmail)
 	req = req.WithContext(ctx)
 
 	rr := httptest.NewRecorder()
