@@ -8,8 +8,8 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
-	"github.com/anglesson/simple-web-server/internal/shared/template"
-	"github.com/anglesson/simple-web-server/internal/shared/utils"
+	"github.com/anglesson/simple-web-server/pkg/template"
+	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
 var sessionService = services.NewSessionService()

@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/shared/template"
+	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
 func ForgetPasswordView(w http.ResponseWriter, r *http.Request) {

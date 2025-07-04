@@ -11,8 +11,8 @@ import (
 	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
-	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
-	"github.com/anglesson/simple-web-server/internal/shared/template"
+	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
+	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
 func SendViewHandler(w http.ResponseWriter, r *http.Request) {

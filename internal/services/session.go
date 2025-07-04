@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/anglesson/simple-web-server/internal/repositories"
-	"github.com/anglesson/simple-web-server/internal/shared/utils"
+	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
 type SessionService struct {

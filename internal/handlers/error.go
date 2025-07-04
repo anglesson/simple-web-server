@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/shared/template"
+	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
 // TODO: Render errors dynamically

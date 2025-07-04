@@ -10,7 +10,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
-	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
+	"github.com/anglesson/simple-web-server/pkg/cookie"
 )
 
 type PageData struct {

@@ -18,11 +18,11 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
-	cookies "github.com/anglesson/simple-web-server/internal/shared/cookie"
-	"github.com/anglesson/simple-web-server/internal/shared/template"
-	"github.com/anglesson/simple-web-server/internal/shared/utils"
+	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/storage"
+	"github.com/anglesson/simple-web-server/pkg/template"
+	"github.com/anglesson/simple-web-server/pkg/utils"
 	"github.com/go-chi/chi/v5"
 )
 

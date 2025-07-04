@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
-	"github.com/anglesson/simple-web-server/internal/shared/template"
+	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
 func SettingsView(w http.ResponseWriter, r *http.Request) {

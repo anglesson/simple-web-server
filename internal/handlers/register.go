@@ -14,9 +14,9 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
-	"github.com/anglesson/simple-web-server/internal/shared/template"
-	"github.com/anglesson/simple-web-server/internal/shared/utils"
 	"github.com/anglesson/simple-web-server/pkg/mail"
+	"github.com/anglesson/simple-web-server/pkg/template"
+	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
