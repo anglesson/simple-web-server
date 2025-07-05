@@ -114,7 +114,8 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Criando e-book para: %v", loggedUser)
 
 	// Busca o criador
-	creator, err := services.NewCreatorService().FindCreatorByUserID(loggedUser.ID)
+	creatorRepo := gorm.NewCreatorRepository()
+	creator, err := services.NewCreatorService(creatorRepo).FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
 		web.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")

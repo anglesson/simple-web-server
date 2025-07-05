@@ -21,12 +21,14 @@ import (
 
 type ClientHandler struct {
 	clientService       services.ClientService
+	creatorService      services.CreatorService
 	flashMessageFactory web.FlashMessageFactory
 }
 
-func NewClientHandler(clientService services.ClientService, flashMessageFactory web.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService services.ClientService, creatorService services.CreatorService, flashMessageFactory web.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
+		creatorService:      creatorService,
 		flashMessageFactory: flashMessageFactory,
 	}
 }
@@ -161,8 +163,7 @@ func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	creatorService := services.NewCreatorService()
-	creator, err := creatorService.FindCreatorByEmail(user_email)
+	creator, err := ch.creatorService.FindCreatorByEmail(user_email)
 	if err != nil {
 		log.Println("Nao autorizado")
 		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)

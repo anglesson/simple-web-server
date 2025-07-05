@@ -3,6 +3,7 @@ package handler_test
 import (
 	"context"
 	"errors"
+	"github.com/anglesson/simple-web-server/domain"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -71,23 +72,44 @@ func (m *MockClientService) CreateBatchClient(clients []*models.Client) error {
 	return args.Error(1)
 }
 
+type MockCreatorService struct {
+	mock.Mock
+}
+
+func (m MockCreatorService) CreateCreator(input services.InputCreateCreator) (*domain.Creator, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m MockCreatorService) FindCreatorByEmail(email string) (*models.Creator, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m MockCreatorService) FindCreatorByUserID(userID uint) (*models.Creator, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 type ClientHandlerTestSuite struct {
 	suite.Suite
-	sut               *handler.ClientHandler
-	mockClientService *MockClientService
-	mockFlashMessage  *MockFlashMessage
-	flashFactory      web.FlashMessageFactory
+	sut                *handler.ClientHandler
+	mockClientService  *MockClientService
+	mockCreatorService *MockCreatorService
+	mockFlashMessage   *MockFlashMessage
+	flashFactory       web.FlashMessageFactory
 }
 
 func (suite *ClientHandlerTestSuite) SetupTest() {
 	suite.mockClientService = NewMockClientService()
 	suite.mockFlashMessage = new(MockFlashMessage)
+	suite.mockCreatorService = new(MockCreatorService)
 
 	suite.flashFactory = func(w http.ResponseWriter, r *http.Request) web.FlashMessagePort {
 		return suite.mockFlashMessage
 	}
 
-	suite.sut = handler.NewClientHandler(suite.mockClientService, suite.flashFactory)
+	suite.sut = handler.NewClientHandler(suite.mockClientService, suite.mockCreatorService, suite.flashFactory)
 }
 
 func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {

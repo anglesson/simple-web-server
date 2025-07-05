@@ -30,9 +30,10 @@ func main() {
 	clientRepository := gorm.NewClientGormRepository()
 
 	// ========== Application Initialization ==========
+	creatorService := services.NewCreatorService(creatorRepository)
 	commonRFService := gov.NewHubDevService()
 	clientService := services.NewClientService(clientRepository, creatorRepository, commonRFService)
-	clientHandler := handler.NewClientHandler(clientService, flashServiceFactory)
+	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory)
 
 	r := chi.NewRouter()
 

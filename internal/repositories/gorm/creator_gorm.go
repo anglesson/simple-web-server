@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"errors"
+	"github.com/anglesson/simple-web-server/domain"
 	"log"
 
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -9,6 +10,11 @@ import (
 )
 
 type CreatorRepository struct {
+}
+
+func (cr *CreatorRepository) Save(creator *domain.Creator) error {
+	//TODO implement me
+	panic("implement me")
 }
 
 func NewCreatorRepository() *CreatorRepository {

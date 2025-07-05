@@ -11,6 +11,8 @@ import (
 
 type CreatorService interface {
 	CreateCreator(input InputCreateCreator) (*domain.Creator, error)
+	FindCreatorByEmail(email string) (*models.Creator, error)
+	FindCreatorByUserID(userID uint) (*models.Creator, error)
 }
 
 type InputCreateCreator struct {
