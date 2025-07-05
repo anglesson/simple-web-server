@@ -36,6 +36,11 @@ func (m *MockCreatorRepository) Create(creator *models.Creator) error {
 	return args.Error(0)
 }
 
+func (m *MockCreatorRepository) Save(creator *domain.Creator) error {
+	args := m.Called(creator)
+	return args.Error(0)
+}
+
 type MockClientRepository struct {
 	mock.Mock
 }

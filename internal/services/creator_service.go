@@ -2,24 +2,56 @@ package services
 
 import (
 	"errors"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/repositories"
 	"log"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 )
 
-type CreatorService struct {
-	creatorRepository *gorm.CreatorRepository
+type CreatorService interface {
+	CreateCreator(input InputCreateCreator) (*domain.Creator, error)
 }
 
-func NewCreatorService() *CreatorService {
-	return &CreatorService{
-		creatorRepository: gorm.NewCreatorRepository(),
+type InputCreateCreator struct {
+	Name        string `json:"name"`
+	CPF         string `json:"cpf"`
+	BirthDate   string `json:"birthDate"`
+	PhoneNumber string `json:"phoneNumber"`
+	Email       string `json:"email"`
+}
+
+type CreatorServiceImpl struct {
+	creatorRepo repositories.CreatorRepository
+}
+
+func NewCreatorService(creatorRepo repositories.CreatorRepository) CreatorService {
+	return &CreatorServiceImpl{
+		creatorRepo: creatorRepo,
 	}
 }
 
-func (cs *CreatorService) FindCreatorByUserID(userID uint) (*models.Creator, error) {
-	creator, err := cs.creatorRepository.FindCreatorByUserID(userID)
+func (cs *CreatorServiceImpl) CreateCreator(input InputCreateCreator) (*domain.Creator, error) {
+	creator, err := domain.NewCreator(
+		input.Name,
+		input.Email,
+		input.CPF,
+		input.PhoneNumber,
+		input.BirthDate,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cs.creatorRepo.Save(creator)
+	if err != nil {
+		return nil, err
+	}
+	return creator, nil
+}
+
+func (cs *CreatorServiceImpl) FindCreatorByUserID(userID uint) (*models.Creator, error) {
+	creator, err := cs.creatorRepo.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Printf("Erro ao buscar creator: %s", err)
 		return nil, errors.New("creator not found")
@@ -30,8 +62,8 @@ func (cs *CreatorService) FindCreatorByUserID(userID uint) (*models.Creator, err
 	return creator, nil
 }
 
-func (cs *CreatorService) FindCreatorByEmail(email string) (*models.Creator, error) {
-	creator, err := cs.creatorRepository.FindCreatorByUserEmail(email)
+func (cs *CreatorServiceImpl) FindCreatorByEmail(email string) (*models.Creator, error) {
+	creator, err := cs.creatorRepo.FindCreatorByUserEmail(email)
 	if err != nil {
 		log.Printf("Erro ao buscar creator: %s", err)
 		return nil, errors.New("creator not found")
