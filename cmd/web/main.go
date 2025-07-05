@@ -4,14 +4,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	handler "github.com/anglesson/simple-web-server/internal/handler"
+	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
 	"github.com/anglesson/simple-web-server/internal/config"
-	"github.com/anglesson/simple-web-server/internal/handlers"
-	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
+	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/go-chi/chi/v5"
 )
@@ -32,7 +32,7 @@ func main() {
 	// ========== Application Initialization ==========
 	commonRFService := gov.NewHubDevService()
 	clientService := services.NewClientService(clientRepository, creatorRepository, commonRFService)
-	clientHandler := handlers.NewClientHandler(clientService, flashServiceFactory)
+	clientHandler := handler.NewClientHandler(clientService, flashServiceFactory)
 
 	r := chi.NewRouter()
 
@@ -44,35 +44,35 @@ func main() {
 	// Public routes
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthGuard)
-		r.Get("/login", handlers.LoginView)
-		r.Post("/login", handlers.LoginSubmit)
-		r.Get("/register", handlers.RegisterView)
-		r.Post("/register", handlers.RegisterSubmit)
-		r.Get("/forget-password", handlers.ForgetPasswordView)
-		r.Post("/forget-password", handlers.ForgetPasswordSubmit)
-		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
+		r.Get("/login", handler.LoginView)
+		r.Post("/login", handler.LoginSubmit)
+		r.Get("/register", handler.RegisterView)
+		r.Post("/register", handler.RegisterSubmit)
+		r.Get("/forget-password", handler.ForgetPasswordView)
+		r.Post("/forget-password", handler.ForgetPasswordSubmit)
+		r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)
 	})
 
 	// Stripe routes
-	r.Post("/api/create-checkout-session", handlers.CreateCheckoutSession)
-	r.Post("/api/webhook", handlers.HandleStripeWebhook)
+	r.Post("/api/create-checkout-session", handler.CreateCheckoutSession)
+	r.Post("/api/webhook", handler.HandleStripeWebhook)
 
 	// Private routes
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)
 		r.Use(middleware.TrialMiddleware)
 
-		r.Post("/logout", handlers.LogoutSubmit)
-		r.Get("/dashboard", handlers.DashboardView)
-		r.Get("/settings", handlers.SettingsView)
+		r.Post("/logout", handler.LogoutSubmit)
+		r.Get("/dashboard", handler.DashboardView)
+		r.Get("/settings", handler.SettingsView)
 
 		// Ebook routes
-		r.Get("/ebook", handlers.EbookIndexView)
-		r.Get("/ebook/create", handlers.EbookCreateView)
-		r.Post("/ebook/create", handlers.EbookCreateSubmit)
-		r.Get("/ebook/edit/{id}", handlers.EbookUpdateView)
-		r.Get("/ebook/view/{id}", handlers.EbookShowView)
-		r.Post("/ebook/update/{id}", handlers.EbookUpdateSubmit)
+		r.Get("/ebook", handler.EbookIndexView)
+		r.Get("/ebook/create", handler.EbookCreateView)
+		r.Post("/ebook/create", handler.EbookCreateSubmit)
+		r.Get("/ebook/edit/{id}", handler.EbookUpdateView)
+		r.Get("/ebook/view/{id}", handler.EbookShowView)
+		r.Post("/ebook/update/{id}", handler.EbookUpdateSubmit)
 
 		// Client routes
 		r.Get("/client", clientHandler.ClientIndexView)
@@ -83,12 +83,12 @@ func main() {
 		r.Post("/client/import", clientHandler.ClientImportSubmit)
 
 		// Purchase routes
-		r.Post("/purchase/ebook/{id}", handlers.PurchaseCreateHandler)
-		r.Get("/purchase/download/{id}", handlers.PurchaseDownloadHandler)
-		r.Get("/send", handlers.SendViewHandler)
+		r.Post("/purchase/ebook/{id}", handler.PurchaseCreateHandler)
+		r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)
+		r.Get("/send", handler.SendViewHandler)
 	})
 
-	r.Get("/", handlers.HomeView) // Home page deve ser a ultima rota
+	r.Get("/", handler.HomeView) // Home page deve ser a ultima rota
 
 	port := config.AppConfig.Port
 

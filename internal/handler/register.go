@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/config"

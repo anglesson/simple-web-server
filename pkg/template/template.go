@@ -8,9 +8,9 @@ import (
 	"net/url"
 
 	"github.com/anglesson/simple-web-server/internal/config"
-	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
+	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/pkg/cookie"
+	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 )
 
 type PageData struct {

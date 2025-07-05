@@ -1,10 +1,10 @@
-package handlers
+package handler
 
 import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
+	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 

@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/config"
-	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"

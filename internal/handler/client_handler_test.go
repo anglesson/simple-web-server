@@ -1,4 +1,4 @@
-package handlers_test
+package handler_test
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/handlers"
-	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
-	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	handler "github.com/anglesson/simple-web-server/internal/handler"
+	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/services"
 
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -73,7 +73,7 @@ func (m *MockClientService) CreateBatchClient(clients []*models.Client) error {
 
 type ClientHandlerTestSuite struct {
 	suite.Suite
-	sut               *handlers.ClientHandler
+	sut               *handler.ClientHandler
 	mockClientService *MockClientService
 	mockFlashMessage  *MockFlashMessage
 	flashFactory      web.FlashMessageFactory
@@ -87,7 +87,7 @@ func (suite *ClientHandlerTestSuite) SetupTest() {
 		return suite.mockFlashMessage
 	}
 
-	suite.sut = handlers.NewClientHandler(suite.mockClientService, suite.flashFactory)
+	suite.sut = handler.NewClientHandler(suite.mockClientService, suite.flashFactory)
 }
 
 func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {

@@ -1,14 +1,14 @@
-package handlers
+package handler
 
 import (
 	"net/http"
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/domain"
-	"github.com/anglesson/simple-web-server/internal/handlers/web"
+	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
 
-	"github.com/anglesson/simple-web-server/internal/handlers/middleware"
+	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
