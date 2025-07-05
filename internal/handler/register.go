@@ -31,7 +31,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "register", nil, "guest")
+	template.View(w, r, "creator/register", nil, "guest")
 }
 
 func RegisterSubmit(w http.ResponseWriter, r *http.Request) {

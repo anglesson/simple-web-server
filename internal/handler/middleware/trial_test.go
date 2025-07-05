@@ -40,7 +40,7 @@ func (m *MockAuthProvider) GetUser(r *http.Request) TestUser {
 	return m.user
 }
 
-// testTrialMiddleware is a wrapper that allows us to inject the auth provider for testing
+// testTrialMiddleware is a wrapper that allows us to inject the creator provider for testing
 func testTrialMiddleware(next http.Handler, authProvider TestAuthProvider) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := authProvider.GetUser(r)
@@ -132,10 +132,10 @@ func TestTrialMiddleware(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			})
 
-			// Create auth provider with our test user
+			// Create creator provider with our test user
 			authProvider := &MockAuthProvider{user: tt.user}
 
-			// Create and call the middleware with our test auth provider
+			// Create and call the middleware with our test creator provider
 			handler := testTrialMiddleware(nextHandler, authProvider)
 			handler.ServeHTTP(w, req)
 
