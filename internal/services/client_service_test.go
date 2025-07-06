@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	mocks_repo "github.com/anglesson/simple-web-server/internal/repositories/mocks"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
 	"testing"
 
@@ -15,32 +16,8 @@ import (
 )
 
 var _ repositories.ClientRepository = (*MockClientRepository)(nil)
-var _ repositories.CreatorRepository = (*MockCreatorRepository)(nil)
+var _ repositories.CreatorRepository = (*mocks_repo.MockCreatorRepository)(nil)
 var _ gov.ReceitaFederalService = (*mocks.MockRFService)(nil)
-
-type MockCreatorRepository struct {
-	mock.Mock
-}
-
-func (m *MockCreatorRepository) FindCreatorByUserID(userID uint) (*models.Creator, error) {
-	args := m.Called(userID)
-	return args.Get(0).(*models.Creator), args.Error(1)
-}
-
-func (m *MockCreatorRepository) FindCreatorByUserEmail(email string) (*models.Creator, error) {
-	args := m.Called(email)
-	return args.Get(0).(*models.Creator), args.Error(1)
-}
-
-func (m *MockCreatorRepository) Create(creator *models.Creator) error {
-	args := m.Called(creator)
-	return args.Error(0)
-}
-
-func (m *MockCreatorRepository) Save(creator *domain.Creator) error {
-	args := m.Called(creator)
-	return args.Error(0)
-}
 
 type MockClientRepository struct {
 	mock.Mock
@@ -94,7 +71,7 @@ type ClientServiceTestSuite struct {
 
 func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(MockClientRepository)
-	suite.mockCreatorRepository = new(MockCreatorRepository)
+	suite.mockCreatorRepository = new(mocks_repo.MockCreatorRepository)
 	suite.mockRFService = new(mocks.MockRFService)
 	suite.sut = services.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
 }
@@ -131,7 +108,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 			},
 		}, nil)
 
-	suite.mockCreatorRepository.(*MockCreatorRepository).
+	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).
 		On("FindCreatorByUserEmail", creator.Contact.Email).
 		Return(creator, nil)
 
@@ -146,7 +123,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 	_, err := suite.sut.CreateClient(input)
 
 	suite.NoError(err)
-	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
+	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
 	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "Save", client)
 }
 
@@ -182,7 +159,7 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 			},
 		}, nil)
 
-	suite.mockCreatorRepository.(*MockCreatorRepository).
+	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).
 		On("FindCreatorByUserEmail", creator.Contact.Email).
 		Return(creator, nil)
 
@@ -193,7 +170,7 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 	_, err := suite.sut.CreateClient(input)
 
 	suite.Error(err)
-	suite.mockCreatorRepository.(*MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
+	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
 	suite.mockClientRepository.(*MockClientRepository).AssertCalled(suite.T(), "FindByEmail", client.Contact.Email)
 }
 

@@ -3,6 +3,7 @@ package services_test
 import (
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/repositories"
+	mocks_repo "github.com/anglesson/simple-web-server/internal/repositories/mocks"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
@@ -18,7 +19,7 @@ type CreatorServiceTestSuite struct {
 }
 
 func (suite *CreatorServiceTestSuite) SetupTest() {
-	suite.mockCreatorRepo = new(MockCreatorRepository)
+	suite.mockCreatorRepo = new(mocks_repo.MockCreatorRepository)
 	suite.mockRFService = new(mocks.MockRFService)
 	suite.sut = services.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService)
 }
@@ -51,14 +52,14 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 			},
 		}, nil)
 
-	suite.mockCreatorRepo.(*MockCreatorRepository).
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
 
 	_, err := suite.sut.CreateCreator(input)
 
 	suite.NoError(err)
-	suite.mockCreatorRepo.(*MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalData() {
@@ -89,14 +90,14 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 			},
 		}, nil)
 
-	suite.mockCreatorRepo.(*MockCreatorRepository).
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
 
 	_, err := suite.sut.CreateCreator(input)
 
 	suite.NoError(err)
-	suite.mockCreatorRepo.(*MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
 	suite.mockRFService.(*mocks.MockRFService).AssertCalled(
 		suite.T(),
 		"ConsultaCPF",
