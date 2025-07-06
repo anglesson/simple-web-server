@@ -41,6 +41,14 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 		input.BirthDate,
 	)
 
+	expectedCreatorFilter := domain.CreatorFilter{
+		CPF: expectedCreator.CPF.Value(),
+	}
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("FindByFilter", expectedCreatorFilter).
+		Return(nil, nil)
+
 	suite.mockRFService.(*mocks.MockRFService).
 		On("ConsultaCPF", expectedCreator.CPF.String(), expectedCreator.Birthdate.Format("02/01/2006")).
 		Return(&gov.ReceitaFederalResponse{
@@ -59,7 +67,14 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 	_, err := suite.sut.CreateCreator(input)
 
 	suite.NoError(err)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindByFilter", expectedCreatorFilter)
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
+	suite.mockRFService.(*mocks.MockRFService).AssertCalled(
+		suite.T(),
+		"ConsultaCPF",
+		expectedCreator.CPF.String(),
+		expectedCreator.Birthdate.Format("02/01/2006"),
+	)
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalData() {
@@ -79,6 +94,14 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 		input.BirthDate,
 	)
 
+	expectedCreatorFilter := domain.CreatorFilter{
+		CPF: expectedCreator.CPF.Value(),
+	}
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("FindByFilter", expectedCreatorFilter).
+		Return(nil, nil)
+
 	suite.mockRFService.(*mocks.MockRFService).
 		On("ConsultaCPF", expectedCreator.CPF.String(), expectedCreator.Birthdate.Format("02/01/2006")).
 		Return(&gov.ReceitaFederalResponse{
@@ -97,8 +120,66 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 	_, err := suite.sut.CreateCreator(input)
 
 	suite.NoError(err)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindByFilter", expectedCreatorFilter)
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
 	suite.mockRFService.(*mocks.MockRFService).AssertCalled(
+		suite.T(),
+		"ConsultaCPF",
+		expectedCreator.CPF.String(),
+		expectedCreator.Birthdate.Format("02/01/2006"),
+	)
+}
+
+func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister() {
+	input := services.InputCreateCreator{
+		Name:        "Valid Name",
+		BirthDate:   "2012-12-12",
+		PhoneNumber: "(12) 94567-8901",
+		Email:       "valid@mail.com",
+		CPF:         "058.997.950-77",
+	}
+
+	expectedCreator, _ := domain.NewCreator(
+		input.Name,
+		input.Email,
+		input.CPF,
+		input.PhoneNumber,
+		input.BirthDate,
+	)
+
+	expectedCreatorFilter := domain.CreatorFilter{
+		CPF: expectedCreator.CPF.Value(),
+	}
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("FindByFilter", expectedCreatorFilter).
+		Return(expectedCreator, nil)
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("FindCreatorByCPF", input.CPF).
+		Return(expectedCreator, nil)
+
+	suite.mockRFService.(*mocks.MockRFService).
+		On("ConsultaCPF", expectedCreator.CPF.String(), expectedCreator.Birthdate.Format("02/01/2006")).
+		Return(&gov.ReceitaFederalResponse{
+			Status: true,
+			Result: gov.ConsultaData{
+				NomeDaPF:       expectedCreator.Name,
+				NumeroDeCPF:    "058.997.950-77",
+				DataNascimento: "12/12/2012",
+			},
+		}, nil)
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("Save", expectedCreator).
+		Return(nil)
+
+	creator, err := suite.sut.CreateCreator(input)
+
+	suite.Error(err)
+	suite.Assert().Nil(creator)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertNotCalled(suite.T(), "Save", expectedCreator)
+	suite.mockRFService.(*mocks.MockRFService).AssertNotCalled(
 		suite.T(),
 		"ConsultaCPF",
 		expectedCreator.CPF.String(),
