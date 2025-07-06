@@ -244,3 +244,44 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInRecei
 		expectedCreator.Birthdate.Format("02/01/2006"),
 	)
 }
+
+func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfAnyDataIsInvalid() {
+	input := services.InputCreateCreator{
+		Name:        "Valid Name",
+		BirthDate:   "2012-12-12",
+		PhoneNumber: "(12) 94567-8901",
+		Email:       "invalid_mail", // invalid mail
+		CPF:         "058.997.950-77",
+	}
+
+	expectedCreator, _ := domain.NewCreator(
+		input.Name,
+		input.Email,
+		input.CPF,
+		input.PhoneNumber,
+		input.BirthDate,
+	)
+
+	suite.mockRFService.(*mocks.MockRFService).
+		On("ConsultaCPF", "05899795077", "12/12/2012").
+		Return(&gov.ReceitaFederalResponse{
+			Status: true,
+			Result: gov.ConsultaData{
+				NomeDaPF:       "Name RF",
+				NumeroDeCPF:    "058.997.950-77",
+				DataNascimento: "12/12/2012",
+			},
+		}, nil)
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("Save", expectedCreator).
+		Return(nil)
+
+	creator, err := suite.sut.CreateCreator(input)
+
+	suite.Error(err)
+	suite.Assert().Nil(creator)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertNotCalled(suite.T(), "FindByFilter")
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertNotCalled(suite.T(), "Save")
+	suite.mockRFService.(*mocks.MockRFService).AssertNotCalled(suite.T(), "ConsultaCPF")
+}
