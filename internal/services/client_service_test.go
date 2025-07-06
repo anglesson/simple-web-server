@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
 	"testing"
 
 	"github.com/anglesson/simple-web-server/domain"
@@ -15,7 +16,7 @@ import (
 
 var _ repositories.ClientRepository = (*MockClientRepository)(nil)
 var _ repositories.CreatorRepository = (*MockCreatorRepository)(nil)
-var _ gov.ReceitaFederalService = (*MockRFService)(nil)
+var _ gov.ReceitaFederalService = (*mocks.MockRFService)(nil)
 
 type MockCreatorRepository struct {
 	mock.Mock
@@ -83,15 +84,6 @@ func (m *MockClientRepository) FindByEmail(email string) (*models.Client, error)
 	return args.Get(0).(*models.Client), args.Error(1)
 }
 
-type MockRFService struct {
-	mock.Mock
-}
-
-func (m *MockRFService) ConsultaCPF(cpf, dataNascimento string) (*gov.ReceitaFederalResponse, error) {
-	args := m.Called(cpf, dataNascimento)
-	return args.Get(0).(*gov.ReceitaFederalResponse), args.Error(1)
-}
-
 type ClientServiceTestSuite struct {
 	suite.Suite
 	sut                   services.ClientService
@@ -103,7 +95,7 @@ type ClientServiceTestSuite struct {
 func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(MockClientRepository)
 	suite.mockCreatorRepository = new(MockCreatorRepository)
-	suite.mockRFService = new(MockRFService)
+	suite.mockRFService = new(mocks.MockRFService)
 	suite.sut = services.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
 }
 
@@ -128,7 +120,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 		Creators:  []*models.Creator{creator},
 	}
 
-	suite.mockRFService.(*MockRFService).
+	suite.mockRFService.(*mocks.MockRFService).
 		On("ConsultaCPF", "000.000.000-00", "12/12/2012").
 		Return(&gov.ReceitaFederalResponse{
 			Status: true,
@@ -179,7 +171,7 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 		Creators:  []*models.Creator{creator},
 	}
 
-	suite.mockRFService.(*MockRFService).
+	suite.mockRFService.(*mocks.MockRFService).
 		On("ConsultaCPF", "000.000.000-00", "12/12/2012").
 		Return(&gov.ReceitaFederalResponse{
 			Status: true,

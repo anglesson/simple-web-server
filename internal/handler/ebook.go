@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/anglesson/simple-web-server/pkg/gov"
 	"io"
 	"log"
 	"mime/multipart"
@@ -115,7 +116,8 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	// Busca o criador
 	creatorRepo := gorm.NewCreatorRepository()
-	creator, err := services.NewCreatorService(creatorRepo).FindCreatorByUserID(loggedUser.ID)
+	rfService := gov.NewHubDevService()
+	creator, err := services.NewCreatorService(creatorRepo, rfService).FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
 		web.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
