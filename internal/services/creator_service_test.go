@@ -5,6 +5,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/repositories"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/gov"
+	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -16,14 +17,10 @@ type CreatorServiceTestSuite struct {
 	mockRFService   gov.ReceitaFederalService
 }
 
-func TestCreatorServiceTestSuite(t *testing.T) {
-	suite.Run(t, new(CreatorServiceTestSuite))
-}
-
 func (suite *CreatorServiceTestSuite) SetupTest() {
 	suite.mockCreatorRepo = new(MockCreatorRepository)
-	suite.mockRFService = new(MockRFService)
-	suite.sut = services.NewCreatorService(suite.mockCreatorRepo)
+	suite.mockRFService = new(mocks.MockRFService)
+	suite.sut = services.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService)
 }
 
 func (suite *CreatorServiceTestSuite) TestCreateCreator() {
@@ -43,6 +40,17 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 		input.BirthDate,
 	)
 
+	suite.mockRFService.(*mocks.MockRFService).
+		On("ConsultaCPF", expectedCreator.CPF.String(), expectedCreator.Birthdate.Format("02/01/2006")).
+		Return(&gov.ReceitaFederalResponse{
+			Status: true,
+			Result: gov.ConsultaData{
+				NomeDaPF:       expectedCreator.Name,
+				NumeroDeCPF:    "058.997.950-77",
+				DataNascimento: "12/12/2012",
+			},
+		}, nil)
+
 	suite.mockCreatorRepo.(*MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
@@ -51,4 +59,52 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 
 	suite.NoError(err)
 	suite.mockCreatorRepo.(*MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
+}
+
+func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalData() {
+	input := services.InputCreateCreator{
+		Name:        "Valid Name",
+		BirthDate:   "2012-12-12",
+		PhoneNumber: "(12) 94567-8901",
+		Email:       "valid@mail.com",
+		CPF:         "058.997.950-77",
+	}
+
+	expectedCreator, _ := domain.NewCreator(
+		"Name RF",
+		input.Email,
+		input.CPF,
+		input.PhoneNumber,
+		input.BirthDate,
+	)
+
+	suite.mockRFService.(*mocks.MockRFService).
+		On("ConsultaCPF", expectedCreator.CPF.String(), expectedCreator.Birthdate.Format("02/01/2006")).
+		Return(&gov.ReceitaFederalResponse{
+			Status: true,
+			Result: gov.ConsultaData{
+				NomeDaPF:       expectedCreator.Name,
+				NumeroDeCPF:    "058.997.950-77",
+				DataNascimento: "12/12/2012",
+			},
+		}, nil)
+
+	suite.mockCreatorRepo.(*MockCreatorRepository).
+		On("Save", expectedCreator).
+		Return(nil)
+
+	_, err := suite.sut.CreateCreator(input)
+
+	suite.NoError(err)
+	suite.mockCreatorRepo.(*MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
+	suite.mockRFService.(*mocks.MockRFService).AssertCalled(
+		suite.T(),
+		"ConsultaCPF",
+		expectedCreator.CPF.String(),
+		expectedCreator.Birthdate.Format("02/01/2006"),
+	)
+}
+
+func TestCreatorServiceTestSuite(t *testing.T) {
+	suite.Run(t, new(CreatorServiceTestSuite))
 }
