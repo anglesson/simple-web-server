@@ -20,6 +20,14 @@ func (m *MockCreatorRepository) FindCreatorByUserEmail(email string) (*models.Cr
 	return args.Get(0).(*models.Creator), args.Error(1)
 }
 
+func (m *MockCreatorRepository) FindByFilter(query domain.CreatorFilter) (*domain.Creator, error) {
+	args := m.Called(query)
+	if args.Get(0) == nil {
+		return nil, nil
+	}
+	return args.Get(0).(*domain.Creator), args.Error(1)
+}
+
 func (m *MockCreatorRepository) Create(creator *models.Creator) error {
 	args := m.Called(creator)
 	return args.Error(0)

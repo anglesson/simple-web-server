@@ -52,3 +52,8 @@ func (cr *CreatorRepository) Create(creator *models.Creator) error {
 	}
 	return nil
 }
+
+func (cr *CreatorRepository) FindByFilter(query domain.CreatorFilter) (*domain.Creator, error) {
+	// TODO: Implement it
+	return nil, nil
+}

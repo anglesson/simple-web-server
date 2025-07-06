@@ -51,6 +51,17 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*domain.C
 		return nil, err
 	}
 
+	creatorExists, err := cs.creatorRepo.FindByFilter(domain.CreatorFilter{
+		CPF: creator.CPF.Value(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if creatorExists != nil {
+		return nil, errors.New("creator already exists")
+	}
+
 	err = cs.validateReceita(creator)
 	if err != nil {
 		return nil, err
