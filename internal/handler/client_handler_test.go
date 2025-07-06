@@ -3,7 +3,8 @@ package handler_test
 import (
 	"context"
 	"errors"
-	"github.com/anglesson/simple-web-server/domain"
+	mocks_service "github.com/anglesson/simple-web-server/internal/services/mocks"
+	mocks_cookies "github.com/anglesson/simple-web-server/pkg/cookie/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -22,88 +23,21 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ services.ClientService = (*MockClientService)(nil)
-
-type MockFlashMessage struct {
-	mock.Mock
-}
-
-var _ web.FlashMessagePort = (*MockFlashMessage)(nil)
-
-func (m *MockFlashMessage) Success(message string) {
-	m.Called(message)
-}
-
-func (m *MockFlashMessage) Error(message string) {
-	m.Called(message)
-}
-
-type MockClientService struct {
-	mock.Mock
-}
-
-func NewMockClientService() *MockClientService {
-	return &MockClientService{}
-}
-
-func (m *MockClientService) CreateClient(input services.CreateClientInput) (*services.CreateClientOutput, error) {
-	args := m.Called(input)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*services.CreateClientOutput), args.Error(1)
-}
-
-func (m *MockClientService) FindCreatorsClientByID(clientID uint, creatorEmail string) (*models.Client, error) {
-	args := m.Called(clientID, creatorEmail)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*models.Client), args.Error(1)
-}
-
-func (m *MockClientService) Update(input services.UpdateClientInput) (*models.Client, error) {
-	args := m.Called(input)
-	return args.Get(0).(*models.Client), args.Error(1)
-}
-
-func (m *MockClientService) CreateBatchClient(clients []*models.Client) error {
-	args := m.Called(clients)
-	return args.Error(1)
-}
-
-type MockCreatorService struct {
-	mock.Mock
-}
-
-func (m MockCreatorService) CreateCreator(input services.InputCreateCreator) (*domain.Creator, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (m MockCreatorService) FindCreatorByEmail(email string) (*models.Creator, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (m MockCreatorService) FindCreatorByUserID(userID uint) (*models.Creator, error) {
-	//TODO implement me
-	panic("implement me")
-}
+var _ services.ClientService = (*mocks_service.MockClientService)(nil)
 
 type ClientHandlerTestSuite struct {
 	suite.Suite
 	sut                *handler.ClientHandler
-	mockClientService  *MockClientService
-	mockCreatorService *MockCreatorService
-	mockFlashMessage   *MockFlashMessage
+	mockClientService  *mocks_service.MockClientService
+	mockCreatorService *mocks_service.MockCreatorService
+	mockFlashMessage   *mocks_cookies.MockFlashMessage
 	flashFactory       web.FlashMessageFactory
 }
 
 func (suite *ClientHandlerTestSuite) SetupTest() {
-	suite.mockClientService = NewMockClientService()
-	suite.mockFlashMessage = new(MockFlashMessage)
-	suite.mockCreatorService = new(MockCreatorService)
+	suite.mockClientService = mocks_service.NewMockClientService()
+	suite.mockFlashMessage = new(mocks_cookies.MockFlashMessage)
+	suite.mockCreatorService = new(mocks_service.MockCreatorService)
 
 	suite.flashFactory = func(w http.ResponseWriter, r *http.Request) web.FlashMessagePort {
 		return suite.mockFlashMessage
