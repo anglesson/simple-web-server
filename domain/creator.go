@@ -45,10 +45,21 @@ func NewCreator(name, email, cpf, phone, birthdate string) (*Creator, error) {
 		return nil, err
 	}
 
+	if !birthdateVo.IsAdult() {
+		return nil, errors.New("creator must be 18 years or older")
+	}
+
 	return &Creator{
 		Name:      name,
 		CPF:       cpfVo,
 		Birthdate: birthdateVo,
 		Contact:   contactVo,
 	}, nil
+}
+
+func (c *Creator) Validate() error {
+	if !c.Birthdate.IsAdult() {
+		return errors.New("creator must be 18 years or older")
+	}
+	return nil
 }
