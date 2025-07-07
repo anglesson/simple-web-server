@@ -4,17 +4,17 @@ import (
 	"errors"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/storage"
 )
 
 type PurchaseService struct {
-	purchaseRepository *repositories.PurchaseRepository
+	purchaseRepository *repository.PurchaseRepository
 	mailService        *mail.EmailService
 }
 
-func NewPurchaseService(purchaseRepository *repositories.PurchaseRepository, mailService *mail.EmailService) *PurchaseService {
+func NewPurchaseService(purchaseRepository *repository.PurchaseRepository, mailService *mail.EmailService) *PurchaseService {
 	return &PurchaseService{
 		purchaseRepository: purchaseRepository,
 		mailService:        mailService,

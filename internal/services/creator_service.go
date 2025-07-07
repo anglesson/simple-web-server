@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 	"github.com/anglesson/simple-web-server/domain"
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 	"log"
 
@@ -25,12 +25,12 @@ type InputCreateCreator struct {
 }
 
 type creatorServiceImpl struct {
-	creatorRepo repositories.CreatorRepository
+	creatorRepo repository.CreatorRepository
 	rfService   gov.ReceitaFederalService
 }
 
 func NewCreatorService(
-	creatorRepo repositories.CreatorRepository,
+	creatorRepo repository.CreatorRepository,
 	receitaFederalService gov.ReceitaFederalService,
 ) CreatorService {
 	return &creatorServiceImpl{

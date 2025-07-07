@@ -6,7 +6,7 @@ import (
 
 	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 

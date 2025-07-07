@@ -8,11 +8,11 @@ import (
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/handler/web"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/template"
@@ -69,7 +69,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user already exists
-	foundedUser := repositories.NewUserRepository().FindByEmail(form.Email)
+	foundedUser := repository.NewUserRepository().FindByEmail(form.Email)
 	if foundedUser != nil {
 		errors["email"] = "Email já cadastrado"
 	}
@@ -95,7 +95,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	hashedPassword := utils.HashPassword(form.Password)
 
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
-	if err := repositories.NewUserRepository().Save(user); err != nil {
+	if err := repository.NewUserRepository().Save(user); err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
 		return
 	}
@@ -109,7 +109,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save user with StripeCustomerID
-	if err := repositories.NewUserRepository().Save(user); err != nil {
+	if err := repository.NewUserRepository().Save(user); err != nil {
 		log.Printf("Error saving user with StripeCustomerID: %v", err)
 		web.RedirectBackWithErrors(w, r, "Erro ao salvar dados do usuário")
 		return

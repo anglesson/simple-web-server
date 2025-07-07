@@ -2,8 +2,8 @@ package services_test
 
 import (
 	"github.com/anglesson/simple-web-server/domain"
-	"github.com/anglesson/simple-web-server/internal/repositories"
-	mocks_repo "github.com/anglesson/simple-web-server/internal/repositories/mocks"
+	"github.com/anglesson/simple-web-server/internal/repository"
+	mocks_repo "github.com/anglesson/simple-web-server/internal/repository/mocks"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
@@ -14,7 +14,7 @@ import (
 type CreatorServiceTestSuite struct {
 	suite.Suite
 	sut             services.CreatorService
-	mockCreatorRepo repositories.CreatorRepository
+	mockCreatorRepo repository.CreatorRepository
 	mockRFService   gov.ReceitaFederalService
 }
 

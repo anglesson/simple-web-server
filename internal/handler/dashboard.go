@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
 func DashboardView(w http.ResponseWriter, r *http.Request) {
 	loggedUser := GetSessionUser(r)
-	dashRepository := repositories.NewDashboardRepository(loggedUser.ID)
+	dashRepository := repository.NewDashboardRepository(loggedUser.ID)
 
 	totalEbooks := dashRepository.GetTotalEbooks()
 	totalSendEbooks := dashRepository.GetTotalSendEbooks()

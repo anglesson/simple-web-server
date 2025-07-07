@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -44,14 +44,14 @@ type UpdateClientInput struct {
 }
 
 type clientServiceImpl struct {
-	clientRepository      repositories.ClientRepository
-	creatorRepository     repositories.CreatorRepository
+	clientRepository      repository.ClientRepository
+	creatorRepository     repository.CreatorRepository
 	receitaFederalService gov.ReceitaFederalService
 }
 
 func NewClientService(
-	clientRepository repositories.ClientRepository,
-	creatorRepository repositories.CreatorRepository,
+	clientRepository repository.ClientRepository,
+	creatorRepository repository.CreatorRepository,
 	receitaFederalService gov.ReceitaFederalService,
 ) ClientService {
 	return &clientServiceImpl{

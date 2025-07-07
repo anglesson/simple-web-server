@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import "github.com/anglesson/simple-web-server/internal/models"
 

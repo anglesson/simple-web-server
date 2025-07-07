@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
@@ -108,7 +108,7 @@ func (s *SessionService) InitSession(w http.ResponseWriter, email string) {
 	s.CSRFToken = s.GenerateCSRFToken()
 
 	// Update the session token in the user data
-	userRepository := repositories.NewUserRepository()
+	userRepository := repository.NewUserRepository()
 	user := userRepository.FindByEmail(email)
 	if user == nil {
 		log.Printf("Erro: Usuário não encontrado para o email: %s", email)

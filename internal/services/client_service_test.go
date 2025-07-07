@@ -1,11 +1,11 @@
 package services_test
 
 import (
-	mocks_repo "github.com/anglesson/simple-web-server/internal/repositories/mocks"
+	mocks_repo "github.com/anglesson/simple-web-server/internal/repository/mocks"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
@@ -13,15 +13,15 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-var _ repositories.ClientRepository = (*mocks_repo.MockClientRepository)(nil)
-var _ repositories.CreatorRepository = (*mocks_repo.MockCreatorRepository)(nil)
+var _ repository.ClientRepository = (*mocks_repo.MockClientRepository)(nil)
+var _ repository.CreatorRepository = (*mocks_repo.MockCreatorRepository)(nil)
 var _ gov.ReceitaFederalService = (*mocks.MockRFService)(nil)
 
 type ClientServiceTestSuite struct {
 	suite.Suite
 	sut                   services.ClientService
-	mockClientRepository  repositories.ClientRepository
-	mockCreatorRepository repositories.CreatorRepository
+	mockClientRepository  repository.ClientRepository
+	mockCreatorRepository repository.CreatorRepository
 	mockRFService         gov.ReceitaFederalService
 }
 

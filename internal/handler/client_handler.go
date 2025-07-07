@@ -9,7 +9,7 @@ import (
 
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"

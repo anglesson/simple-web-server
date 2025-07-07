@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 )
 
 type EbookService struct{}
@@ -13,8 +13,8 @@ func NewEbookService() *EbookService {
 	return &EbookService{}
 }
 
-func (s *EbookService) ListEbooksForUser(UserID uint, query repositories.EbookQuery) (*[]models.Ebook, error) {
-	ebookRepository := repositories.NewEbookRepository()
+func (s *EbookService) ListEbooksForUser(UserID uint, query repository.EbookQuery) (*[]models.Ebook, error) {
+	ebookRepository := repository.NewEbookRepository()
 	ebooks, err := ebookRepository.FindEbooksByUser(UserID, query)
 	if err != nil {
 		return nil, errors.New("ebooks não encontrados")

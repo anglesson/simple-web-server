@@ -13,11 +13,11 @@ import (
 
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
-	"github.com/anglesson/simple-web-server/internal/repositories/gorm"
+	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/database"
@@ -40,7 +40,7 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	pagination := domain.NewPagination(page, perPage)
 
 	ebookService := services.NewEbookService()
-	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repositories.EbookQuery{
+	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
 		Title:      title,
 		Pagination: pagination,
 	})
@@ -304,7 +304,7 @@ func GetSessionUser(r *http.Request) *models.User {
 		log.Fatalf("Erro ao recuperar usuário da sessão: %s", user_email)
 		return nil
 	}
-	return repositories.NewUserRepository().FindByEmail(user_email)
+	return repository.NewUserRepository().FindByEmail(user_email)
 }
 
 func EbookShowView(w http.ResponseWriter, r *http.Request) {

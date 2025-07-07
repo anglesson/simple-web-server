@@ -8,7 +8,7 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/services"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/mail"
@@ -22,7 +22,7 @@ func purchaseServiceFactory() *services.PurchaseService {
 		mailPort,
 		config.AppConfig.MailUsername,
 		config.AppConfig.MailPassword))
-	pr := repositories.NewPurchaseRepository()
+	pr := repository.NewPurchaseRepository()
 	return services.NewPurchaseService(pr, ms)
 }
 

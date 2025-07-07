@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/repositories"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/services"
 	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/anglesson/simple-web-server/pkg/utils"
@@ -43,7 +43,7 @@ func LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user exists
-	user := repositories.NewUserRepository().FindByEmail(form.Email)
+	user := repository.NewUserRepository().FindByEmail(form.Email)
 	if user == nil || !utils.CheckPasswordHash(user.Password, form.Password) {
 		errors["password"] = "Email ou senha inválidos"
 	}
