@@ -18,7 +18,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/storage"
@@ -39,7 +39,7 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Query().Get("title")
 	pagination := domain.NewPagination(page, perPage)
 
-	ebookService := services.NewEbookService()
+	ebookService := service.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
 		Title:      title,
 		Pagination: pagination,
@@ -117,7 +117,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	// Busca o criador
 	creatorRepo := gorm.NewCreatorRepository()
 	rfService := gov.NewHubDevService()
-	creator, err := services.NewCreatorService(creatorRepo, rfService).FindCreatorByUserID(loggedUser.ID)
+	creator, err := service.NewCreatorService(creatorRepo, rfService).FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
 		web.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")

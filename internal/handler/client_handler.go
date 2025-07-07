@@ -13,19 +13,19 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/go-chi/chi/v5"
 )
 
 type ClientHandler struct {
-	clientService       services.ClientService
-	creatorService      services.CreatorService
+	clientService       service.ClientService
+	creatorService      service.CreatorService
 	flashMessageFactory web.FlashMessageFactory
 }
 
-func NewClientHandler(clientService services.ClientService, creatorService services.CreatorService, flashMessageFactory web.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService service.ClientService, creatorService service.CreatorService, flashMessageFactory web.FlashMessageFactory) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		creatorService:      creatorService,
@@ -104,7 +104,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	input := services.CreateClientInput{
+	input := service.CreateClientInput{
 		Name:      r.FormValue("name"),
 		CPF:       r.FormValue("cpf"),
 		BirthDate: r.FormValue("birthdate"),
@@ -137,7 +137,7 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 	clientID := chi.URLParam(r, "id")
 	id, _ := strconv.ParseUint(clientID, 10, 32)
 
-	input := services.UpdateClientInput{
+	input := service.UpdateClientInput{
 		ID:           uint(id),
 		Email:        r.FormValue("email"),
 		Phone:        r.FormValue("phone"),

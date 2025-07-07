@@ -7,12 +7,12 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
-var sessionService = services.NewSessionService()
+var sessionService = service.NewSessionService()
 
 func LoginView(w http.ResponseWriter, r *http.Request) {
 	csrfToken := sessionService.GenerateCSRFToken()

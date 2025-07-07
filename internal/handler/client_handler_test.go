@@ -3,7 +3,7 @@ package handler_test
 import (
 	"context"
 	"errors"
-	mocks_service "github.com/anglesson/simple-web-server/internal/services/mocks"
+	mocks_service "github.com/anglesson/simple-web-server/internal/service/mocks"
 	mocks_cookies "github.com/anglesson/simple-web-server/pkg/cookie/mocks"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +13,7 @@ import (
 	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/go-chi/chi/v5"
@@ -23,7 +23,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ services.ClientService = (*mocks_service.MockClientService)(nil)
+var _ service.ClientService = (*mocks_service.MockClientService)(nil)
 
 type ClientHandlerTestSuite struct {
 	suite.Suite
@@ -71,7 +71,7 @@ func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {
 func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := services.CreateClientInput{
+	expectedInput := service.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -89,7 +89,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 	rr := httptest.NewRecorder()
 
 	suite.mockClientService.On("CreateClient", expectedInput).Return(
-		(*services.CreateClientOutput)(nil), errors.New("failed to create client due to service error")).Once()
+		(*service.CreateClientOutput)(nil), errors.New("failed to create client due to service error")).Once()
 	suite.mockFlashMessage.On("Error", "failed to create client due to service error").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
@@ -103,7 +103,7 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 	creatorEmail := "creator@mail"
 
-	expectedInput := services.CreateClientInput{
+	expectedInput := service.CreateClientInput{
 		Email:        "client@mail",
 		Name:         "Any Name",
 		Phone:        "Any Phone",
@@ -120,7 +120,7 @@ func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
 
 	rr := httptest.NewRecorder()
 
-	suite.mockClientService.On("CreateClient", expectedInput).Return(&services.CreateClientOutput{}, nil).Once()
+	suite.mockClientService.On("CreateClient", expectedInput).Return(&service.CreateClientOutput{}, nil).Once()
 	suite.mockFlashMessage.On("Success", "Cliente foi cadastrado!").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
@@ -136,7 +136,7 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 	creatorEmail := "creator@mail"
 	clientID := uint(1)
 
-	expectedInput := services.UpdateClientInput{
+	expectedInput := service.UpdateClientInput{
 		ID:           clientID,
 		Email:        "updated@mail.com",
 		Phone:        "Updated Phone",

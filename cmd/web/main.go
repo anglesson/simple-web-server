@@ -7,7 +7,7 @@ import (
 	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
 	"github.com/anglesson/simple-web-server/internal/config"
@@ -31,8 +31,8 @@ func main() {
 
 	// ========== Application Initialization ==========
 	commonRFService := gov.NewHubDevService()
-	creatorService := services.NewCreatorService(creatorRepository, commonRFService)
-	clientService := services.NewClientService(clientRepository, creatorRepository, commonRFService)
+	creatorService := service.NewCreatorService(creatorRepository, commonRFService)
+	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
 	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory)
 
 	r := chi.NewRouter()

@@ -9,13 +9,13 @@ import (
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/go-chi/chi/v5"
 )
 
-func purchaseServiceFactory() *services.PurchaseService {
+func purchaseServiceFactory() *service.PurchaseService {
 	mailPort, _ := strconv.Atoi(config.AppConfig.MailPort)
 	ms := mail.NewEmailService(mail.NewGoMailer(
 		config.AppConfig.MailHost,
@@ -23,7 +23,7 @@ func purchaseServiceFactory() *services.PurchaseService {
 		config.AppConfig.MailUsername,
 		config.AppConfig.MailPassword))
 	pr := repository.NewPurchaseRepository()
-	return services.NewPurchaseService(pr, ms)
+	return service.NewPurchaseService(pr, ms)
 }
 
 func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {

@@ -1,4 +1,4 @@
-package services_test
+package service_test
 
 import (
 	mocks_repo "github.com/anglesson/simple-web-server/internal/repository/mocks"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -19,7 +19,7 @@ var _ gov.ReceitaFederalService = (*mocks.MockRFService)(nil)
 
 type ClientServiceTestSuite struct {
 	suite.Suite
-	sut                   services.ClientService
+	sut                   service.ClientService
 	mockClientRepository  repository.ClientRepository
 	mockCreatorRepository repository.CreatorRepository
 	mockRFService         gov.ReceitaFederalService
@@ -29,13 +29,13 @@ func (suite *ClientServiceTestSuite) SetupTest() {
 	suite.mockClientRepository = new(mocks_repo.MockClientRepository)
 	suite.mockCreatorRepository = new(mocks_repo.MockCreatorRepository)
 	suite.mockRFService = new(mocks.MockRFService)
-	suite.sut = services.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
+	suite.sut = service.NewClientService(suite.mockClientRepository, suite.mockCreatorRepository, suite.mockRFService)
 }
 
 func (suite *ClientServiceTestSuite) TestCreateClient() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := services.CreateClientInput{
+	input := service.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
@@ -86,7 +86,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
 
-	input := services.CreateClientInput{
+	input := service.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",

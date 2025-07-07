@@ -13,7 +13,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/anglesson/simple-web-server/pkg/utils"
@@ -101,7 +101,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create Stripe customer
-	stripeService := services.NewStripeService()
+	stripeService := service.NewStripeService()
 	if err := stripeService.CreateCustomer(user); err != nil {
 		log.Printf("Error creating Stripe customer: %v", err)
 		web.RedirectBackWithErrors(w, r, "Erro ao criar cliente no Stripe")

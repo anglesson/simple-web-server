@@ -1,10 +1,10 @@
-package services_test
+package service_test
 
 import (
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	mocks_repo "github.com/anglesson/simple-web-server/internal/repository/mocks"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
 	"github.com/stretchr/testify/suite"
@@ -13,7 +13,7 @@ import (
 
 type CreatorServiceTestSuite struct {
 	suite.Suite
-	sut             services.CreatorService
+	sut             service.CreatorService
 	mockCreatorRepo repository.CreatorRepository
 	mockRFService   gov.ReceitaFederalService
 }
@@ -25,11 +25,11 @@ func TestCreatorServiceTestSuite(t *testing.T) {
 func (suite *CreatorServiceTestSuite) SetupTest() {
 	suite.mockCreatorRepo = new(mocks_repo.MockCreatorRepository)
 	suite.mockRFService = new(mocks.MockRFService)
-	suite.sut = services.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService)
+	suite.sut = service.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService)
 }
 
 func (suite *CreatorServiceTestSuite) TestCreateCreator() {
-	input := services.InputCreateCreator{
+	input := service.InputCreateCreator{
 		Name:        "Valid Name",
 		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
@@ -82,7 +82,7 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalData() {
-	input := services.InputCreateCreator{
+	input := service.InputCreateCreator{
 		Name:        "Valid Name",
 		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
@@ -135,7 +135,7 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister() {
-	input := services.InputCreateCreator{
+	input := service.InputCreateCreator{
 		Name:        "Valid Name",
 		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
@@ -193,7 +193,7 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister(
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInReceitaFederal() {
-	input := services.InputCreateCreator{
+	input := service.InputCreateCreator{
 		Name:        "Valid Name",
 		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
@@ -246,7 +246,7 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInRecei
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfAnyDataIsInvalid() {
-	input := services.InputCreateCreator{
+	input := service.InputCreateCreator{
 		Name:        "Valid Name",
 		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",

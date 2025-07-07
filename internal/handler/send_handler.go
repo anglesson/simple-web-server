@@ -10,7 +10,7 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/services"
+	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
@@ -41,7 +41,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		"ClientsCreator": len(creator.Clients),
 	}
 
-	ebookService := services.NewEbookService()
+	ebookService := service.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
 		Pagination: viewData["Pagination"].(*domain.Pagination),
 	})
