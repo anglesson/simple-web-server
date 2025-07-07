@@ -31,7 +31,7 @@ func (suite *CreatorServiceTestSuite) SetupTest() {
 func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 	input := services.InputCreateCreator{
 		Name:        "Valid Name",
-		BirthDate:   "2012-12-12",
+		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
 		Email:       "valid@mail.com",
 		CPF:         "058.997.950-77",
@@ -60,7 +60,7 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 			Result: gov.ConsultaData{
 				NomeDaPF:       expectedCreator.Name,
 				NumeroDeCPF:    "058.997.950-77",
-				DataNascimento: "12/12/2012",
+				DataNascimento: "12/12/1990",
 			},
 		}, nil)
 
@@ -84,7 +84,7 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalData() {
 	input := services.InputCreateCreator{
 		Name:        "Valid Name",
-		BirthDate:   "2012-12-12",
+		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
 		Email:       "valid@mail.com",
 		CPF:         "058.997.950-77",
@@ -113,7 +113,7 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 			Result: gov.ConsultaData{
 				NomeDaPF:       expectedCreator.Name,
 				NumeroDeCPF:    "058.997.950-77",
-				DataNascimento: "12/12/2012",
+				DataNascimento: "12/12/1990",
 			},
 		}, nil)
 
@@ -137,7 +137,7 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister() {
 	input := services.InputCreateCreator{
 		Name:        "Valid Name",
-		BirthDate:   "2012-12-12",
+		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
 		Email:       "valid@mail.com",
 		CPF:         "058.997.950-77",
@@ -170,7 +170,7 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister(
 			Result: gov.ConsultaData{
 				NomeDaPF:       expectedCreator.Name,
 				NumeroDeCPF:    "058.997.950-77",
-				DataNascimento: "12/12/2012",
+				DataNascimento: "12/12/1990",
 			},
 		}, nil)
 
@@ -195,7 +195,7 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister(
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInReceitaFederal() {
 	input := services.InputCreateCreator{
 		Name:        "Valid Name",
-		BirthDate:   "2012-12-12",
+		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
 		Email:       "valid@mail.com",
 		CPF:         "058.997.950-77",
@@ -248,7 +248,7 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInRecei
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfAnyDataIsInvalid() {
 	input := services.InputCreateCreator{
 		Name:        "Valid Name",
-		BirthDate:   "2012-12-12",
+		BirthDate:   "1990-12-12",
 		PhoneNumber: "(12) 94567-8901",
 		Email:       "invalid_mail", // invalid mail
 		CPF:         "058.997.950-77",
@@ -263,13 +263,13 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfAnyDataIsInvalid() {
 	)
 
 	suite.mockRFService.(*mocks.MockRFService).
-		On("ConsultaCPF", "05899795077", "12/12/2012").
+		On("ConsultaCPF", "05899795077", "12/12/1990").
 		Return(&gov.ReceitaFederalResponse{
 			Status: true,
 			Result: gov.ConsultaData{
 				NomeDaPF:       "Name RF",
 				NumeroDeCPF:    "058.997.950-77",
-				DataNascimento: "12/12/2012",
+				DataNascimento: "12/12/1990",
 			},
 		}, nil)
 

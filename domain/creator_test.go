@@ -25,7 +25,7 @@ func TestNewCreator(t *testing.T) {
 				Name:      "Any Name",
 				Email:     "valid@mail.com",
 				CPF:       "058.997.950-77",
-				Phone:     "(81) 99999-9999",
+				Phone:     "(12) 98765-4321",
 				Birthdate: "2004-01-01",
 			},
 			wantErr: false,
@@ -36,7 +36,7 @@ func TestNewCreator(t *testing.T) {
 				Name:      "",
 				Email:     "valid@mail.com",
 				CPF:       "058.997.950-77",
-				Phone:     "(99) 99999-9999",
+				Phone:     "(12) 98765-4321",
 				Birthdate: "2004-01-01",
 			},
 			wantErr: true,
@@ -47,7 +47,7 @@ func TestNewCreator(t *testing.T) {
 				Name:      "Valid Name",
 				Email:     "invalid_mail.com",
 				CPF:       "058.997.950-77",
-				Phone:     "(99) 99999-9999",
+				Phone:     "(12) 98765-4321",
 				Birthdate: "2004-01-01",
 			},
 			wantErr: true,
@@ -58,7 +58,7 @@ func TestNewCreator(t *testing.T) {
 				Name:      "Valid Name",
 				Email:     "valid@mail.com",
 				CPF:       "000.000.000-00",
-				Phone:     "(99) 99999-9999",
+				Phone:     "(12) 98765-4321",
 				Birthdate: "2004-01-01",
 			},
 			wantErr: true,
@@ -80,8 +80,19 @@ func TestNewCreator(t *testing.T) {
 				Name:      "Valid Name",
 				Email:     "valid@mail.com",
 				CPF:       "058.997.950-77",
-				Phone:     "(99) 99999-9999",
+				Phone:     "(12) 98765-4321",
 				Birthdate: "invalid date",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Creator is minor",
+			input: InputType{
+				Name:      "Valid Name",
+				Email:     "valid@mail.com",
+				CPF:       "058.997.950-77",
+				Phone:     "(12) 98765-4321",
+				Birthdate: "2023-01-01",
 			},
 			wantErr: true,
 		},
@@ -112,6 +123,10 @@ func TestNewCreator(t *testing.T) {
 
 			if !tt.wantErr && creator.Birthdate.String() != tt.input.Birthdate {
 				t.Errorf("NewCreator() = %v, want %v", creator.Birthdate.String(), tt.input.Birthdate)
+			}
+
+			if !tt.wantErr && creator.Birthdate.IsAdult() == false {
+				t.Errorf("NewCreator() = %v, want %v", creator.Birthdate.IsAdult(), true)
 			}
 		})
 	}
