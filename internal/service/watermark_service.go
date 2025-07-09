@@ -35,7 +35,7 @@ func getFilename(original string) string {
 }
 
 // ApplyWatermark aplica uma marca d'água ao PDF com as informações do usuário
-func ApplyWatermark(inputPath, name, cpf, email string) (string, error) {
+func ApplyWatermark(inputPath, content string) (string, error) {
 	outputPDF := getFilename(inputPath)
 
 	// Tentar criar o diretório ./temp se ele não existir
@@ -47,25 +47,37 @@ func ApplyWatermark(inputPath, name, cpf, email string) (string, error) {
 	conf := model.NewDefaultConfiguration()
 	// conf.ValidationMode = model.ValidationRelaxed // Relaxar validação
 
-	wm, errParse := pdfcpu.ParseTextWatermarkDetails(
-		fmt.Sprintf("%s  - %s - %s", name, cpf, email),
-		"font:Helvetica, points:20, pos:c, fillc:#000000, scale:1.0, rot:45, op:0.1",
-		true,
-		types.POINTS,
-	)
+	watermarkStrings := make([]string, 0)
+	watermarkStrings = append(watermarkStrings, "font:Helvetica, points:20, pos:c, fillc:#000000, scale:1.0, rot:45, op:0.1")
+	watermarkStrings = append(watermarkStrings, "font:Helvetica, points:20, pos:bc, fillc:#000000, scale:1.0, rot:0, op:0.1")
+	watermarkStrings = append(watermarkStrings, "font:Helvetica, points:20, pos:l, fillc:#000000, scale:1.0, rot:90, op:0.1")
+	watermarkStrings = append(watermarkStrings, "font:Helvetica, points:20, pos:r, fillc:#000000, scale:1.0, rot:-90, op:0.1")
+	watermarkStrings = append(watermarkStrings, "font:Helvetica, points:20, pos:tc, fillc:#000000, scale:1.0, rot:0, op:0.1")
 
-	if errParse != nil {
-		log.Fatal(errParse)
-	}
+	for key, wms := range watermarkStrings {
+		if key > 0 {
+			inputPath = outputPDF
+		}
+		log.Printf("Adicionando marca d'água: %s", wms)
+		// Adiciona a marca d'água ao PDF
+		wm, errParse := pdfcpu.ParseTextWatermarkDetails(
+			content,
+			wms,
+			true,
+			types.POINTS,
+		)
 
-	err := api.AddWatermarksFile(inputPath, outputPDF, nil, wm, conf)
+		if errParse != nil {
+			log.Fatal(errParse)
+		}
 
-	if err != nil {
-		fmt.Println("Erro ao configurar o stamp:", err)
-		return "", err
+		err := api.AddWatermarksFile(inputPath, outputPDF, nil, wm, conf)
+		if err != nil {
+			fmt.Println("Erro ao configurar o stamp:", err)
+			return "", err
+		}
 	}
 
 	fmt.Println("Stamp aplicado com sucesso!")
-
 	return outputPDF, nil
 }

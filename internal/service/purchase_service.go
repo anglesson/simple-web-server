@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
@@ -58,7 +59,7 @@ func (ps *PurchaseService) GetEbookFile(purchaseID int) (string, error) {
 		return "", errors.New("erro no download do objeto")
 	}
 
-	outputFilePath, err := ApplyWatermark(fileLocation, purchase.Client.Name, purchase.Client.CPF, purchase.Client.Contact.Email)
+	outputFilePath, err := ApplyWatermark(fileLocation, fmt.Sprintf("%s - %s - %s", purchase.Client.Name, purchase.Client.CPF, purchase.Client.Contact.Email))
 	if err != nil {
 		return "", err
 	}

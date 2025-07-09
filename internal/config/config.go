@@ -10,6 +10,7 @@ import (
 type AppConfiguration struct {
 	AppName               string
 	AppMode               string
+	AppKey                string
 	Host                  string
 	Port                  string
 	DatabaseURL           string
@@ -49,6 +50,7 @@ func LoadConfigs() {
 	}
 
 	AppConfig.AppName = GetEnv("APPLICATION_NAME", "Docffy")
+	AppConfig.AppKey = GetEnv("APP_KEY", "Docffy")
 	AppConfig.Host = GetEnv("HOST", "http://localhost")
 	AppConfig.Port = GetEnv("PORT", "8080")
 	AppConfig.DatabaseURL = GetEnv("DATABASE_URL", "./mydb.db")
