@@ -31,7 +31,7 @@ func WatermarkHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// Criar arquivo temporário para salvar o upload
-	tempFile, err := os.CreateTemp("./temp", "upload-*.pdf")
+	tempFile, err := os.CreateTemp("/temp", "upload-*.pdf")
 	if err != nil {
 		log.Printf("Erro ao criar arquivo temporário: %v", err)
 		http.Error(w, "Erro interno do servidor", http.StatusInternalServerError)
