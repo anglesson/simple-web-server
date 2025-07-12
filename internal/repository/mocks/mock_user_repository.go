@@ -15,5 +15,8 @@ func (m *MockUserRepository) Save(user *domain.User) error {
 }
 func (m *MockUserRepository) FindByEmail(emailUser string) *domain.User {
 	args := m.Called(emailUser)
+	if args.Get(0) == nil {
+		return nil
+	}
 	return args.Get(0).(*domain.User)
 }

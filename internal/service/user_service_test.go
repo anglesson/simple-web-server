@@ -35,6 +35,7 @@ func (suite *UserServiceTestSuite) TestCreateUser() {
 	inputPasswordConfirmation := "AnyPassword"
 	inputEmail := "any@user.com"
 
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByEmail", inputEmail).Return(nil)
 	suite.mockEncrypter.(*utilsMocks.MockEncrypter).On("HashPassword", inputPassword).Return("HashedPassword")
 	expectedUser, _ := domain.NewUser(inputUsername, inputEmail, "HashedPassword")
 
@@ -53,6 +54,7 @@ func (suite *UserServiceTestSuite) TestCreateUserWithHashedPassword() {
 
 	expectedUser, _ := domain.NewUser(inputUsername, inputEmail, "HashedPassword")
 
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByEmail", inputEmail).Return(nil)
 	suite.mockEncrypter.(*utilsMocks.MockEncrypter).On("HashPassword", inputPassword).Return("HashedPassword")
 	suite.mockUserRepository.(*mocks.MockUserRepository).On("Save", mock.Anything).Return(nil)
 	user, err := suite.sut.CreateUser(inputUsername, inputEmail, inputPassword, inputPasswordConfirmation)
@@ -73,4 +75,20 @@ func (suite *UserServiceTestSuite) TestShouldReturnErrorIfPasswordAndConfirmatio
 
 	suite.Error(err)
 	suite.Nil(user)
+}
+
+func (suite *UserServiceTestSuite) TestShouldReturnErrorIfUserAlreadyExists() {
+	inputUsername := "Any Username"
+	inputPassword := "AnyPassword"
+	inputPasswordConfirmation := "AnyPassword"
+	inputEmail := "any@user.com"
+
+	suite.mockEncrypter.(*utilsMocks.MockEncrypter).On("HashPassword", inputPassword).Return("HashedPassword")
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByEmail", inputEmail).Return(&domain.User{})
+	user, err := suite.sut.CreateUser(inputUsername, inputEmail, inputPassword, inputPasswordConfirmation)
+
+	suite.Error(err)
+	suite.Nil(user)
+	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "FindByEmail", inputEmail)
+	suite.mockUserRepository.(*mocks.MockUserRepository).AssertNotCalled(suite.T(), "Save")
 }
