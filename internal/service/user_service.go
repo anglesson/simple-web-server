@@ -28,6 +28,11 @@ func (us *UserServiceImpl) CreateUser(username, email, password, passwordConfirm
 		return nil, errors.New("passwords do not match")
 	}
 
+	existingUser := us.userRepository.FindByEmail(email)
+	if existingUser != nil {
+		return nil, errors.New("user already exists")
+	}
+
 	user, err := domain.NewUser(username, email, us.encrypter.HashPassword(password))
 	if err != nil {
 		return nil, err
