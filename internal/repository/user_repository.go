@@ -1,20 +1,26 @@
 package repository
 
 import (
+	"github.com/anglesson/simple-web-server/domain"
 	"log"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/pkg/database"
 )
 
-type UserRepository struct {
+type UserRepository interface {
+	Save(user *domain.User) error
+	FindByEmail(emailUser string) *domain.User
 }
 
-func NewUserRepository() *UserRepository {
-	return &UserRepository{}
+type UserRepositoryImpl struct {
 }
 
-func (ur *UserRepository) Save(user *models.User) error {
+func NewUserRepository() *UserRepositoryImpl {
+	return &UserRepositoryImpl{}
+}
+
+func (r *UserRepositoryImpl) Save(user *models.User) error {
 	result := database.DB.Save(user)
 	if result.Error != nil {
 		log.Printf("Erro ao salvar usuário: %v", result.Error)
@@ -26,7 +32,7 @@ func (ur *UserRepository) Save(user *models.User) error {
 }
 
 // TODO: add error handler
-func (ur *UserRepository) FindByEmail(emailUser string) *models.User {
+func (r *UserRepositoryImpl) FindByEmail(emailUser string) *models.User {
 	var user models.User
 	result := database.DB.Where("email = ?", emailUser).First(&user)
 	if result.Error != nil {
@@ -36,7 +42,7 @@ func (ur *UserRepository) FindByEmail(emailUser string) *models.User {
 	return &user
 }
 
-func (r *UserRepository) FindBySessionToken(token string) *models.User {
+func (r *UserRepositoryImpl) FindBySessionToken(token string) *models.User {
 	var user models.User
 	result := database.DB.Where("session_token = ?", token).First(&user)
 	if result.Error != nil {
@@ -46,7 +52,7 @@ func (r *UserRepository) FindBySessionToken(token string) *models.User {
 	return &user
 }
 
-func (ur *UserRepository) FindByStripeCustomerID(customerID string) *models.User {
+func (r *UserRepositoryImpl) FindByStripeCustomerID(customerID string) *models.User {
 	var user models.User
 	err := database.DB.Where("stripe_customer_id = ?", customerID).First(&user).Error
 	if err != nil {
