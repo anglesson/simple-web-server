@@ -22,7 +22,7 @@ func TestNewUser(t *testing.T) {
 			input: InputType{
 				Username: "Any Username",
 				Email:    "valid@mail.com",
-				Password: "Any Password",
+				Password: "ValidPassword123!",
 			},
 			wantErr: false,
 		}, {
@@ -30,7 +30,7 @@ func TestNewUser(t *testing.T) {
 			input: InputType{
 				Username: "Any Username",
 				Email:    "invalid_valid_mail",
-				Password: "Any Password",
+				Password: "ValidPassword123!",
 			},
 			wantErr: true,
 		}, {
@@ -38,7 +38,7 @@ func TestNewUser(t *testing.T) {
 			input: InputType{
 				Username: "",
 				Email:    "valid@mail.com",
-				Password: "Any Password",
+				Password: "ValidPassword123!",
 			},
 			wantErr: true,
 		}, {
@@ -46,7 +46,7 @@ func TestNewUser(t *testing.T) {
 			input: InputType{
 				Username: "Any username",
 				Email:    "",
-				Password: "Any Password",
+				Password: "ValidPassword123!",
 			},
 			wantErr: true,
 		}, {
@@ -63,7 +63,7 @@ func TestNewUser(t *testing.T) {
 			input: InputType{
 				Username: strings.Repeat("a", 51),
 				Email:    "valid@mail.com",
-				Password: "any_password",
+				Password: "ValidPassword123!",
 			},
 			wantErr: false,
 		},
@@ -89,7 +89,7 @@ func TestNewUser(t *testing.T) {
 				t.Errorf("NewUser() = %v, want %v", user.Email.Value(), tt.input.Username)
 			}
 
-			if !tt.wantErr && user.Password != tt.input.Password {
+			if !tt.wantErr && !user.Password.Equals(tt.input.Password) {
 				t.Errorf("NewUser() = %v, want %v", user.Password, tt.input.Password)
 			}
 		})
