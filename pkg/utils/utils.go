@@ -9,7 +9,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HashPassword(password string) string {
+type Encrypter interface {
+	HashPassword(password string) string
+	CheckPasswordHash(hashedPassword, password string) bool
+	GenerateToken(length int) string
+}
+
+type encrypterImpl struct {
+}
+
+func NewEncrypter() Encrypter {
+	return &encrypterImpl{}
+}
+
+func (e *encrypterImpl) HashPassword(password string) string {
 	// In a real application, use a secure hashing algorithm
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -23,12 +36,12 @@ func HashPassword(password string) string {
 	return hashedPassword
 }
 
-func CheckPasswordHash(hashedPassword, password string) bool {
+func (e *encrypterImpl) CheckPasswordHash(hashedPassword, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
 }
 
-func GenerateToken(length int) string {
+func (e *encrypterImpl) GenerateToken(length int) string {
 	bytes := make([]byte, length)
 	if _, err := rand.Read(bytes); err != nil {
 		log.Fatalf("Failed to generate random token: %v", err)

@@ -12,6 +12,7 @@ import (
 type SessionService struct {
 	SessionToken string
 	CSRFToken    string
+	encrypter    utils.Encrypter
 }
 
 func NewSessionService() *SessionService {
@@ -22,12 +23,12 @@ func NewSessionService() *SessionService {
 }
 
 func (s *SessionService) GenerateSessionToken() string {
-	s.SessionToken = utils.GenerateToken(32)
+	s.SessionToken = s.encrypter.GenerateToken(32)
 	return s.SessionToken
 }
 
 func (s *SessionService) GenerateCSRFToken() string {
-	s.CSRFToken = utils.GenerateToken(32)
+	s.CSRFToken = s.encrypter.GenerateToken(32)
 	return s.CSRFToken
 }
 

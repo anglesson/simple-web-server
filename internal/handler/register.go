@@ -16,7 +16,6 @@ import (
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/template"
-	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +91,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashedPassword := utils.HashPassword(form.Password)
+	hashedPassword := encrypter.HashPassword(form.Password)
 
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
 	if err := repository.NewUserRepository().Save(user); err != nil {

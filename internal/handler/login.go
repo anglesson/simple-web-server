@@ -13,6 +13,7 @@ import (
 )
 
 var sessionService = service.NewSessionService()
+var encrypter = utils.NewEncrypter()
 
 func LoginView(w http.ResponseWriter, r *http.Request) {
 	csrfToken := sessionService.GenerateCSRFToken()
@@ -44,7 +45,7 @@ func LoginSubmit(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the user exists
 	user := repository.NewUserRepository().FindByEmail(form.Email)
-	if user == nil || !utils.CheckPasswordHash(user.Password, form.Password) {
+	if user == nil || !encrypter.CheckPasswordHash(user.Password, form.Password) {
 		errors["password"] = "Email ou senha inválidos"
 	}
 
