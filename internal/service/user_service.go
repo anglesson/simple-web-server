@@ -1,13 +1,14 @@
 package service
 
 import (
+	"errors"
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
 type UserService interface {
-	CreateUser(username, email, password string) (*domain.User, error)
+	CreateUser(username, email, password, passwordConfirmation string) (*domain.User, error)
 }
 
 type UserServiceImpl struct {
@@ -22,7 +23,11 @@ func NewUserService(userRepository repository.UserRepository, encrypter utils.En
 	}
 }
 
-func (us *UserServiceImpl) CreateUser(username, email, password string) (*domain.User, error) {
+func (us *UserServiceImpl) CreateUser(username, email, password, passwordConfirmation string) (*domain.User, error) {
+	if password != passwordConfirmation {
+		return nil, errors.New("passwords do not match")
+	}
+
 	user, err := domain.NewUser(username, email, us.encrypter.HashPassword(password))
 	if err != nil {
 		return nil, err
