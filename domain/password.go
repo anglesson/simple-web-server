@@ -58,3 +58,7 @@ func validatePassword(s string) error {
 func (p *Password) Equals(value string) bool {
 	return *p == Password(value)
 }
+
+func (p *Password) Value() string {
+	return string(*p)
+}

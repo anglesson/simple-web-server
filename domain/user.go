@@ -4,7 +4,7 @@ import "errors"
 
 type User struct {
 	Email    *Email
-	Password string
+	Password *Password
 	Username string
 }
 
@@ -22,9 +22,23 @@ func NewUser(username, email, password string) (*User, error) {
 		return nil, err
 	}
 
+	passwordVO, err := NewPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
 	return &User{
 		Email:    emailVO,
-		Password: password,
+		Password: passwordVO,
 		Username: username,
 	}, nil
+}
+
+func (u *User) SetPassword(newPassword string) error {
+	passwordVO, err := NewPassword(newPassword)
+	if err != nil {
+		return err
+	}
+	u.Password = passwordVO
+	return nil
 }
