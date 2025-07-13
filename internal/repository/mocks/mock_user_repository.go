@@ -10,7 +10,7 @@ type MockUserRepository struct {
 }
 
 func (m *MockUserRepository) Create(user *domain.User) error {
-	args := m.Called(&user)
+	args := m.Called(user)
 	return args.Error(0)
 }
 func (m *MockUserRepository) FindByUserEmail(emailUser string) *domain.User {
