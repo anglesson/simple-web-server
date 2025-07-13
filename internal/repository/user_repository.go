@@ -9,8 +9,8 @@ import (
 )
 
 type UserRepository interface {
-	Save(user *domain.User) error
-	FindByEmail(emailUser string) *domain.User
+	Create(user *domain.User) error
+	FindByUserEmail(emailUser string) *domain.User
 }
 
 type UserRepositoryImpl struct {
@@ -60,4 +60,12 @@ func (r *UserRepositoryImpl) FindByStripeCustomerID(customerID string) *models.U
 		return nil
 	}
 	return &user
+}
+
+func (r *UserRepositoryImpl) Create(user *domain.User) error {
+	return nil
+}
+
+func (r *UserRepositoryImpl) FindByUserEmail(emailUser string) *domain.User {
+	return nil
 }

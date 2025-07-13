@@ -9,11 +9,11 @@ type MockUserRepository struct {
 	mock.Mock
 }
 
-func (m *MockUserRepository) Save(user *domain.User) error {
+func (m *MockUserRepository) Create(user *domain.User) error {
 	args := m.Called(&user)
 	return args.Error(0)
 }
-func (m *MockUserRepository) FindByEmail(emailUser string) *domain.User {
+func (m *MockUserRepository) FindByUserEmail(emailUser string) *domain.User {
 	args := m.Called(emailUser)
 	if args.Get(0) == nil {
 		return nil

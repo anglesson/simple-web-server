@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/utils"
 	"log"
 	"net/http"
 
@@ -25,14 +27,21 @@ func main() {
 		return web.NewCookieFlashMessage(w, r)
 	}
 
+	// Utils
+	encrypter := utils.NewEncrypter()
+
 	// Repositories
 	creatorRepository := gorm.NewCreatorRepository()
 	clientRepository := gorm.NewClientGormRepository()
+	userRepository := repository.NewUserRepository()
 
-	// ========== Application Initialization ==========
+	// Services
 	commonRFService := gov.NewHubDevService()
-	creatorService := service.NewCreatorService(creatorRepository, commonRFService)
+	userService := service.NewUserService(userRepository, encrypter)
+	creatorService := service.NewCreatorService(creatorRepository, commonRFService, userService)
 	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
+
+	// Handlers
 	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory)
 
 	r := chi.NewRouter()

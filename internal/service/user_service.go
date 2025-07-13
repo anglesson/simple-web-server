@@ -34,7 +34,7 @@ func (us *UserServiceImpl) CreateUser(username, email, password, passwordConfirm
 
 	username = strings.TrimSpace(username)
 
-	existingUser := us.userRepository.FindByEmail(email)
+	existingUser := us.userRepository.FindByUserEmail(email)
 	if existingUser != nil {
 		return nil, ErrUserAlreadyExists
 	}
@@ -51,7 +51,7 @@ func (us *UserServiceImpl) CreateUser(username, email, password, passwordConfirm
 	}
 	user.Password = passwordVO
 
-	err = us.userRepository.Save(user)
+	err = us.userRepository.Create(user)
 	if err != nil {
 		return nil, err
 	}

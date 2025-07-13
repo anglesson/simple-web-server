@@ -6,10 +6,12 @@ import (
 )
 
 type Creator struct {
+	Entity
 	Name      string
 	CPF       *CPF
 	Birthdate *BirthDay
 	Contact   *Contact
+	UserID    uint
 }
 
 func NewCreator(name, email, cpf, phone, birthdate string) (*Creator, error) {

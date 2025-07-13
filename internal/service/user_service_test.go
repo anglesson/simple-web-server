@@ -45,33 +45,33 @@ func TestUserServiceTestSuite(t *testing.T) {
 
 func (suite *UserServiceTestSuite) TestCreateUser() {
 
-	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByEmail", input.Email).Return(nil)
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByUserEmail", input.Email).Return(nil)
 	suite.mockEncrypter.(*utilsMocks.MockEncrypter).On("HashPassword", input.Password).Return("HashedPassword123!")
 	expectedUser, _ := domain.NewUser(input.Username, input.Email, "HashedPassword123!")
 
-	suite.mockUserRepository.(*mocks.MockUserRepository).On("Save", &expectedUser).Return(nil)
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("Create", &expectedUser).Return(nil)
 	_, err := suite.sut.CreateUser(input.Username, input.Email, input.Password, input.PasswordConfirmation)
 
 	suite.NoError(err)
-	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "Save", &expectedUser)
+	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "Create", &expectedUser)
 }
 
 func (suite *UserServiceTestSuite) TestCreateUserWithHashedPassword() {
 	expectedUser, _ := domain.NewUser(input.Username, input.Email, "HashedPassword123!")
 
-	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByEmail", input.Email).Return(nil)
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByUserEmail", input.Email).Return(nil)
 	suite.mockEncrypter.(*utilsMocks.MockEncrypter).On("HashPassword", input.Password).Return("HashedPassword123!")
-	suite.mockUserRepository.(*mocks.MockUserRepository).On("Save", mock.Anything).Return(nil)
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("Create", mock.Anything).Return(nil)
 	user, err := suite.sut.CreateUser(input.Username, input.Email, input.Password, input.PasswordConfirmation)
 
 	suite.NoError(err)
 	suite.mockEncrypter.(*utilsMocks.MockEncrypter).AssertCalled(suite.T(), "HashPassword", input.Password)
-	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "Save", &expectedUser)
+	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "Create", &expectedUser)
 	suite.Assert().Equal("HashedPassword123!", user.Password.Value())
 }
 
 func (suite *UserServiceTestSuite) TestShouldReturnErrorIfPasswordAndConfirmationAreDifferent() {
-	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByEmail", input.Email).Return(nil)
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByUserEmail", input.Email).Return(nil)
 	suite.mockEncrypter.(*utilsMocks.MockEncrypter).On("HashPassword", input.Password).Return("HashedPassword")
 	user, err := suite.sut.CreateUser(input.Username, input.Email, input.Password, input.PasswordConfirmation)
 
@@ -81,11 +81,11 @@ func (suite *UserServiceTestSuite) TestShouldReturnErrorIfPasswordAndConfirmatio
 
 func (suite *UserServiceTestSuite) TestShouldReturnErrorIfUserAlreadyExists() {
 	suite.mockEncrypter.(*utilsMocks.MockEncrypter).On("HashPassword", input.Password).Return("HashedPassword")
-	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByEmail", input.Email).Return(&domain.User{})
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByUserEmail", input.Email).Return(&domain.User{})
 	user, err := suite.sut.CreateUser(input.Username, input.Email, input.Password, input.PasswordConfirmation)
 
 	suite.Error(err)
 	suite.Nil(user)
-	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "FindByEmail", input.Email)
-	suite.mockUserRepository.(*mocks.MockUserRepository).AssertNotCalled(suite.T(), "Save")
+	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "FindByUserEmail", input.Email)
+	suite.mockUserRepository.(*mocks.MockUserRepository).AssertNotCalled(suite.T(), "Create")
 }

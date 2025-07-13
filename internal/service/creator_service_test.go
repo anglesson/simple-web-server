@@ -5,17 +5,21 @@ import (
 	"github.com/anglesson/simple-web-server/internal/repository"
 	mocks_repo "github.com/anglesson/simple-web-server/internal/repository/mocks"
 	"github.com/anglesson/simple-web-server/internal/service"
+	mocksService "github.com/anglesson/simple-web-server/internal/service/mocks"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
+var inputCreateCreator = service.InputCreateCreator{}
+
 type CreatorServiceTestSuite struct {
 	suite.Suite
 	sut             service.CreatorService
 	mockCreatorRepo repository.CreatorRepository
 	mockRFService   gov.ReceitaFederalService
+	mockUserService service.UserService
 }
 
 func TestCreatorServiceTestSuite(t *testing.T) {
@@ -23,26 +27,28 @@ func TestCreatorServiceTestSuite(t *testing.T) {
 }
 
 func (suite *CreatorServiceTestSuite) SetupTest() {
+	inputCreateCreator = service.InputCreateCreator{
+		Name:                 "Valid Name",
+		BirthDate:            "1990-12-12",
+		PhoneNumber:          "(12) 94567-8901",
+		Email:                "valid@mail.com",
+		CPF:                  "058.997.950-77",
+		Password:             "ValidPassword123!",
+		PasswordConfirmation: "ValidPassword123!",
+	}
 	suite.mockCreatorRepo = new(mocks_repo.MockCreatorRepository)
 	suite.mockRFService = new(mocks.MockRFService)
-	suite.sut = service.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService)
+	suite.mockUserService = new(mocksService.MockUserService)
+	suite.sut = service.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService, suite.mockUserService)
 }
 
 func (suite *CreatorServiceTestSuite) TestCreateCreator() {
-	input := service.InputCreateCreator{
-		Name:        "Valid Name",
-		BirthDate:   "1990-12-12",
-		PhoneNumber: "(12) 94567-8901",
-		Email:       "valid@mail.com",
-		CPF:         "058.997.950-77",
-	}
-
 	expectedCreator, _ := domain.NewCreator(
-		input.Name,
-		input.Email,
-		input.CPF,
-		input.PhoneNumber,
-		input.BirthDate,
+		inputCreateCreator.Name,
+		inputCreateCreator.Email,
+		inputCreateCreator.CPF,
+		inputCreateCreator.PhoneNumber,
+		inputCreateCreator.BirthDate,
 	)
 
 	expectedCreatorFilter := domain.CreatorFilter{
@@ -64,11 +70,15 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 			},
 		}, nil)
 
+	suite.mockUserService.(*mocksService.MockUserService).
+		On("CreateUser", inputCreateCreator.Name, inputCreateCreator.Email, inputCreateCreator.Password, inputCreateCreator.PasswordConfirmation).
+		Return(&domain.User{}, nil)
+
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
 
-	_, err := suite.sut.CreateCreator(input)
+	_, err := suite.sut.CreateCreator(inputCreateCreator)
 
 	suite.NoError(err)
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindByFilter", expectedCreatorFilter)
@@ -81,21 +91,13 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator() {
 	)
 }
 
-func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalData() {
-	input := service.InputCreateCreator{
-		Name:        "Valid Name",
-		BirthDate:   "1990-12-12",
-		PhoneNumber: "(12) 94567-8901",
-		Email:       "valid@mail.com",
-		CPF:         "058.997.950-77",
-	}
-
+func (suite *CreatorServiceTestSuite) TestShouldCallUserService() {
 	expectedCreator, _ := domain.NewCreator(
-		"Name RF",
-		input.Email,
-		input.CPF,
-		input.PhoneNumber,
-		input.BirthDate,
+		inputCreateCreator.Name,
+		inputCreateCreator.Email,
+		inputCreateCreator.CPF,
+		inputCreateCreator.PhoneNumber,
+		inputCreateCreator.BirthDate,
 	)
 
 	expectedCreatorFilter := domain.CreatorFilter{
@@ -117,11 +119,73 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 			},
 		}, nil)
 
+	suite.mockUserService.(*mocksService.MockUserService).
+		On("CreateUser", inputCreateCreator.Name, inputCreateCreator.Email, inputCreateCreator.Password, inputCreateCreator.PasswordConfirmation).
+		Return(&domain.User{}, nil)
+
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
 
-	_, err := suite.sut.CreateCreator(input)
+	_, err := suite.sut.CreateCreator(inputCreateCreator)
+
+	suite.NoError(err)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindByFilter", expectedCreatorFilter)
+	suite.mockUserService.(*mocksService.MockUserService).
+		AssertCalled(
+			suite.T(),
+			"CreateUser",
+			inputCreateCreator.Name,
+			inputCreateCreator.Email,
+			inputCreateCreator.Password,
+			inputCreateCreator.PasswordConfirmation,
+		)
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "Save", expectedCreator)
+	suite.mockRFService.(*mocks.MockRFService).AssertCalled(
+		suite.T(),
+		"ConsultaCPF",
+		expectedCreator.CPF.String(),
+		expectedCreator.Birthdate.Format("02/01/2006"),
+	)
+}
+
+func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalData() {
+	expectedCreator, _ := domain.NewCreator(
+		"Name RF",
+		inputCreateCreator.Email,
+		inputCreateCreator.CPF,
+		inputCreateCreator.PhoneNumber,
+		inputCreateCreator.BirthDate,
+	)
+
+	expectedCreatorFilter := domain.CreatorFilter{
+		CPF: expectedCreator.CPF.Value(),
+	}
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("FindByFilter", expectedCreatorFilter).
+		Return(nil, nil)
+
+	suite.mockRFService.(*mocks.MockRFService).
+		On("ConsultaCPF", expectedCreator.CPF.String(), expectedCreator.Birthdate.Format("02/01/2006")).
+		Return(&gov.ReceitaFederalResponse{
+			Status: true,
+			Result: gov.ConsultaData{
+				NomeDaPF:       expectedCreator.Name,
+				NumeroDeCPF:    "058.997.950-77",
+				DataNascimento: "12/12/1990",
+			},
+		}, nil)
+
+	suite.mockUserService.(*mocksService.MockUserService).
+		On("CreateUser", inputCreateCreator.Name, inputCreateCreator.Email, inputCreateCreator.Password, inputCreateCreator.PasswordConfirmation).
+		Return(&domain.User{}, nil)
+
+	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
+		On("Save", expectedCreator).
+		Return(nil)
+
+	_, err := suite.sut.CreateCreator(inputCreateCreator)
 
 	suite.NoError(err)
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindByFilter", expectedCreatorFilter)
@@ -135,20 +199,12 @@ func (suite *CreatorServiceTestSuite) TestShouldUpdateCreatorWithReceitaFederalD
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister() {
-	input := service.InputCreateCreator{
-		Name:        "Valid Name",
-		BirthDate:   "1990-12-12",
-		PhoneNumber: "(12) 94567-8901",
-		Email:       "valid@mail.com",
-		CPF:         "058.997.950-77",
-	}
-
 	expectedCreator, _ := domain.NewCreator(
-		input.Name,
-		input.Email,
-		input.CPF,
-		input.PhoneNumber,
-		input.BirthDate,
+		inputCreateCreator.Name,
+		inputCreateCreator.Email,
+		inputCreateCreator.CPF,
+		inputCreateCreator.PhoneNumber,
+		inputCreateCreator.BirthDate,
 	)
 
 	expectedCreatorFilter := domain.CreatorFilter{
@@ -160,7 +216,7 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister(
 		Return(expectedCreator, nil)
 
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
-		On("FindCreatorByCPF", input.CPF).
+		On("FindCreatorByCPF", inputCreateCreator.CPF).
 		Return(expectedCreator, nil)
 
 	suite.mockRFService.(*mocks.MockRFService).
@@ -174,11 +230,15 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister(
 			},
 		}, nil)
 
+	suite.mockUserService.(*mocksService.MockUserService).
+		On("CreateUser", inputCreateCreator.Name, inputCreateCreator.Email, inputCreateCreator.Password, inputCreateCreator.PasswordConfirmation).
+		Return(&domain.User{}, nil)
+
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
 
-	creator, err := suite.sut.CreateCreator(input)
+	creator, err := suite.sut.CreateCreator(inputCreateCreator)
 
 	suite.Error(err)
 	suite.Assert().Nil(creator)
@@ -193,20 +253,12 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfCreatorHasARegister(
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInReceitaFederal() {
-	input := service.InputCreateCreator{
-		Name:        "Valid Name",
-		BirthDate:   "1990-12-12",
-		PhoneNumber: "(12) 94567-8901",
-		Email:       "valid@mail.com",
-		CPF:         "058.997.950-77",
-	}
-
 	expectedCreator, _ := domain.NewCreator(
-		input.Name,
-		input.Email,
-		input.CPF,
-		input.PhoneNumber,
-		input.BirthDate,
+		inputCreateCreator.Name,
+		inputCreateCreator.Email,
+		inputCreateCreator.CPF,
+		inputCreateCreator.PhoneNumber,
+		inputCreateCreator.BirthDate,
 	)
 
 	expectedCreatorFilter := domain.CreatorFilter{
@@ -218,7 +270,7 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInRecei
 		Return(expectedCreator, nil)
 
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
-		On("FindCreatorByCPF", input.CPF).
+		On("FindCreatorByCPF", inputCreateCreator.CPF).
 		Return(expectedCreator, nil)
 
 	suite.mockRFService.(*mocks.MockRFService).
@@ -227,11 +279,15 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInRecei
 			Status: false, // Simulate data not found in Receita Federal
 		}, nil)
 
+	suite.mockUserService.(*mocksService.MockUserService).
+		On("CreateUser", inputCreateCreator.Name, inputCreateCreator.Email, inputCreateCreator.Password, inputCreateCreator.PasswordConfirmation).
+		Return(&domain.User{}, nil)
+
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
 
-	creator, err := suite.sut.CreateCreator(input)
+	creator, err := suite.sut.CreateCreator(inputCreateCreator)
 
 	suite.Error(err)
 	suite.Assert().Nil(creator)
@@ -246,20 +302,14 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfDataNotExistsInRecei
 }
 
 func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfAnyDataIsInvalid() {
-	input := service.InputCreateCreator{
-		Name:        "Valid Name",
-		BirthDate:   "1990-12-12",
-		PhoneNumber: "(12) 94567-8901",
-		Email:       "invalid_mail", // invalid mail
-		CPF:         "058.997.950-77",
-	}
+	inputCreateCreator.Email = "invalid_mail" // invalid mail
 
 	expectedCreator, _ := domain.NewCreator(
-		input.Name,
-		input.Email,
-		input.CPF,
-		input.PhoneNumber,
-		input.BirthDate,
+		inputCreateCreator.Name,
+		inputCreateCreator.Email,
+		inputCreateCreator.CPF,
+		inputCreateCreator.PhoneNumber,
+		inputCreateCreator.BirthDate,
 	)
 
 	suite.mockRFService.(*mocks.MockRFService).
@@ -273,11 +323,15 @@ func (suite *CreatorServiceTestSuite) TestShouldThrowErrorIfAnyDataIsInvalid() {
 			},
 		}, nil)
 
+	suite.mockUserService.(*mocksService.MockUserService).
+		On("CreateUser", inputCreateCreator.Name, inputCreateCreator.Email, inputCreateCreator.Password, inputCreateCreator.PasswordConfirmation).
+		Return(&domain.User{}, nil)
+
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).
 		On("Save", expectedCreator).
 		Return(nil)
 
-	creator, err := suite.sut.CreateCreator(input)
+	creator, err := suite.sut.CreateCreator(inputCreateCreator)
 
 	suite.Error(err)
 	suite.Assert().Nil(creator)

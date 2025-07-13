@@ -3,6 +3,7 @@ package domain
 import "errors"
 
 type User struct {
+	Entity
 	Email    *Email
 	Password *Password
 	Username string

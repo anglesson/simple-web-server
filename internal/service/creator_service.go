@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/repository"
+
 	"github.com/anglesson/simple-web-server/pkg/gov"
 	"log"
 
@@ -17,25 +18,30 @@ type CreatorService interface {
 }
 
 type InputCreateCreator struct {
-	Name        string `json:"name"`
-	CPF         string `json:"cpf"`
-	BirthDate   string `json:"birthDate"`
-	PhoneNumber string `json:"phoneNumber"`
-	Email       string `json:"email"`
+	Name                 string `json:"name"`
+	CPF                  string `json:"cpf"`
+	BirthDate            string `json:"birthDate"`
+	PhoneNumber          string `json:"phoneNumber"`
+	Email                string `json:"email"`
+	Password             string `json:"password"`
+	PasswordConfirmation string `json:"passwordConfirmation"`
 }
 
 type creatorServiceImpl struct {
 	creatorRepo repository.CreatorRepository
 	rfService   gov.ReceitaFederalService
+	userService UserService
 }
 
 func NewCreatorService(
 	creatorRepo repository.CreatorRepository,
 	receitaFederalService gov.ReceitaFederalService,
+	userService UserService,
 ) CreatorService {
 	return &creatorServiceImpl{
 		creatorRepo: creatorRepo,
 		rfService:   receitaFederalService,
+		userService: userService,
 	}
 }
 
@@ -66,6 +72,13 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*domain.C
 	if err != nil {
 		return nil, err
 	}
+
+	user, err := cs.userService.CreateUser(input.Name, input.Email, input.Password, input.PasswordConfirmation)
+	if err != nil {
+		return nil, err
+	}
+
+	creator.UserID = user.ID
 
 	err = cs.creatorRepo.Save(creator)
 	if err != nil {
