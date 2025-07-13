@@ -3,13 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/anglesson/simple-web-server/pkg/gov"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/anglesson/simple-web-server/pkg/gov"
 
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
@@ -117,7 +118,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	// Busca o criador
 	creatorRepo := gorm.NewCreatorRepository()
 	rfService := gov.NewHubDevService()
-	userRepository := repository.NewUserRepository()
+	userRepository := repository.NewGormUserRepository()
 	encrypter := utils.NewEncrypter()
 	userService := service.NewUserService(userRepository, encrypter)
 	creator, err := service.NewCreatorService(creatorRepo, rfService, userService).FindCreatorByUserID(loggedUser.ID)
@@ -307,7 +308,7 @@ func GetSessionUser(r *http.Request) *models.User {
 		log.Fatalf("Erro ao recuperar usuário da sessão: %s", user_email)
 		return nil
 	}
-	return repository.NewUserRepository().FindByEmail(user_email)
+	return repository.NewGormUserRepository().FindByEmail(user_email)
 }
 
 func EbookShowView(w http.ResponseWriter, r *http.Request) {

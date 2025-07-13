@@ -44,7 +44,7 @@ func LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user exists
-	user := repository.NewUserRepository().FindByEmail(form.Email)
+	user := repository.NewGormUserRepository().FindByEmail(form.Email)
 	if user == nil || !encrypter.CheckPasswordHash(user.Password, form.Password) {
 		errors["password"] = "Email ou senha inválidos"
 	}

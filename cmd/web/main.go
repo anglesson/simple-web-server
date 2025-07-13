@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/pkg/utils"
 	"log"
 	"net/http"
+
+	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/utils"
 
 	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
@@ -33,7 +34,7 @@ func main() {
 	// Repositories
 	creatorRepository := gorm.NewCreatorRepository()
 	clientRepository := gorm.NewClientGormRepository()
-	userRepository := repository.NewUserRepository()
+	userRepository := repository.NewGormUserRepository()
 
 	// Services
 	commonRFService := gov.NewHubDevService()
@@ -43,6 +44,7 @@ func main() {
 
 	// Handlers
 	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory)
+	creatorHandler := handler.NewCreatorHandler(userService)
 
 	r := chi.NewRouter()
 
@@ -57,7 +59,7 @@ func main() {
 		r.Get("/login", handler.LoginView)
 		r.Post("/login", handler.LoginSubmit)
 		r.Get("/register", handler.RegisterView)
-		r.Post("/register", handler.RegisterSubmit)
+		r.Post("/register", creatorHandler.RegisterCreatorSSR)
 		r.Get("/forget-password", handler.ForgetPasswordView)
 		r.Post("/forget-password", handler.ForgetPasswordSubmit)
 		r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)

@@ -68,7 +68,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user already exists
-	foundedUser := repository.NewUserRepository().FindByEmail(form.Email)
+	foundedUser := repository.NewGormUserRepository().FindByEmail(form.Email)
 	if foundedUser != nil {
 		errors["email"] = "Email já cadastrado"
 	}
@@ -94,7 +94,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	hashedPassword := encrypter.HashPassword(form.Password)
 
 	user := models.NewUser(form.Username, hashedPassword, form.Email)
-	if err := repository.NewUserRepository().Save(user); err != nil {
+	if err := repository.NewGormUserRepository().Save(user); err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
 		return
 	}
@@ -108,7 +108,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save user with StripeCustomerID
-	if err := repository.NewUserRepository().Save(user); err != nil {
+	if err := repository.NewGormUserRepository().Save(user); err != nil {
 		log.Printf("Error saving user with StripeCustomerID: %v", err)
 		web.RedirectBackWithErrors(w, r, "Erro ao salvar dados do usuário")
 		return

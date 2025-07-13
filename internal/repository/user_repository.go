@@ -1,8 +1,10 @@
 package repository
 
 import (
-	"github.com/anglesson/simple-web-server/domain"
 	"log"
+
+	"github.com/anglesson/simple-web-server/domain"
+	"gorm.io/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/pkg/database"
@@ -13,14 +15,17 @@ type UserRepository interface {
 	FindByUserEmail(emailUser string) *domain.User
 }
 
-type UserRepositoryImpl struct {
+type GormUserRepositoryImpl struct {
+	db *gorm.DB
 }
 
-func NewUserRepository() *UserRepositoryImpl {
-	return &UserRepositoryImpl{}
+func NewGormUserRepository() *GormUserRepositoryImpl {
+	return &GormUserRepositoryImpl{
+		db: database.DB,
+	}
 }
 
-func (r *UserRepositoryImpl) Save(user *models.User) error {
+func (r *GormUserRepositoryImpl) Save(user *models.User) error {
 	result := database.DB.Save(user)
 	if result.Error != nil {
 		log.Printf("Erro ao salvar usuário: %v", result.Error)
@@ -32,7 +37,7 @@ func (r *UserRepositoryImpl) Save(user *models.User) error {
 }
 
 // TODO: add error handler
-func (r *UserRepositoryImpl) FindByEmail(emailUser string) *models.User {
+func (r *GormUserRepositoryImpl) FindByEmail(emailUser string) *models.User {
 	var user models.User
 	result := database.DB.Where("email = ?", emailUser).First(&user)
 	if result.Error != nil {
@@ -42,7 +47,7 @@ func (r *UserRepositoryImpl) FindByEmail(emailUser string) *models.User {
 	return &user
 }
 
-func (r *UserRepositoryImpl) FindBySessionToken(token string) *models.User {
+func (r *GormUserRepositoryImpl) FindBySessionToken(token string) *models.User {
 	var user models.User
 	result := database.DB.Where("session_token = ?", token).First(&user)
 	if result.Error != nil {
@@ -52,7 +57,7 @@ func (r *UserRepositoryImpl) FindBySessionToken(token string) *models.User {
 	return &user
 }
 
-func (r *UserRepositoryImpl) FindByStripeCustomerID(customerID string) *models.User {
+func (r *GormUserRepositoryImpl) FindByStripeCustomerID(customerID string) *models.User {
 	var user models.User
 	err := database.DB.Where("stripe_customer_id = ?", customerID).First(&user).Error
 	if err != nil {
@@ -62,10 +67,15 @@ func (r *UserRepositoryImpl) FindByStripeCustomerID(customerID string) *models.U
 	return &user
 }
 
-func (r *UserRepositoryImpl) Create(user *domain.User) error {
+func (r *GormUserRepositoryImpl) Create(user *domain.User) error {
+	err := r.db.Create(&models.User{Username: user.Username, Email: user.Email.Value(), Password: user.Password.Value()}).Error
+	if err != nil {
+		log.Printf("Error creating user: %v", err)
+		return err
+	}
 	return nil
 }
 
-func (r *UserRepositoryImpl) FindByUserEmail(emailUser string) *domain.User {
+func (r *GormUserRepositoryImpl) FindByUserEmail(emailUser string) *domain.User {
 	return nil
 }

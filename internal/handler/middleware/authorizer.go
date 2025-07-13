@@ -31,7 +31,7 @@ func authorizer(r *http.Request) (string, error) {
 	}
 
 	// Find user by session token
-	userRepository := repository.NewUserRepository()
+	userRepository := repository.NewGormUserRepository()
 	user := userRepository.FindBySessionToken(cookie.Value)
 	if user == nil {
 		log.Printf("User not found for session token: %s", cookie.Value)
@@ -128,7 +128,7 @@ func Auth(r *http.Request) *models.User {
 		return &models.User{}
 	}
 
-	userRepository := repository.NewUserRepository()
+	userRepository := repository.NewGormUserRepository()
 	user = userRepository.FindByEmail(user_email)
 
 	return user

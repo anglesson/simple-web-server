@@ -19,6 +19,7 @@ func NewSessionService() *SessionService {
 	return &SessionService{
 		SessionToken: "",
 		CSRFToken:    "",
+		encrypter:    utils.NewEncrypter(),
 	}
 }
 
@@ -109,7 +110,7 @@ func (s *SessionService) InitSession(w http.ResponseWriter, email string) {
 	s.CSRFToken = s.GenerateCSRFToken()
 
 	// Update the session token in the user data
-	userRepository := repository.NewUserRepository()
+	userRepository := repository.NewGormUserRepository()
 	user := userRepository.FindByEmail(email)
 	if user == nil {
 		log.Printf("Erro: Usuário não encontrado para o email: %s", email)
