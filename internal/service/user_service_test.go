@@ -1,6 +1,8 @@
 package service_test
 
 import (
+	"testing"
+
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/repository/mocks"
@@ -8,17 +10,9 @@ import (
 	"github.com/anglesson/simple-web-server/pkg/utils"
 	utilsMocks "github.com/anglesson/simple-web-server/pkg/utils/mocks"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
-type InputCreateUser struct {
-	Username             string
-	Password             string
-	PasswordConfirmation string
-	Email                string
-}
-
-var input = InputCreateUser{
+var input = service.InputCreateUser{
 	Username:             "Any Username",
 	Password:             "Password123!",
 	PasswordConfirmation: "Password123!",
@@ -30,7 +24,7 @@ type UserServiceTestSuite struct {
 	sut                service.UserService
 	mockUserRepository repository.UserRepository
 	mockEncrypter      utils.Encrypter
-	testInput          InputCreateUser
+	testInput          service.InputCreateUser
 }
 
 func (suite *UserServiceTestSuite) SetupTest() {
@@ -39,7 +33,7 @@ func (suite *UserServiceTestSuite) SetupTest() {
 }
 
 func (suite *UserServiceTestSuite) setUpInput() {
-	suite.testInput = InputCreateUser{
+	suite.testInput = service.InputCreateUser{
 		Username:             "Valid UserName",
 		Email:                "valid@mail.com",
 		Password:             "Password123!",
@@ -69,11 +63,7 @@ func (suite *UserServiceTestSuite) TestCreateUser_Success() {
 	suite.setupSuccessfulMockExpectations(expectedUser)
 
 	// Act
-	user, err := suite.sut.CreateUser(
-		suite.testInput.Username,
-		suite.testInput.Email,
-		suite.testInput.Password,
-		suite.testInput.PasswordConfirmation)
+	user, err := suite.sut.CreateUser(suite.testInput)
 
 	// Assert
 	suite.NoError(err)
@@ -87,7 +77,7 @@ func (suite *UserServiceTestSuite) TestCreateUser_ShouldCallHashPassword() {
 	suite.setupSuccessfulMockExpectations(expectedUser)
 
 	// Act
-	user, err := suite.sut.CreateUser(suite.testInput.Username, suite.testInput.Email, suite.testInput.Password, suite.testInput.PasswordConfirmation)
+	user, err := suite.sut.CreateUser(suite.testInput)
 
 	// Assert
 	suite.NoError(err)
@@ -104,7 +94,7 @@ func (suite *UserServiceTestSuite) TestShouldReturnErrorIfPasswordAndConfirmatio
 	suite.setupSuccessfulMockExpectations(expectedUser)
 
 	// Act
-	user, err := suite.sut.CreateUser(suite.testInput.Username, suite.testInput.Email, suite.testInput.Password, suite.testInput.PasswordConfirmation)
+	user, err := suite.sut.CreateUser(suite.testInput)
 
 	// Assert
 	suite.Error(err)
@@ -113,15 +103,15 @@ func (suite *UserServiceTestSuite) TestShouldReturnErrorIfPasswordAndConfirmatio
 
 func (suite *UserServiceTestSuite) TestShouldReturnErrorIfUserAlreadyExists() {
 	// Arrange
-	suite.setupSuccessfulMockExpectations(&domain.User{})
-	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByUserEmail", input.Email).Return(&domain.User{})
+	expectedUser, _ := domain.NewUser(suite.testInput.Username, suite.testInput.Email, "HashedPassword123!")
+	suite.mockUserRepository.(*mocks.MockUserRepository).On("FindByUserEmail", suite.testInput.Email).Return(expectedUser)
 
 	// Act
-	user, err := suite.sut.CreateUser(input.Username, input.Email, input.Password, input.PasswordConfirmation)
+	user, err := suite.sut.CreateUser(suite.testInput)
 
 	// Assert
 	suite.Error(err)
 	suite.Nil(user)
-	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "FindByUserEmail", input.Email)
+	suite.mockUserRepository.(*mocks.MockUserRepository).AssertCalled(suite.T(), "FindByUserEmail", suite.testInput.Email)
 	suite.mockUserRepository.(*mocks.MockUserRepository).AssertNotCalled(suite.T(), "Create")
 }

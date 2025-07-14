@@ -1,6 +1,8 @@
 package service_test
 
 import (
+	"testing"
+
 	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	mocks_repo "github.com/anglesson/simple-web-server/internal/repository/mocks"
@@ -9,7 +11,6 @@ import (
 	"github.com/anglesson/simple-web-server/pkg/gov"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 const (
@@ -28,6 +29,7 @@ type CreatorServiceTestSuite struct {
 	mockRFService   gov.ReceitaFederalService
 	mockUserService service.UserService
 	testInput       service.InputCreateCreator
+	testInputUser   service.InputCreateUser
 }
 
 func TestCreatorServiceTestSuite(t *testing.T) {
@@ -46,6 +48,13 @@ func (suite *CreatorServiceTestSuite) setupTestInput() {
 		PhoneNumber:          validPhoneNumber,
 		Email:                validEmail,
 		CPF:                  validCPF,
+		Password:             validPassword,
+		PasswordConfirmation: validPassword,
+	}
+
+	suite.testInputUser = service.InputCreateUser{
+		Username:             validName,
+		Email:                validEmail,
 		Password:             validPassword,
 		PasswordConfirmation: validPassword,
 	}
@@ -77,11 +86,8 @@ func (suite *CreatorServiceTestSuite) setupSuccessfulMockExpectations(expectedCr
 			},
 		}, nil)
 
-	suite.mockUserService.(*mocksService.MockUserService).On("CreateUser",
-		suite.testInput.Name,
-		suite.testInput.Email,
-		suite.testInput.Password,
-		suite.testInput.PasswordConfirmation).
+	suite.mockUserService.(*mocksService.MockUserService).
+		On("CreateUser", suite.testInputUser).
 		Return(&domain.User{}, nil)
 
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).On("Save", expectedCreator).Return(nil)
@@ -123,11 +129,7 @@ func (suite *CreatorServiceTestSuite) TestCreateCreator_ShouldCallUserService() 
 	// Assert
 	suite.NoError(err)
 	suite.mockUserService.(*mocksService.MockUserService).
-		AssertCalled(suite.T(), "CreateUser",
-			suite.testInput.Name,
-			suite.testInput.Email,
-			suite.testInput.Password,
-			suite.testInput.PasswordConfirmation)
+		AssertCalled(suite.T(), "CreateUser", suite.testInputUser)
 }
 
 func (suite *CreatorServiceTestSuite) TestCreateCreator_ShouldUpdateCreatorWithReceitaFederalData() {

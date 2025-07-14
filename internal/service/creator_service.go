@@ -73,7 +73,14 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*domain.C
 		return nil, err
 	}
 
-	user, err := cs.userService.CreateUser(input.Name, input.Email, input.Password, input.PasswordConfirmation)
+	inputCreateUser := InputCreateUser{
+		Username:             input.Name,
+		Email:                input.Email,
+		Password:             input.Password,
+		PasswordConfirmation: input.PasswordConfirmation,
+	}
+
+	user, err := cs.userService.CreateUser(inputCreateUser)
 	if err != nil {
 		return nil, err
 	}

@@ -34,7 +34,14 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		PasswordConfirmation: r.FormValue("password_confirmation"),
 	}
 
-	_, err := ch.userService.CreateUser(input.Name, input.Email, input.Password, input.PasswordConfirmation)
+	inputCreateUser := service.InputCreateUser{
+		Username:             input.Name,
+		Email:                input.Email,
+		Password:             input.Password,
+		PasswordConfirmation: input.PasswordConfirmation,
+	}
+
+	_, err := ch.userService.CreateUser(inputCreateUser)
 	if err != nil {
 		fmt.Printf("[ERROR]: %s", err.Error())
 		template.View(w, r, "creator/register", map[string]interface{}{
