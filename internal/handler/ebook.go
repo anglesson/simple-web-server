@@ -116,7 +116,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Criando e-book para: %v", loggedUser)
 
 	// Busca o criador
-	creatorRepo := gorm.NewCreatorRepository()
+	creatorRepo := gorm.NewCreatorRepository(database.DB)
 	rfService := gov.NewHubDevService()
 	userRepository := repository.NewGormUserRepository()
 	encrypter := utils.NewEncrypter()
@@ -338,7 +338,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
-	creatorRepository := gorm.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository(database.DB)
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())

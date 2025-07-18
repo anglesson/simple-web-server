@@ -32,7 +32,7 @@ func main() {
 	encrypter := utils.NewEncrypter()
 
 	// Repositories
-	creatorRepository := gorm.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository(database.DB)
 	clientRepository := gorm.NewClientGormRepository()
 	userRepository := repository.NewGormUserRepository()
 

@@ -11,22 +11,29 @@ import (
 )
 
 var DB *gorm.DB
+var err error
 
 func Connect() {
-	var err error
-
-	if config.AppConfig.IsProdcution() {
-		DB, err = gorm.Open(postgres.Open(config.AppConfig.DatabaseURL), &gorm.Config{})
-		if err != nil {
-			log.Panic("failed to connect database")
-		}
+	if config.AppConfig.IsProduction() {
+		connectWithPostgres()
 	} else {
-		DB, err = gorm.Open(sqlite.Open("./mydb.db"), &gorm.Config{})
-		if err != nil {
-			log.Panic("failed to connect database")
-		}
+		connectWithSQLite()
 	}
+}
 
+func connectWithPostgres() {
+	connectGormAndMigrate(postgres.Open(config.AppConfig.DatabaseURL))
+}
+
+func connectWithSQLite() {
+	connectGormAndMigrate(sqlite.Open("./mydb.db"))
+}
+
+func connectGormAndMigrate(dialector gorm.Dialector) {
+	DB, err = gorm.Open(dialector, &gorm.Config{})
+	if err != nil {
+		log.Panic("failed to connect database")
+	}
 	migrate()
 }
 

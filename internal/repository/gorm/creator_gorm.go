@@ -2,14 +2,17 @@ package gorm
 
 import (
 	"errors"
-	"github.com/anglesson/simple-web-server/domain"
 	"log"
+
+	"github.com/anglesson/simple-web-server/domain"
+	"gorm.io/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/pkg/database"
 )
 
 type CreatorRepository struct {
+	db *gorm.DB
 }
 
 func (cr *CreatorRepository) Save(creator *domain.Creator) error {
@@ -17,8 +20,8 @@ func (cr *CreatorRepository) Save(creator *domain.Creator) error {
 	panic("implement me")
 }
 
-func NewCreatorRepository() *CreatorRepository {
-	return &CreatorRepository{}
+func NewCreatorRepository(db *gorm.DB) *CreatorRepository {
+	return &CreatorRepository{db}
 }
 
 func (cr *CreatorRepository) FindCreatorByUserID(userID uint) (*models.Creator, error) {

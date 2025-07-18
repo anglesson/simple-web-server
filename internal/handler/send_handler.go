@@ -12,6 +12,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
@@ -27,7 +28,7 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creatorRepository := gorm.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository(database.DB)
 	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())

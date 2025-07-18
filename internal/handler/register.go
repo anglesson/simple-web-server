@@ -14,6 +14,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
@@ -114,7 +115,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creatorRepository := gorm.NewCreatorRepository()
+	creatorRepository := gorm.NewCreatorRepository(database.DB)
 	creator := models.NewCreator(user.Username, user.Email, "", user.ID)
 	if err := creatorRepository.Create(creator); err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())

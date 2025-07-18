@@ -74,8 +74,7 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
-	creatorRepository := gorm.NewCreatorRepository()
-	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
+	creator, err := ch.creatorService.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
 	}

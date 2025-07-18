@@ -33,7 +33,7 @@ type AppConfiguration struct {
 	StripeWebhookSecret   string
 }
 
-func (ac *AppConfiguration) IsProdcution() bool {
+func (ac *AppConfiguration) IsProduction() bool {
 	return ac.AppMode == "production"
 }
 
