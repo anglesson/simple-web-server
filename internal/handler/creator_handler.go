@@ -9,12 +9,12 @@ import (
 )
 
 type CreatorHandler struct {
-	userService service.UserService
+	creatorService service.CreatorService
 }
 
-func NewCreatorHandler(userService service.UserService) *CreatorHandler {
+func NewCreatorHandler(creatorService service.CreatorService) *CreatorHandler {
 	return &CreatorHandler{
-		userService,
+		creatorService,
 	}
 }
 
@@ -26,24 +26,17 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 
 	input := service.InputCreateCreator{
 		Name:                 r.FormValue("name"),
-		BirthDate:            r.FormValue("birthDate"),
-		PhoneNumber:          r.FormValue("phoneNumber"),
+		BirthDate:            r.FormValue("birthdate"),
+		PhoneNumber:          r.FormValue("phone"),
 		Email:                r.FormValue("email"),
 		CPF:                  r.FormValue("cpf"),
 		Password:             r.FormValue("password"),
 		PasswordConfirmation: r.FormValue("password_confirmation"),
 	}
 
-	inputCreateUser := service.InputCreateUser{
-		Username:             input.Name,
-		Email:                input.Email,
-		Password:             input.Password,
-		PasswordConfirmation: input.PasswordConfirmation,
-	}
-
-	_, err := ch.userService.CreateUser(inputCreateUser)
+	_, err := ch.creatorService.CreateCreator(input)
 	if err != nil {
-		fmt.Printf("[ERROR]: %s", err.Error())
+		fmt.Printf("[ERROR]: %s\n", err.Error())
 		template.View(w, r, "creator/register", map[string]interface{}{
 			"Error": err.Error(),
 			"Form":  input,

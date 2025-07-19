@@ -44,7 +44,7 @@ func main() {
 
 	// Handlers
 	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory)
-	creatorHandler := handler.NewCreatorHandler(userService)
+	creatorHandler := handler.NewCreatorHandler(creatorService)
 
 	r := chi.NewRouter()
 

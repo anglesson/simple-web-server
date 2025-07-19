@@ -17,8 +17,8 @@
             <input type="hidden" name="csrf_token" value="{{.csrf_token}}" />
             <!-- Name -->
             <div class="mb-3">
-              <label for="name" class="form-label">Nome de usuário</label>
-              <input type="text" id="name" class="form-control" name="name" placeholder="Digite um nome de usuário" required="" value="{{.Data.Form.Name}}" />
+              <label for="name" class="form-label">Nome</label>
+              <input type="text" id="name" class="form-control" name="name" placeholder="Digite um nome" required="" value="{{.Data.Form.Name}}" />
               {{with .Errors.username}}
               <p class="text-danger">{{.}}</p>
               {{end}}
@@ -26,7 +26,7 @@
             <!-- CPF -->
             <div class="mb-3">
               <label for="cpf" class="form-label">CPF</label>
-              <input type="text" id="cpf" class="form-control cpf" name="cpf" placeholder="Digite um nome de usuário" required="" value="{{.Data.Form.CPF}}" />
+              <input type="text" id="cpf" class="form-control cpf" name="cpf" placeholder="Digite o CPF" required value="{{.Data.Form.CPF}}" />
               {{with .Errors.cpf}}
               <p class="text-danger">{{.}}</p>
               {{end}}
@@ -34,7 +34,7 @@
             <!-- Birthdate -->
             <div class="mb-3">
               <label for="birthdate" class="form-label">Data de Nascimento</label>
-              <input type="text" id="birthdate" class="form-control date" name="birthdate" required="" value="{{.Data.Form.BirthDate}}" />
+              <input type="date" id="birthdate" class="form-control" name="birthdate" required value="{{.Data.Form.BirthDate}}" />
               {{with .Errors.birthdate}}
               <p class="text-danger">{{.}}</p>
               {{end}}
@@ -42,7 +42,7 @@
             <!-- E-mail -->
             <div class="mb-3">
               <label for="email" class="form-label">E-mail</label>
-              <input type="email" id="email" class="form-control" name="email" placeholder="Digite seu e-mail" required="" value="{{with .Data.Form.Email}}{{.}}{{end}}" />
+              <input type="email" id="email" class="form-control" name="email" placeholder="Digite seu e-mail" required value="{{with .Data.Form.Email}}{{.}}{{end}}" />
               {{with .Errors.email}}
               <p class="text-danger">{{.}}</p>
               {{end}}

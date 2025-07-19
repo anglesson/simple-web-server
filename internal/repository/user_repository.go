@@ -77,5 +77,17 @@ func (r *GormUserRepositoryImpl) Create(user *domain.User) error {
 }
 
 func (r *GormUserRepositoryImpl) FindByUserEmail(emailUser string) *domain.User {
-	return nil
+	var user models.User
+	err := r.db.Where("email = ?", emailUser).First(&user).Error
+	if err != nil {
+		log.Printf("Error finding user by email: %v", err)
+		return nil
+	}
+	userDomain, err := domain.NewUser(user.Username, user.Email, user.Password)
+	if err != nil {
+		log.Printf("Error creating user domain: %v", err)
+		return nil
+	}
+	userDomain.ID = user.ID
+	return userDomain
 }
