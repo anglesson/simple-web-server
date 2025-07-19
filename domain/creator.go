@@ -65,3 +65,11 @@ func (c *Creator) Validate() error {
 	}
 	return nil
 }
+
+func (c *Creator) GetEmail() string {
+	return c.Contact.Email.Value()
+}
+
+func (c *Creator) GetPhone() string {
+	return c.Contact.Phone.String()
+}

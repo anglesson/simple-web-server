@@ -15,11 +15,6 @@ type CreatorRepository struct {
 	db *gorm.DB
 }
 
-func (cr *CreatorRepository) Save(creator *domain.Creator) error {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewCreatorRepository(db *gorm.DB) *CreatorRepository {
 	return &CreatorRepository{db}
 }
@@ -59,4 +54,24 @@ func (cr *CreatorRepository) Create(creator *models.Creator) error {
 func (cr *CreatorRepository) FindByFilter(query domain.CreatorFilter) (*domain.Creator, error) {
 	// TODO: Implement it
 	return nil, nil
+}
+
+func (cr *CreatorRepository) Save(creator *domain.Creator) error {
+	creatorModel := models.Creator{
+		Name: creator.Name,
+		Contact: models.Contact{
+			Email: creator.GetEmail(),
+			Phone: creator.GetPhone(),
+		},
+		UserID: creator.UserID,
+	}
+	err := cr.db.Create(&creatorModel).Error
+	if err != nil {
+		log.Printf("creator isn't saved. error: %s", err.Error())
+		return errors.New("creator not saved")
+	}
+
+	creator.ID = creatorModel.ID
+
+	return nil
 }
