@@ -10,6 +10,7 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/database"
 )
 
 // First, define a custom type for context keys (typically at package level)
@@ -31,7 +32,7 @@ func authorizer(r *http.Request) (string, error) {
 	}
 
 	// Find user by session token
-	userRepository := repository.NewGormUserRepository()
+	userRepository := repository.NewGormUserRepository(database.DB)
 	user := userRepository.FindBySessionToken(cookie.Value)
 	if user == nil {
 		log.Printf("User not found for session token: %s", cookie.Value)
@@ -128,7 +129,7 @@ func Auth(r *http.Request) *models.User {
 		return &models.User{}
 	}
 
-	userRepository := repository.NewGormUserRepository()
+	userRepository := repository.NewGormUserRepository(database.DB)
 	user = userRepository.FindByEmail(user_email)
 
 	return user

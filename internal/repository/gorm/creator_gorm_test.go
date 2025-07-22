@@ -11,8 +11,8 @@ import (
 func TestCreatorGorm_Save(t *testing.T) {
 	database.Connect()
 
-	database.DB.Begin()
-	defer database.DB.Rollback()
+	tx := database.DB.Begin()
+	defer tx.Rollback()
 
 	// Arrange
 	creator, err := domain.NewCreator("valid name", "valid@mail.com", "058.997.950-77", "(81) 98765-4321", "1990-01-01")

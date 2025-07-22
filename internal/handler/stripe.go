@@ -9,6 +9,7 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/checkout/session"
 	"github.com/stripe/stripe-go/v76/webhook"
@@ -34,7 +35,7 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Session token found: %s", sessionCookie.Value)
 
 	// Find user by session token
-	userRepository := repository.NewGormUserRepository()
+	userRepository := repository.NewGormUserRepository(database.DB)
 	user := userRepository.FindBySessionToken(sessionCookie.Value)
 	if user == nil {
 		log.Printf("User not found for session token: %s", sessionCookie.Value)
@@ -176,7 +177,7 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Find user by Stripe customer ID
-		userRepository := repository.NewGormUserRepository()
+		userRepository := repository.NewGormUserRepository(database.DB)
 		user := userRepository.FindByStripeCustomerID(session.Customer.ID)
 		if user == nil {
 			log.Printf("User not found for Stripe customer ID: %s", session.Customer.ID)
@@ -206,7 +207,7 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Find user by Stripe customer ID
-		userRepository := repository.NewGormUserRepository()
+		userRepository := repository.NewGormUserRepository(database.DB)
 		user := userRepository.FindByStripeCustomerID(subscription.Customer.ID)
 		if user == nil {
 			log.Printf("User not found for Stripe customer ID: %s", subscription.Customer.ID)
@@ -237,7 +238,7 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Find user by Stripe customer ID
-		userRepository := repository.NewGormUserRepository()
+		userRepository := repository.NewGormUserRepository(database.DB)
 		user := userRepository.FindByStripeCustomerID(subscription.Customer.ID)
 		if user == nil {
 			log.Printf("User not found for Stripe customer ID: %s", subscription.Customer.ID)

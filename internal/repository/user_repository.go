@@ -19,9 +19,9 @@ type GormUserRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func NewGormUserRepository() *GormUserRepositoryImpl {
+func NewGormUserRepository(db *gorm.DB) *GormUserRepositoryImpl {
 	return &GormUserRepositoryImpl{
-		db: database.DB,
+		db: db,
 	}
 }
 
@@ -68,11 +68,18 @@ func (r *GormUserRepositoryImpl) FindByStripeCustomerID(customerID string) *mode
 }
 
 func (r *GormUserRepositoryImpl) Create(user *domain.User) error {
-	err := r.db.Create(&models.User{Username: user.Username, Email: user.Email.Value(), Password: user.Password.Value()}).Error
+	var userModel models.User
+	userModel.Username = user.Username
+	userModel.Email = user.Email.Value()
+	userModel.Password = user.Password.Value()
+
+	err := r.db.Create(&userModel).Error
 	if err != nil {
 		log.Printf("Error creating user: %v", err)
 		return err
 	}
+
+	user.ID = userModel.ID
 	return nil
 }
 

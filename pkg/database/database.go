@@ -47,3 +47,11 @@ func migrate() {
 	DB.AutoMigrate(&models.Purchase{})
 	DB.AutoMigrate(&models.DownloadLog{})
 }
+
+func Close() {
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Panic("failed to close database")
+	}
+	sqlDB.Close()
+}

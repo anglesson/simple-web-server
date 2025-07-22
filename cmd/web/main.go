@@ -34,7 +34,7 @@ func main() {
 	// Repositories
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
 	clientRepository := gorm.NewClientGormRepository()
-	userRepository := repository.NewGormUserRepository()
+	userRepository := repository.NewGormUserRepository(database.DB)
 
 	// Services
 	commonRFService := gov.NewHubDevService()

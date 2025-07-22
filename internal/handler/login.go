@@ -8,6 +8,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/anglesson/simple-web-server/pkg/utils"
 )
@@ -44,7 +45,7 @@ func LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user exists
-	user := repository.NewGormUserRepository().FindByEmail(form.Email)
+	user := repository.NewGormUserRepository(database.DB).FindByEmail(form.Email)
 	if user == nil || !encrypter.CheckPasswordHash(user.Password, form.Password) {
 		errors["password"] = "Email ou senha inválidos"
 	}

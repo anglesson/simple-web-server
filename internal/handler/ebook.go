@@ -118,7 +118,7 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	// Busca o criador
 	creatorRepo := gorm.NewCreatorRepository(database.DB)
 	rfService := gov.NewHubDevService()
-	userRepository := repository.NewGormUserRepository()
+	userRepository := repository.NewGormUserRepository(database.DB)
 	encrypter := utils.NewEncrypter()
 	userService := service.NewUserService(userRepository, encrypter)
 	creator, err := service.NewCreatorService(creatorRepo, rfService, userService).FindCreatorByUserID(loggedUser.ID)
@@ -308,7 +308,7 @@ func GetSessionUser(r *http.Request) *models.User {
 		log.Fatalf("Erro ao recuperar usuário da sessão: %s", user_email)
 		return nil
 	}
-	return repository.NewGormUserRepository().FindByEmail(user_email)
+	return repository.NewGormUserRepository(database.DB).FindByEmail(user_email)
 }
 
 func EbookShowView(w http.ResponseWriter, r *http.Request) {
