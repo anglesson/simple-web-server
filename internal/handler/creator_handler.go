@@ -34,7 +34,7 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		PasswordConfirmation: r.FormValue("password_confirmation"),
 	}
 
-	_, err := ch.creatorService.CreateCreator(input)
+	creator, err := ch.creatorService.CreateCreator(input)
 	if err != nil {
 		fmt.Printf("[ERROR]: %s\n", err.Error())
 		template.View(w, r, "creator/register", map[string]interface{}{
@@ -43,6 +43,8 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		}, "guest")
 		return
 	}
+
+	sessionService.InitSession(w, creator.GetEmail())
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
