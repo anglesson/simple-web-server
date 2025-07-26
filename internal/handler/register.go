@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
@@ -116,7 +117,7 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
-	creator := models.NewCreator(user.Username, user.Email, "", user.ID)
+	creator := models.NewCreator(user.Username, user.Email, "", "", time.Time{}, user.ID)
 	if err := creatorRepository.Create(creator); err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
 		return

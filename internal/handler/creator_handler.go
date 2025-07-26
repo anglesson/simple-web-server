@@ -44,7 +44,7 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	sessionService.InitSession(w, creator.GetEmail())
+	sessionService.InitSession(w, creator.Email)
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }

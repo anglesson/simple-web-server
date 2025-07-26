@@ -1,9 +1,10 @@
 package service_test
 
 import (
+	"testing"
+
 	mocks_repo "github.com/anglesson/simple-web-server/internal/repository/mocks"
 	"github.com/anglesson/simple-web-server/pkg/gov/mocks"
-	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
@@ -33,13 +34,13 @@ func (suite *ClientServiceTestSuite) SetupTest() {
 }
 
 func (suite *ClientServiceTestSuite) TestCreateClient() {
-	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
+	creator := &models.Creator{Email: "creator@mail.com"}
 
 	input := service.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
-		EmailCreator: creator.Contact.Email,
+		EmailCreator: creator.Email,
 	}
 
 	expectedName := "Name Receita Federal"
@@ -65,7 +66,7 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 		}, nil)
 
 	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).
-		On("FindCreatorByUserEmail", creator.Contact.Email).
+		On("FindCreatorByUserEmail", creator.Email).
 		Return(creator, nil)
 
 	suite.mockClientRepository.(*mocks_repo.MockClientRepository).
@@ -79,18 +80,18 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 	_, err := suite.sut.CreateClient(input)
 
 	suite.NoError(err)
-	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
+	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Email)
 	suite.mockClientRepository.(*mocks_repo.MockClientRepository).AssertCalled(suite.T(), "Save", client)
 }
 
 func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
-	creator := &models.Creator{Contact: models.Contact{Email: "creator@mail.com"}}
+	creator := &models.Creator{Email: "creator@mail.com"}
 
 	input := service.CreateClientInput{
 		Name:         "Name User",
 		CPF:          "000.000.000-00",
 		BirthDate:    "2012-12-12",
-		EmailCreator: creator.Contact.Email,
+		EmailCreator: creator.Email,
 	}
 
 	expectedName := "Name Receita Federal"
@@ -116,7 +117,7 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 		}, nil)
 
 	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).
-		On("FindCreatorByUserEmail", creator.Contact.Email).
+		On("FindCreatorByUserEmail", creator.Email).
 		Return(creator, nil)
 
 	suite.mockClientRepository.(*mocks_repo.MockClientRepository).
@@ -126,7 +127,7 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 	_, err := suite.sut.CreateClient(input)
 
 	suite.Error(err)
-	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Contact.Email)
+	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Email)
 	suite.mockClientRepository.(*mocks_repo.MockClientRepository).AssertCalled(suite.T(), "FindByEmail", client.Contact.Email)
 }
 

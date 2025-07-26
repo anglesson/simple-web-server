@@ -3,7 +3,6 @@ package repository
 import (
 	"log"
 
-	"github.com/anglesson/simple-web-server/domain"
 	"gorm.io/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -11,8 +10,8 @@ import (
 )
 
 type UserRepository interface {
-	Create(user *domain.User) error
-	FindByUserEmail(emailUser string) *domain.User
+	Create(user *models.User) error
+	FindByUserEmail(emailUser string) *models.User
 }
 
 type GormUserRepositoryImpl struct {
@@ -67,34 +66,21 @@ func (r *GormUserRepositoryImpl) FindByStripeCustomerID(customerID string) *mode
 	return &user
 }
 
-func (r *GormUserRepositoryImpl) Create(user *domain.User) error {
-	var userModel models.User
-	userModel.Username = user.Username
-	userModel.Email = user.Email.Value()
-	userModel.Password = user.Password.Value()
-
-	err := r.db.Create(&userModel).Error
+func (r *GormUserRepositoryImpl) Create(user *models.User) error {
+	err := r.db.Create(user).Error
 	if err != nil {
 		log.Printf("Error creating user: %v", err)
 		return err
 	}
-
-	user.ID = userModel.ID
 	return nil
 }
 
-func (r *GormUserRepositoryImpl) FindByUserEmail(emailUser string) *domain.User {
+func (r *GormUserRepositoryImpl) FindByUserEmail(emailUser string) *models.User {
 	var user models.User
 	err := r.db.Where("email = ?", emailUser).First(&user).Error
 	if err != nil {
 		log.Printf("Error finding user by email: %v", err)
 		return nil
 	}
-	userDomain, err := domain.NewUser(user.Username, user.Email, user.Password)
-	if err != nil {
-		log.Printf("Error creating user domain: %v", err)
-		return nil
-	}
-	userDomain.ID = user.ID
-	return userDomain
+	return &user
 }

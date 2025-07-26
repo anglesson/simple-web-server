@@ -2,17 +2,16 @@ package service
 
 import (
 	"errors"
-	"github.com/anglesson/simple-web-server/domain"
-	"github.com/anglesson/simple-web-server/internal/repository"
-
-	"github.com/anglesson/simple-web-server/pkg/gov"
 	"log"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/gov"
 )
 
 type CreatorService interface {
-	CreateCreator(input InputCreateCreator) (*domain.Creator, error)
+	CreateCreator(input InputCreateCreator) (*models.Creator, error)
 	FindCreatorByEmail(email string) (*models.Creator, error)
 	FindCreatorByUserID(userID uint) (*models.Creator, error)
 }
@@ -45,21 +44,23 @@ func NewCreatorService(
 	}
 }
 
-func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*domain.Creator, error) {
-	creator, err := domain.NewCreator(
-		input.Name,
-		input.Email,
-		input.CPF,
-		input.PhoneNumber,
-		input.BirthDate,
-	)
+func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.Creator, error) {
+	// Validate input
+	if err := validateCreatorInput(input); err != nil {
+		return nil, err
+	}
+
+	// Parse birth date
+	birthDate, err := time.Parse("2006-01-02", input.BirthDate)
 	if err != nil {
 		return nil, err
 	}
 
-	creatorExists, err := cs.creatorRepo.FindByFilter(domain.CreatorFilter{
-		CPF: creator.CPF.Value(),
-	})
+	// Clean CPF (remove non-digits)
+	cleanCPF := cleanCPF(input.CPF)
+
+	// Check if creator already exists
+	creatorExists, err := cs.creatorRepo.FindByCPF(cleanCPF)
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +69,15 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*domain.C
 		return nil, errors.New("creator already exists")
 	}
 
-	err = cs.validateReceita(creator)
+	// Validate with Receita Federal
+	validatedName, err := cs.validateReceita(cleanCPF, birthDate)
 	if err != nil {
 		return nil, err
 	}
 
+	// Create user
 	inputCreateUser := InputCreateUser{
-		Username:             input.Name,
+		Username:             validatedName,
 		Email:                input.Email,
 		Password:             input.Password,
 		PasswordConfirmation: input.PasswordConfirmation,
@@ -85,12 +88,21 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*domain.C
 		return nil, err
 	}
 
-	creator.UserID = user.ID
+	// Create creator
+	creator := models.NewCreator(
+		validatedName,
+		input.Email,
+		cleanPhone(input.PhoneNumber),
+		cleanCPF,
+		birthDate,
+		user.ID,
+	)
 
-	err = cs.creatorRepo.Save(creator)
+	err = cs.creatorRepo.Create(creator)
 	if err != nil {
 		return nil, err
 	}
+
 	return creator, nil
 }
 
@@ -118,25 +130,24 @@ func (cs *creatorServiceImpl) FindCreatorByEmail(email string) (*models.Creator,
 	return creator, nil
 }
 
-// TODO: Mover para classe de servico e retornar apenas o nome
-func (cs *creatorServiceImpl) validateReceita(creator *domain.Creator) error {
+// validateReceita validates CPF with Receita Federal and returns the validated name
+func (cs *creatorServiceImpl) validateReceita(cpf string, birthDate time.Time) (string, error) {
 	if cs.rfService == nil {
-		return errors.New("serviço da receita federal não está disponível")
+		return "", errors.New("serviço da receita federal não está disponível")
 	}
 
-	response, err := cs.rfService.ConsultaCPF(creator.CPF.String(), creator.Birthdate.Format("02/01/2006"))
+	response, err := cs.rfService.ConsultaCPF(cpf, birthDate.Format("02/01/2006"))
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if !response.Status {
-		return errors.New("CPF inválido ou não encontrado na receita federal")
+		return "", errors.New("CPF inválido ou não encontrado na receita federal")
 	}
 
 	if response.Result.NomeDaPF == "" {
-		return errors.New("nome não encontrado na receita federal")
+		return "", errors.New("nome não encontrado na receita federal")
 	}
 
-	creator.Name = response.Result.NomeDaPF
-	return nil
+	return response.Result.NomeDaPF, nil
 }

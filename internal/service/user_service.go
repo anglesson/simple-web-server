@@ -2,10 +2,9 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
-	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/utils"
 )
@@ -20,7 +19,7 @@ type InputCreateUser struct {
 }
 
 type UserService interface {
-	CreateUser(input InputCreateUser) (*domain.User, error)
+	CreateUser(input InputCreateUser) (*models.User, error)
 }
 
 type UserServiceImpl struct {
@@ -35,7 +34,7 @@ func NewUserService(userRepository repository.UserRepository, encrypter utils.En
 	}
 }
 
-func (us *UserServiceImpl) CreateUser(input InputCreateUser) (*domain.User, error) {
+func (us *UserServiceImpl) CreateUser(input InputCreateUser) (*models.User, error) {
 	if input.Password != input.PasswordConfirmation {
 		return nil, errors.New("passwords do not match")
 	}
@@ -47,19 +46,10 @@ func (us *UserServiceImpl) CreateUser(input InputCreateUser) (*domain.User, erro
 		return nil, ErrUserAlreadyExists
 	}
 
-	user, err := domain.NewUser(input.Username, input.Email, input.Password)
-	if err != nil {
-		return nil, fmt.Errorf("invalid user data: %w", err)
-	}
-
 	hashedPassword := us.encrypter.HashPassword(input.Password)
-	passwordVO, err := domain.NewPassword(hashedPassword)
-	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
-	}
-	user.Password = passwordVO
+	user := models.NewUser(input.Username, hashedPassword, input.Email)
 
-	err = us.userRepository.Create(user)
+	err := us.userRepository.Create(user)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"github.com/anglesson/simple-web-server/domain"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/stretchr/testify/mock"
 )
@@ -10,7 +10,10 @@ type MockUserService struct {
 	mock.Mock
 }
 
-func (m *MockUserService) CreateUser(input service.InputCreateUser) (*domain.User, error) {
+func (m *MockUserService) CreateUser(input service.InputCreateUser) (*models.User, error) {
 	args := m.Called(input)
-	return args.Get(0).(*domain.User), args.Error(1)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.User), args.Error(1)
 }

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 
-	"github.com/anglesson/simple-web-server/domain"
 	"gorm.io/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -42,36 +41,25 @@ func (cr *CreatorRepository) FindCreatorByUserEmail(email string) (*models.Creat
 	return &creator, nil
 }
 
+func (cr *CreatorRepository) FindByCPF(cpf string) (*models.Creator, error) {
+	var creator models.Creator
+	err := database.DB.
+		First(&creator, "cpf = ?", cpf).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Creator not found, but that's not an error
+		}
+		log.Printf("error finding creator by CPF: %s", err.Error())
+		return nil, errors.New("error finding creator")
+	}
+	return &creator, nil
+}
+
 func (cr *CreatorRepository) Create(creator *models.Creator) error {
 	err := database.DB.Create(&creator).Error
 	if err != nil {
 		log.Printf("fail on create 'creator': %s", err.Error())
 		return errors.New("creator not found")
 	}
-	return nil
-}
-
-func (cr *CreatorRepository) FindByFilter(query domain.CreatorFilter) (*domain.Creator, error) {
-	// TODO: Implement it
-	return nil, nil
-}
-
-func (cr *CreatorRepository) Save(creator *domain.Creator) error {
-	creatorModel := models.Creator{
-		Name: creator.Name,
-		Contact: models.Contact{
-			Email: creator.GetEmail(),
-			Phone: creator.GetPhone(),
-		},
-		UserID: creator.UserID,
-	}
-	err := cr.db.Create(&creatorModel).Error
-	if err != nil {
-		log.Printf("creator isn't saved. error: %s", err.Error())
-		return errors.New("creator not saved")
-	}
-
-	creator.ID = creatorModel.ID
-
 	return nil
 }

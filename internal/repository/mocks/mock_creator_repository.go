@@ -1,7 +1,6 @@
 package mocks
 
 import (
-	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stretchr/testify/mock"
 )
@@ -12,28 +11,29 @@ type MockCreatorRepository struct {
 
 func (m *MockCreatorRepository) FindCreatorByUserID(userID uint) (*models.Creator, error) {
 	args := m.Called(userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*models.Creator), args.Error(1)
 }
 
 func (m *MockCreatorRepository) FindCreatorByUserEmail(email string) (*models.Creator, error) {
 	args := m.Called(email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*models.Creator), args.Error(1)
 }
 
-func (m *MockCreatorRepository) FindByFilter(query domain.CreatorFilter) (*domain.Creator, error) {
-	args := m.Called(query)
+func (m *MockCreatorRepository) FindByCPF(cpf string) (*models.Creator, error) {
+	args := m.Called(cpf)
 	if args.Get(0) == nil {
-		return nil, nil
+		return nil, args.Error(1)
 	}
-	return args.Get(0).(*domain.Creator), args.Error(1)
+	return args.Get(0).(*models.Creator), args.Error(1)
 }
 
 func (m *MockCreatorRepository) Create(creator *models.Creator) error {
-	args := m.Called(creator)
-	return args.Error(0)
-}
-
-func (m *MockCreatorRepository) Save(creator *domain.Creator) error {
 	args := m.Called(creator)
 	return args.Error(0)
 }

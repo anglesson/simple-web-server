@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/stretchr/testify/assert"
@@ -58,10 +57,9 @@ func (s *UserRepositoryTestSuite) TearDownTest() {
 // TestCreateUser testa a criação bem-sucedida de um usuário.
 func (s *UserRepositoryTestSuite) TestCreateUser() {
 	uniqueEmail := fmt.Sprintf("test-%d@example.com", time.Now().UnixNano())
-	user, err := domain.NewUser("Any name", uniqueEmail, "Valid_Password123")
-	require.NoError(s.T(), err)
+	user := models.NewUser("Any name", "Valid_Password123", uniqueEmail)
 
-	err = s.repo.Create(user)
+	err := s.repo.Create(user)
 	require.NoError(s.T(), err, "A criação do usuário não deve retornar erro")
 
 	assert.NotZero(s.T(), user.ID, "O ID do usuário deve ser preenchido após a criação")
