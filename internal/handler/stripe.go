@@ -9,7 +9,10 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/internal/repository/gorm"
+	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/database"
+	"github.com/anglesson/simple-web-server/pkg/gov"
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/checkout/session"
 	"github.com/stripe/stripe-go/v76/webhook"
@@ -72,8 +75,21 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.StripeCustomerID == "" {
-		log.Printf("Usuário %s não possui ID do Stripe", user.Email)
+	// Get user's subscription
+	subscriptionRepository := gorm.NewSubscriptionGormRepository()
+	subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
+	subscription, err := subscriptionService.FindByUserID(user.ID)
+	if err != nil {
+		log.Printf("Erro ao buscar subscription do usuário: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Erro ao processar pagamento",
+		})
+		return
+	}
+
+	if subscription == nil || subscription.StripeCustomerID == "" {
+		log.Printf("Usuário %s não possui subscription ou ID do Stripe", user.Email)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Erro ao processar pagamento: Cliente não encontrado",
@@ -104,7 +120,7 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := &stripe.CheckoutSessionParams{
-		Customer: stripe.String(user.StripeCustomerID),
+		Customer: stripe.String(subscription.StripeCustomerID),
 		Mode:     stripe.String(string(stripe.CheckoutSessionModeSubscription)),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
@@ -176,85 +192,99 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Find user by Stripe customer ID
-		userRepository := repository.NewGormUserRepository(database.DB)
-		user := userRepository.FindByStripeCustomerID(session.Customer.ID)
-		if user == nil {
-			log.Printf("User not found for Stripe customer ID: %s", session.Customer.ID)
+		// Find subscription by Stripe customer ID
+		subscriptionRepository := gorm.NewSubscriptionGormRepository()
+		subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
+		subscription, err := subscriptionService.FindByStripeCustomerID(session.Customer.ID)
+		if err != nil {
+			log.Printf("Error finding subscription: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if subscription == nil {
+			log.Printf("Subscription not found for Stripe customer ID: %s", session.Customer.ID)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		// Update user subscription status
-		user.StripeSubscriptionID = session.Subscription.ID
-		user.SubscriptionStatus = "active"
-		now := time.Now()
-		user.SubscriptionEndDate = &now
-
-		if err := userRepository.Save(user); err != nil {
-			log.Printf("Error updating user subscription: %v", err)
+		// Update subscription status
+		err = subscriptionService.ActivateSubscription(subscription, session.Customer.ID, session.Subscription.ID)
+		if err != nil {
+			log.Printf("Error updating subscription: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 	case "customer.subscription.updated":
-		var subscription stripe.Subscription
-		err := json.Unmarshal(event.Data.Raw, &subscription)
+		var stripeSubscription stripe.Subscription
+		err := json.Unmarshal(event.Data.Raw, &stripeSubscription)
 		if err != nil {
 			log.Printf("Error parsing subscription: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		// Find user by Stripe customer ID
-		userRepository := repository.NewGormUserRepository(database.DB)
-		user := userRepository.FindByStripeCustomerID(subscription.Customer.ID)
-		if user == nil {
-			log.Printf("User not found for Stripe customer ID: %s", subscription.Customer.ID)
+		// Find subscription by Stripe customer ID
+		subscriptionRepository := gorm.NewSubscriptionGormRepository()
+		subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
+		subscription, err := subscriptionService.FindByStripeCustomerID(stripeSubscription.Customer.ID)
+		if err != nil {
+			log.Printf("Error finding subscription: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if subscription == nil {
+			log.Printf("Subscription not found for Stripe customer ID: %s", stripeSubscription.Customer.ID)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		// Update user subscription status
-		user.SubscriptionStatus = string(subscription.Status)
-		if subscription.CurrentPeriodEnd > 0 {
-			endDate := time.Unix(subscription.CurrentPeriodEnd, 0)
-			user.SubscriptionEndDate = &endDate
+		// Update subscription status
+		var endDate *time.Time
+		if stripeSubscription.CurrentPeriodEnd > 0 {
+			endDate = &time.Time{}
+			*endDate = time.Unix(stripeSubscription.CurrentPeriodEnd, 0)
 		}
-
-		if err := userRepository.Save(user); err != nil {
-			log.Printf("Error updating user subscription: %v", err)
+		err = subscriptionService.UpdateSubscriptionStatus(subscription, string(stripeSubscription.Status), endDate)
+		if err != nil {
+			log.Printf("Error updating subscription: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 	case "customer.subscription.deleted":
-		var subscription stripe.Subscription
-		err := json.Unmarshal(event.Data.Raw, &subscription)
+		var stripeSubscription stripe.Subscription
+		err := json.Unmarshal(event.Data.Raw, &stripeSubscription)
 		if err != nil {
 			log.Printf("Error parsing subscription: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		// Find user by Stripe customer ID
-		userRepository := repository.NewGormUserRepository(database.DB)
-		user := userRepository.FindByStripeCustomerID(subscription.Customer.ID)
-		if user == nil {
-			log.Printf("User not found for Stripe customer ID: %s", subscription.Customer.ID)
+		// Find subscription by Stripe customer ID
+		subscriptionRepository := gorm.NewSubscriptionGormRepository()
+		subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
+		subscription, err := subscriptionService.FindByStripeCustomerID(stripeSubscription.Customer.ID)
+		if err != nil {
+			log.Printf("Error finding subscription: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if subscription == nil {
+			log.Printf("Subscription not found for Stripe customer ID: %s", stripeSubscription.Customer.ID)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		// Update user subscription status
-		user.SubscriptionStatus = "canceled"
-		if subscription.CurrentPeriodEnd > 0 {
-			endDate := time.Unix(subscription.CurrentPeriodEnd, 0)
-			user.SubscriptionEndDate = &endDate
+		// Update subscription status
+		var endDate *time.Time
+		if stripeSubscription.CurrentPeriodEnd > 0 {
+			endDate = &time.Time{}
+			*endDate = time.Unix(stripeSubscription.CurrentPeriodEnd, 0)
 		}
-
-		if err := userRepository.Save(user); err != nil {
-			log.Printf("Error updating user subscription: %v", err)
+		err = subscriptionService.UpdateSubscriptionStatus(subscription, "canceled", endDate)
+		if err != nil {
+			log.Printf("Error updating subscription: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

@@ -27,20 +27,26 @@ type InputCreateCreator struct {
 }
 
 type creatorServiceImpl struct {
-	creatorRepo repository.CreatorRepository
-	rfService   gov.ReceitaFederalService
-	userService UserService
+	creatorRepo         repository.CreatorRepository
+	rfService           gov.ReceitaFederalService
+	userService         UserService
+	subscriptionService SubscriptionService
+	paymentGateway      PaymentGateway
 }
 
 func NewCreatorService(
 	creatorRepo repository.CreatorRepository,
 	receitaFederalService gov.ReceitaFederalService,
 	userService UserService,
+	subscriptionService SubscriptionService,
+	paymentGateway PaymentGateway,
 ) CreatorService {
 	return &creatorServiceImpl{
-		creatorRepo: creatorRepo,
-		rfService:   receitaFederalService,
-		userService: userService,
+		creatorRepo:         creatorRepo,
+		rfService:           receitaFederalService,
+		userService:         userService,
+		subscriptionService: subscriptionService,
+		paymentGateway:      paymentGateway,
 	}
 }
 
@@ -98,9 +104,30 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.C
 		user.ID,
 	)
 
+	// Save creator
 	err = cs.creatorRepo.Create(creator)
 	if err != nil {
 		return nil, err
+	}
+
+	// Create customer in payment gateway
+	customerID, err := cs.paymentGateway.CreateCustomer(input.Email, validatedName)
+	if err != nil {
+		log.Printf("Error creating customer in payment gateway: %v", err)
+		// Don't fail the creator creation if payment gateway fails
+		// The customer can be created later
+	} else {
+		// Create subscription for the creator
+		subscription, err := cs.subscriptionService.CreateSubscription(user.ID, "default_plan")
+		if err != nil {
+			log.Printf("Error creating subscription: %v", err)
+		} else {
+			// Activate subscription with customer ID
+			err = cs.subscriptionService.ActivateSubscription(subscription, customerID, "")
+			if err != nil {
+				log.Printf("Error activating subscription: %v", err)
+			}
+		}
 	}
 
 	return creator, nil

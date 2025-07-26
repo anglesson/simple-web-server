@@ -2,38 +2,25 @@ package models
 
 import (
 	"strings"
-	"time"
 
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	Username             string     `json:"username" validate:"required"`
-	Password             string     `json:"password" validate:"required"`
-	Email                string     `json:"email" validate:"required,email" gorm:"unique"`
-	TrialStartDate       *time.Time `json:"trial_start_date"`
-	TrialEndDate         *time.Time `json:"trial_end_date"`
-	IsTrialActive        bool       `json:"is_trial_active"`
-	StripeCustomerID     string     `json:"stripe_customer_id"`
-	StripeSubscriptionID string     `json:"stripe_subscription_id"`
-	SubscriptionStatus   string     `json:"subscription_status"`
-	SubscriptionEndDate  *time.Time `json:"subscription_end_date"`
-	CSRFToken            string
-	SessionToken         string
+	Username     string `json:"username" validate:"required"`
+	Password     string `json:"password" validate:"required"`
+	Email        string `json:"email" validate:"required,email" gorm:"unique"`
+	CSRFToken    string
+	SessionToken string
+	Subscription *Subscription `json:"subscription" gorm:"foreignKey:UserID"`
 }
 
 func NewUser(username, password, email string) *User {
-	now := time.Now()
-	trialEndDate := now.AddDate(0, 0, 7) // 7 days trial
-
 	return &User{
-		Username:       username,
-		Password:       password,
-		Email:          email,
-		TrialStartDate: &now,
-		TrialEndDate:   &trialEndDate,
-		IsTrialActive:  true,
+		Username: username,
+		Password: password,
+		Email:    email,
 	}
 }
 
@@ -53,29 +40,22 @@ func (u *User) GetInitials() string {
 }
 
 func (u *User) IsInTrialPeriod() bool {
-	if u.TrialEndDate == nil {
+	if u.Subscription == nil {
 		return false
 	}
-	return u.IsTrialActive && time.Now().Before(*u.TrialEndDate)
+	return u.Subscription.IsInTrialPeriod()
 }
 
 func (u *User) DaysLeftInTrial() int {
-	if u.TrialEndDate == nil {
+	if u.Subscription == nil {
 		return 0
 	}
-	days := u.TrialEndDate.Sub(time.Now()).Hours() / 24
-	if days < 0 {
-		return 0
-	}
-	return int(days)
+	return u.Subscription.DaysLeftInTrial()
 }
 
 func (u *User) IsSubscribed() bool {
-	if u.SubscriptionStatus == "active" {
-		return true
+	if u.Subscription == nil {
+		return false
 	}
-	if u.SubscriptionEndDate != nil && time.Now().Before(*u.SubscriptionEndDate) {
-		return true
-	}
-	return false
+	return u.Subscription.IsSubscribed()
 }

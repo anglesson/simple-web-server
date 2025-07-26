@@ -39,7 +39,11 @@ func main() {
 	// Services
 	commonRFService := gov.NewHubDevService()
 	userService := service.NewUserService(userRepository, encrypter)
-	creatorService := service.NewCreatorService(creatorRepository, commonRFService, userService)
+	subscriptionRepository := gorm.NewSubscriptionGormRepository()
+	subscriptionService := service.NewSubscriptionService(subscriptionRepository, commonRFService)
+	stripeService := service.NewStripeService()
+	paymentGateway := service.NewStripePaymentGateway(stripeService)
+	creatorService := service.NewCreatorService(creatorRepository, commonRFService, userService, subscriptionService, paymentGateway)
 	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
 
 	// Handlers

@@ -126,7 +126,16 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	userRepository := repository.NewGormUserRepository(database.DB)
 	encrypter := utils.NewEncrypter()
 	userService := service.NewUserService(userRepository, encrypter)
-	creator, err := service.NewCreatorService(creatorRepo, rfService, userService).FindCreatorByUserID(loggedUser.ID)
+	subscriptionRepository := gorm.NewSubscriptionGormRepository()
+	stripeService := service.NewStripeService()
+	creatorService := service.NewCreatorService(
+		creatorRepo,
+		rfService,
+		userService,
+		service.NewSubscriptionService(subscriptionRepository, rfService),
+		service.NewStripePaymentGateway(stripeService),
+	)
+	creator, err := creatorService.FindCreatorByUserID(loggedUser.ID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
 		web.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")

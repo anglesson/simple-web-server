@@ -2,10 +2,8 @@ package service
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/config"
-	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/customer"
 	"github.com/stripe/stripe-go/v76/subscription"
@@ -22,23 +20,19 @@ func NewStripeService() *StripeService {
 	}
 }
 
-func (s *StripeService) CreateCustomer(user *models.User) error {
+func (s *StripeService) CreateCustomer(email, name string) (string, error) {
 	params := &stripe.CustomerParams{
-		Email: stripe.String(user.Email),
-		Name:  stripe.String(user.Username),
-		Metadata: map[string]string{
-			"user_id": strconv.FormatUint(uint64(user.ID), 10),
-		},
+		Email: stripe.String(email),
+		Name:  stripe.String(name),
 	}
 
 	c, err := customer.New(params)
 	if err != nil {
 		log.Printf("Error creating Stripe customer: %v", err)
-		return err
+		return "", err
 	}
 
-	user.StripeCustomerID = c.ID
-	return nil
+	return c.ID, nil
 }
 
 func (s *StripeService) CreateSubscription(customerID string, priceID string) error {

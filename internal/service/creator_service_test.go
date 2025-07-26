@@ -27,12 +27,14 @@ const (
 
 type CreatorServiceTestSuite struct {
 	suite.Suite
-	sut             service.CreatorService
-	mockCreatorRepo repository.CreatorRepository
-	mockRFService   gov.ReceitaFederalService
-	mockUserService service.UserService
-	testInput       service.InputCreateCreator
-	testInputUser   service.InputCreateUser
+	sut                     service.CreatorService
+	mockCreatorRepo         repository.CreatorRepository
+	mockRFService           gov.ReceitaFederalService
+	mockUserService         service.UserService
+	mockSubscriptionService service.SubscriptionService
+	mockPaymentGateway      service.PaymentGateway
+	testInput               service.InputCreateCreator
+	testInputUser           service.InputCreateUser
 }
 
 func TestCreatorServiceTestSuite(t *testing.T) {
@@ -67,7 +69,9 @@ func (suite *CreatorServiceTestSuite) setupMocks() {
 	suite.mockCreatorRepo = new(mocks_repo.MockCreatorRepository)
 	suite.mockRFService = new(mocks.MockRFService)
 	suite.mockUserService = new(mocksService.MockUserService)
-	suite.sut = service.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService, suite.mockUserService)
+	suite.mockSubscriptionService = new(mocksService.MockSubscriptionService)
+	suite.mockPaymentGateway = new(mocksService.MockPaymentGateway)
+	suite.sut = service.NewCreatorService(suite.mockCreatorRepo, suite.mockRFService, suite.mockUserService, suite.mockSubscriptionService, suite.mockPaymentGateway)
 }
 
 func (suite *CreatorServiceTestSuite) setupSuccessfulMockExpectations(validatedName string) {
@@ -107,6 +111,20 @@ func (suite *CreatorServiceTestSuite) setupSuccessfulMockExpectations(validatedN
 		UserID:    expectedUser.ID,
 	}
 	suite.mockCreatorRepo.(*mocks_repo.MockCreatorRepository).On("Create", expectedCreator).Return(nil)
+
+	// Mock PaymentGateway expectations
+	suite.mockPaymentGateway.(*mocksService.MockPaymentGateway).
+		On("CreateCustomer", validEmail, validatedName).
+		Return("cus_123", nil)
+
+	// Mock SubscriptionService expectations
+	suite.mockSubscriptionService.(*mocksService.MockSubscriptionService).
+		On("CreateSubscription", expectedUser.ID, "default_plan").
+		Return(&models.Subscription{UserID: expectedUser.ID}, nil)
+
+	suite.mockSubscriptionService.(*mocksService.MockSubscriptionService).
+		On("ActivateSubscription", mock.AnythingOfType("*models.Subscription"), "cus_123", "").
+		Return(nil)
 }
 
 func (suite *CreatorServiceTestSuite) TestCreateCreator_Success() {

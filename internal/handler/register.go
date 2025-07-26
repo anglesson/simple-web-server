@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
@@ -16,6 +15,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/database"
+	"github.com/anglesson/simple-web-server/pkg/gov"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
@@ -101,25 +101,34 @@ func RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create Stripe customer
-	stripeService := service.NewStripeService()
-	if err := stripeService.CreateCustomer(user); err != nil {
-		log.Printf("Error creating Stripe customer: %v", err)
-		web.RedirectBackWithErrors(w, r, "Erro ao criar cliente no Stripe")
-		return
-	}
-
-	// Save user with StripeCustomerID
-	if err := repository.NewGormUserRepository(database.DB).Save(user); err != nil {
-		log.Printf("Error saving user with StripeCustomerID: %v", err)
-		web.RedirectBackWithErrors(w, r, "Erro ao salvar dados do usuário")
-		return
-	}
-
+	// Create creator with subscription and payment gateway integration
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
-	creator := models.NewCreator(user.Username, user.Email, "", "", time.Time{}, user.ID)
-	if err := creatorRepository.Create(creator); err != nil {
-		web.RedirectBackWithErrors(w, r, err.Error())
+	userRepository := repository.NewGormUserRepository(database.DB)
+	subscriptionRepository := gorm.NewSubscriptionGormRepository()
+	stripeService := service.NewStripeService()
+
+	creatorService := service.NewCreatorService(
+		creatorRepository,
+		gov.NewHubDevService(),
+		service.NewUserService(userRepository, encrypter),
+		service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService()),
+		service.NewStripePaymentGateway(stripeService),
+	)
+
+	creatorInput := service.InputCreateCreator{
+		Name:                 user.Username,
+		CPF:                  "",           // Will be filled later
+		BirthDate:            "1990-01-01", // Default date
+		PhoneNumber:          "",
+		Email:                user.Email,
+		Password:             form.Password,
+		PasswordConfirmation: form.PasswordConfirmation,
+	}
+
+	_, err := creatorService.CreateCreator(creatorInput)
+	if err != nil {
+		log.Printf("Error creating creator: %v", err)
+		web.RedirectBackWithErrors(w, r, "Erro ao criar conta")
 		return
 	}
 
