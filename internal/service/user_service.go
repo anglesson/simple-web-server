@@ -10,6 +10,7 @@ import (
 )
 
 var ErrUserAlreadyExists = errors.New("usuário já existe")
+var ErrInvalidCredentials = errors.New("email ou senha inválidos")
 
 type InputCreateUser struct {
 	Username             string
@@ -18,8 +19,14 @@ type InputCreateUser struct {
 	PasswordConfirmation string
 }
 
+type InputLogin struct {
+	Email    string
+	Password string
+}
+
 type UserService interface {
 	CreateUser(input InputCreateUser) (*models.User, error)
+	AuthenticateUser(input InputLogin) (*models.User, error)
 }
 
 type UserServiceImpl struct {
@@ -54,6 +61,26 @@ func (us *UserServiceImpl) CreateUser(input InputCreateUser) (*models.User, erro
 	err := us.userRepository.Create(user)
 	if err != nil {
 		return nil, err
+	}
+
+	return user, nil
+}
+
+func (us *UserServiceImpl) AuthenticateUser(input InputLogin) (*models.User, error) {
+	// Validate input
+	if input.Email == "" || input.Password == "" {
+		return nil, ErrInvalidCredentials
+	}
+
+	// Find user by email
+	user := us.userRepository.FindByUserEmail(input.Email)
+	if user == nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	// Check password
+	if !us.encrypter.CheckPasswordHash(user.Password, input.Password) {
+		return nil, ErrInvalidCredentials
 	}
 
 	return user, nil
