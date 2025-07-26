@@ -39,6 +39,7 @@ func connectGormAndMigrate(dialector gorm.Dialector) {
 
 func migrate() {
 	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.Subscription{})
 	DB.AutoMigrate(&models.ClientCreator{})
 	DB.AutoMigrate(&models.Client{})
 	DB.AutoMigrate(&models.Contact{})
