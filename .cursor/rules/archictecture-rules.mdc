@@ -27,6 +27,7 @@ Located in pkg/
 - GORM: All models are localized in internal/models/
 - SQLite: When running local
 - Postgres: When running in production
+- Bootstrap 5
 
 ## Tests
 The test are included in same path of implementation and you package has a sufix '_test' in package name. Exemple: If package is 'cookie', the test will be in 'cookie_test'
