@@ -35,10 +35,12 @@ func NewUserService(userRepository repository.UserRepository, encrypter utils.En
 }
 
 func (us *UserServiceImpl) CreateUser(input InputCreateUser) (*models.User, error) {
-	if input.Password != input.PasswordConfirmation {
-		return nil, errors.New("passwords do not match")
+	// Validate input
+	if err := validateUserInput(input); err != nil {
+		return nil, err
 	}
 
+	// Clean username
 	input.Username = strings.TrimSpace(input.Username)
 
 	existingUser := us.userRepository.FindByUserEmail(input.Email)
