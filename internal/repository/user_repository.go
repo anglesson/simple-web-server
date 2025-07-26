@@ -11,7 +11,11 @@ import (
 
 type UserRepository interface {
 	Create(user *models.User) error
+	Save(user *models.User) error
 	FindByUserEmail(emailUser string) *models.User
+	FindByEmail(emailUser string) *models.User
+	FindBySessionToken(token string) *models.User
+	FindByStripeCustomerID(customerID string) *models.User
 }
 
 type GormUserRepositoryImpl struct {
@@ -38,7 +42,7 @@ func (r *GormUserRepositoryImpl) Save(user *models.User) error {
 // TODO: add error handler
 func (r *GormUserRepositoryImpl) FindByEmail(emailUser string) *models.User {
 	var user models.User
-	result := database.DB.Where("email = ?", emailUser).First(&user)
+	result := database.DB.Preload("Subscription").Where("email = ?", emailUser).First(&user)
 	if result.Error != nil {
 		log.Printf("Erro ao buscar usuário por email: %v", result.Error)
 		return nil
@@ -48,7 +52,7 @@ func (r *GormUserRepositoryImpl) FindByEmail(emailUser string) *models.User {
 
 func (r *GormUserRepositoryImpl) FindBySessionToken(token string) *models.User {
 	var user models.User
-	result := database.DB.Where("session_token = ?", token).First(&user)
+	result := database.DB.Preload("Subscription").Where("session_token = ?", token).First(&user)
 	if result.Error != nil {
 		log.Printf("Erro ao buscar usuário por session token: %v", result.Error)
 		return nil
@@ -77,7 +81,7 @@ func (r *GormUserRepositoryImpl) Create(user *models.User) error {
 
 func (r *GormUserRepositoryImpl) FindByUserEmail(emailUser string) *models.User {
 	var user models.User
-	err := r.db.Where("email = ?", emailUser).First(&user).Error
+	err := r.db.Preload("Subscription").Where("email = ?", emailUser).First(&user).Error
 	if err != nil {
 		log.Printf("Error finding user by email: %v", err)
 		return nil

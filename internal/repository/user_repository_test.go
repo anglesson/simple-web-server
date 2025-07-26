@@ -1,77 +1,190 @@
 package repository_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
-// UserRepositoryTestSuite é uma suíte de testes para o GormUserRepositoryImpl.
 type UserRepositoryTestSuite struct {
 	suite.Suite
-	db   *gorm.DB
-	repo repository.UserRepository
-	tx   *gorm.DB
+	userRepository repository.UserRepository
 }
 
-// SetupSuite é executado uma vez antes de todos os testes na suíte.
-// Ele configura um banco de dados SQLite em memória.
-func (s *UserRepositoryTestSuite) SetupSuite() {
-	// Usando banco de dados em memória para garantir isolamento total
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	require.NoError(s.T(), err, "Falha ao conectar ao banco de dados em memória")
-
-	s.db = db
-	// Roda as migrações para criar a tabela 'users'
-	err = s.db.AutoMigrate(&models.User{})
-	require.NoError(s.T(), err, "Falha ao executar migrações")
-}
-
-// TearDownSuite é executado uma vez após todos os testes na suíte.
-func (s *UserRepositoryTestSuite) TearDownSuite() {
-	sqlDB, _ := s.db.DB()
-	sqlDB.Close()
-}
-
-// SetupTest é executado antes de cada teste.
-// Inicia uma transação e cria uma nova instância do repositório para o teste.
-func (s *UserRepositoryTestSuite) SetupTest() {
-	s.tx = s.db.Begin()
-	s.repo = repository.NewGormUserRepository(s.tx)
-}
-
-// TearDownTest é executado após cada teste.
-// Faz o rollback da transação para limpar os dados do teste.
-func (s *UserRepositoryTestSuite) TearDownTest() {
-	s.tx.Rollback()
-}
-
-// TestCreateUser testa a criação bem-sucedida de um usuário.
-func (s *UserRepositoryTestSuite) TestCreateUser() {
-	uniqueEmail := fmt.Sprintf("test-%d@example.com", time.Now().UnixNano())
-	user := models.NewUser("Any name", "Valid_Password123", uniqueEmail)
-
-	err := s.repo.Create(user)
-	require.NoError(s.T(), err, "A criação do usuário não deve retornar erro")
-
-	assert.NotZero(s.T(), user.ID, "O ID do usuário deve ser preenchido após a criação")
-
-	// Opcional: verificar se o usuário foi realmente salvo no banco (dentro da transação)
-	var foundUser models.User
-	err = s.tx.First(&foundUser, user.ID).Error
-	require.NoError(s.T(), err, "O usuário deve ser encontrado no banco de dados")
-	assert.Equal(s.T(), uniqueEmail, foundUser.Email)
-}
-
-// TestUserRepository é a função que o Go executa, que por sua vez roda a suíte.
-func TestUserRepository(t *testing.T) {
+func TestUserRepositoryTestSuite(t *testing.T) {
 	suite.Run(t, new(UserRepositoryTestSuite))
+}
+
+func (suite *UserRepositoryTestSuite) SetupSuite() {
+	database.Connect()
+	suite.userRepository = repository.NewGormUserRepository(database.DB)
+}
+
+func (suite *UserRepositoryTestSuite) SetupTest() {
+	// Limpar dados de teste
+	database.DB.Exec("DELETE FROM subscriptions")
+	database.DB.Exec("DELETE FROM users")
+}
+
+func (suite *UserRepositoryTestSuite) createTestUserWithSubscription() *models.User {
+	// Criar usuário
+	user := models.NewUser("testuser", "password123", "test@example.com")
+	err := suite.userRepository.Create(user)
+	suite.Require().NoError(err)
+
+	// Criar subscription
+	subscription := models.NewSubscription(user.ID, "test_plan")
+	err = database.DB.Create(subscription).Error
+	suite.Require().NoError(err)
+
+	return user
+}
+
+func (suite *UserRepositoryTestSuite) TestFindByUserEmail_LoadsSubscription() {
+	// Criar usuário com subscription
+	user := suite.createTestUserWithSubscription()
+
+	// Buscar usuário por email
+	foundUser := suite.userRepository.FindByUserEmail(user.Email)
+	suite.Require().NotNil(foundUser)
+
+	// Verificar que a subscription foi carregada
+	assert.NotNil(suite.T(), foundUser.Subscription)
+	assert.Equal(suite.T(), user.ID, foundUser.Subscription.UserID)
+	assert.Equal(suite.T(), "test_plan", foundUser.Subscription.PlanID)
+	assert.True(suite.T(), foundUser.Subscription.IsTrialActive)
+	assert.Equal(suite.T(), "inactive", foundUser.Subscription.SubscriptionStatus)
+}
+
+func (suite *UserRepositoryTestSuite) TestFindByUserEmail_UserWithoutSubscription() {
+	// Criar usuário sem subscription
+	user := models.NewUser("testuser2", "password123", "test2@example.com")
+	err := suite.userRepository.Create(user)
+	suite.Require().NoError(err)
+
+	// Buscar usuário por email
+	foundUser := suite.userRepository.FindByUserEmail(user.Email)
+	suite.Require().NotNil(foundUser)
+
+	// Verificar que a subscription é nil
+	assert.Nil(suite.T(), foundUser.Subscription)
+}
+
+func (suite *UserRepositoryTestSuite) TestFindByUserEmail_UserNotFound() {
+	// Buscar usuário que não existe
+	foundUser := suite.userRepository.FindByUserEmail("nonexistent@example.com")
+	assert.Nil(suite.T(), foundUser)
+}
+
+func (suite *UserRepositoryTestSuite) TestFindBySessionToken_LoadsSubscription() {
+	// Criar usuário com subscription
+	user := suite.createTestUserWithSubscription()
+
+	// Definir session token
+	user.SessionToken = "test-session-token"
+	err := suite.userRepository.Save(user)
+	suite.Require().NoError(err)
+
+	// Buscar usuário por session token
+	foundUser := suite.userRepository.FindBySessionToken("test-session-token")
+	suite.Require().NotNil(foundUser)
+
+	// Verificar que a subscription foi carregada
+	assert.NotNil(suite.T(), foundUser.Subscription)
+	assert.Equal(suite.T(), user.ID, foundUser.Subscription.UserID)
+	assert.Equal(suite.T(), "test_plan", foundUser.Subscription.PlanID)
+}
+
+func (suite *UserRepositoryTestSuite) TestFindBySessionToken_UserNotFound() {
+	// Buscar usuário com session token que não existe
+	foundUser := suite.userRepository.FindBySessionToken("nonexistent-token")
+	assert.Nil(suite.T(), foundUser)
+}
+
+func (suite *UserRepositoryTestSuite) TestUserTrialMethods_WithSubscription() {
+	// Criar usuário com subscription ativa
+	user := suite.createTestUserWithSubscription()
+
+	// Buscar usuário para garantir que a subscription foi carregada
+	foundUser := suite.userRepository.FindByUserEmail(user.Email)
+	suite.Require().NotNil(foundUser)
+	suite.Require().NotNil(foundUser.Subscription)
+
+	// Testar métodos do trial
+	assert.True(suite.T(), foundUser.IsInTrialPeriod())
+	assert.False(suite.T(), foundUser.IsSubscribed())
+	assert.Greater(suite.T(), foundUser.DaysLeftInTrial(), 0)
+}
+
+func (suite *UserRepositoryTestSuite) TestUserTrialMethods_WithoutSubscription() {
+	// Criar usuário sem subscription
+	user := models.NewUser("testuser3", "password123", "test3@example.com")
+	err := suite.userRepository.Create(user)
+	suite.Require().NoError(err)
+
+	// Buscar usuário
+	foundUser := suite.userRepository.FindByUserEmail(user.Email)
+	suite.Require().NotNil(foundUser)
+	assert.Nil(suite.T(), foundUser.Subscription)
+
+	// Testar métodos do trial (devem retornar false/0)
+	assert.False(suite.T(), foundUser.IsInTrialPeriod())
+	assert.False(suite.T(), foundUser.IsSubscribed())
+	assert.Equal(suite.T(), 0, foundUser.DaysLeftInTrial())
+}
+
+func (suite *UserRepositoryTestSuite) TestUserTrialMethods_ExpiredTrial() {
+	// Criar usuário com subscription
+	user := suite.createTestUserWithSubscription()
+
+	// Modificar a subscription para trial expirado
+	subscription := &models.Subscription{}
+	err := database.DB.Where("user_id = ?", user.ID).First(subscription).Error
+	suite.Require().NoError(err)
+
+	subscription.IsTrialActive = false
+	subscription.TrialEndDate = time.Now().AddDate(0, 0, -1) // Trial expirado
+	err = database.DB.Save(subscription).Error
+	suite.Require().NoError(err)
+
+	// Buscar usuário
+	foundUser := suite.userRepository.FindByUserEmail(user.Email)
+	suite.Require().NotNil(foundUser)
+	suite.Require().NotNil(foundUser.Subscription)
+
+	// Testar métodos do trial
+	assert.False(suite.T(), foundUser.IsInTrialPeriod())
+	assert.False(suite.T(), foundUser.IsSubscribed())
+	assert.Equal(suite.T(), 0, foundUser.DaysLeftInTrial())
+}
+
+func (suite *UserRepositoryTestSuite) TestUserTrialMethods_ActiveSubscription() {
+	// Criar usuário com subscription
+	user := suite.createTestUserWithSubscription()
+
+	// Modificar a subscription para ativa
+	subscription := &models.Subscription{}
+	err := database.DB.Where("user_id = ?", user.ID).First(subscription).Error
+	suite.Require().NoError(err)
+
+	subscription.SubscriptionStatus = "active"
+	subscription.StripeCustomerID = "cus_test123"
+	subscription.StripeSubscriptionID = "sub_test123"
+	err = database.DB.Save(subscription).Error
+	suite.Require().NoError(err)
+
+	// Buscar usuário
+	foundUser := suite.userRepository.FindByUserEmail(user.Email)
+	suite.Require().NotNil(foundUser)
+	suite.Require().NotNil(foundUser.Subscription)
+
+	// Testar métodos do trial
+	assert.True(suite.T(), foundUser.IsInTrialPeriod()) // Ainda no trial
+	assert.True(suite.T(), foundUser.IsSubscribed())    // Mas também inscrito
+	assert.Greater(suite.T(), foundUser.DaysLeftInTrial(), 0)
 }
