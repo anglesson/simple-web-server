@@ -58,7 +58,7 @@ func (s *EmailService) SendLinkToDownload(purchases []*models.Purchase) {
 		}
 
 		s.mailer.From(config.AppConfig.MailFromAddress)
-		s.mailer.To(purchase.Client.Contact.Email)
+		s.mailer.To(purchase.Client.Email)
 		s.mailer.Subject("Seu e-book chegou!")
 		s.mailer.Body(NewEmail("ebook_download", data))
 		s.mailer.Send()

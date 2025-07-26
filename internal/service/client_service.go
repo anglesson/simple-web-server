@@ -62,6 +62,11 @@ func NewClientService(
 }
 
 func (cs *clientServiceImpl) CreateClient(input CreateClientInput) (*CreateClientOutput, error) {
+	// Validate input
+	if err := validateClientInput(input); err != nil {
+		return nil, err
+	}
+
 	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
 	if err != nil {
 		return nil, err
@@ -75,7 +80,11 @@ func (cs *clientServiceImpl) CreateClient(input CreateClientInput) (*CreateClien
 		return nil, errors.New("cliente já existe")
 	}
 
-	client := models.NewClient(input.Name, input.CPF, input.BirthDate, input.Email, input.Phone, creator)
+	// Clean CPF and phone
+	cleanCPF := cleanCPF(input.CPF)
+	cleanPhone := cleanPhone(input.Phone)
+
+	client := models.NewClient(input.Name, cleanCPF, input.BirthDate, input.Email, cleanPhone, creator)
 
 	if err := cs.validateReceita(client); err != nil {
 		return nil, err
@@ -89,8 +98,8 @@ func (cs *clientServiceImpl) CreateClient(input CreateClientInput) (*CreateClien
 		ID:        int(client.ID),
 		Name:      client.Name,
 		CPF:       client.CPF,
-		Phone:     client.Contact.Phone,
-		Email:     client.Contact.Email,
+		Phone:     client.Phone,
+		Email:     client.Email,
 		BirthDate: client.Birthdate,
 		UpdatedAt: client.UpdatedAt.String(),
 		CreatedAt: client.CreatedAt.String(),
@@ -124,8 +133,8 @@ func (cs *clientServiceImpl) Update(input UpdateClientInput) (*models.Client, er
 	}
 
 	// Update only email and phone
-	client.Contact.Email = input.Email
-	client.Contact.Phone = input.Phone
+	client.Email = input.Email
+	client.Phone = input.Phone
 
 	err = cs.clientRepository.Save(client)
 	if err != nil {

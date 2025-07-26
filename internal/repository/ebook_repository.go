@@ -4,8 +4,6 @@ import (
 	"errors"
 	"log"
 
-	common_application "github.com/anglesson/simple-web-server/domain"
-
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/pkg/database"
 	"gorm.io/gorm"
@@ -14,7 +12,7 @@ import (
 type EbookQuery struct {
 	Title       string
 	Description string
-	Pagination  *common_application.Pagination
+	Pagination  *models.Pagination
 }
 
 type EbookRepository struct {
@@ -32,16 +30,14 @@ func (r *EbookRepository) FindEbooksByUser(UserID uint, query EbookQuery) (*[]mo
 		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
 		Where("creators.user_id = ?", UserID).
 		Scopes(ContainsTitleOrDescriptionWith(query.Title)).
-		Offset(query.Pagination.GetOffset()).
-		Limit(query.Pagination.GetLimit()).
+		Offset(getOffset(query.Pagination)).
+		Limit(getLimit(query.Pagination)).
 		Find(&ebooks).
 		Error
 	if err != nil {
 		log.Panicf("Erro na busca de ebooks: %s", err)
 		return nil, errors.New("Erro na busca de dados")
 	}
-
-	query.Pagination.Total = int64(len(ebooks))
 
 	return &ebooks, nil
 }
@@ -50,4 +46,19 @@ func ContainsTitleOrDescriptionWith(term string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("title LIKE ? OR description LIKE ?", "%"+term+"%", "%"+term+"%")
 	}
+}
+
+// Helper functions for pagination
+func getOffset(pagination *models.Pagination) int {
+	if pagination == nil {
+		return 0
+	}
+	return (pagination.Page - 1) * pagination.Limit
+}
+
+func getLimit(pagination *models.Pagination) int {
+	if pagination == nil {
+		return 10 // default limit
+	}
+	return pagination.Limit
 }

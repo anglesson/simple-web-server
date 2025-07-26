@@ -12,7 +12,6 @@ import (
 
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
-	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
@@ -38,7 +37,8 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	title := r.URL.Query().Get("title")
-	pagination := domain.NewPagination(page, perPage)
+
+	pagination := models.NewPagination(page, perPage)
 
 	ebookService := service.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
@@ -48,6 +48,11 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Set total count for pagination
+	if ebooks != nil {
+		pagination.SetTotal(int64(len(*ebooks)))
 	}
 
 	template.View(w, r, "ebook", map[string]any{
@@ -334,7 +339,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := domain.NewPagination(page, perPage)
+	pagination := models.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
@@ -344,13 +349,18 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := gorm.NewClientGormRepository().FindByClientsWhereEbookWasSend(creator, domain.ClientFilter{
+	clients, err := gorm.NewClientGormRepository().FindByClientsWhereEbookWasSend(creator, models.ClientFilter{
 		Term:       term,
 		EbookID:    ebook.ID,
 		Pagination: pagination,
 	})
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
+	}
+
+	// Set total count for pagination
+	if clients != nil {
+		pagination.SetTotal(int64(len(*clients)))
 	}
 
 	template.View(w, r, "view_ebook", map[string]any{

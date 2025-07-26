@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
@@ -34,17 +34,19 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
+	pagination := models.NewPagination(1, 1000)
+
 	viewData := map[string]any{
 		"Ebooks":         nil,
 		"Clients":        nil,
-		"Pagination":     domain.NewPagination(1, 1000),
+		"Pagination":     pagination,
 		"EbookID":        nil,
 		"ClientsCreator": len(creator.Clients),
 	}
 
 	ebookService := service.NewEbookService()
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
-		Pagination: viewData["Pagination"].(*domain.Pagination),
+		Pagination: pagination,
 	})
 	if err != nil {
 		cookies.NotifyError(w, "Ocorre um erro ao listar seus ebooks")
@@ -58,9 +60,9 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	if ebookID != 0 {
 		viewData["EbookID"] = ebookID
 	}
-	clients, err := gorm.NewClientGormRepository().FindByClientsWhereEbookNotSend(creator, domain.ClientFilter{
+	clients, err := gorm.NewClientGormRepository().FindByClientsWhereEbookNotSend(creator, models.ClientFilter{
 		EbookID:    uint(ebookID),
-		Pagination: viewData["Pagination"].(*domain.Pagination),
+		Pagination: pagination,
 		Term:       r.URL.Query().Get("term"),
 	})
 	if clients != nil && len(*clients) > 0 {
@@ -69,6 +71,11 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
+	}
+
+	// Set total count for pagination
+	if clients != nil {
+		pagination.SetTotal(int64(len(*clients)))
 	}
 
 	template.View(w, r, "send_ebook", viewData, "admin")

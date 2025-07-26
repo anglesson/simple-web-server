@@ -39,10 +39,14 @@ func NewUser(username, password, email string) *User {
 
 func (u *User) GetInitials() string {
 	words := strings.Fields(u.Username)
-	initials := ""
-	for _, word := range words {
-		if len(word) > 0 {
-			initials += strings.ToUpper(string(word[0]))
+	if len(words) == 0 {
+		return ""
+	}
+	initials := strings.ToUpper(string(words[0][0]))
+	if len(words) > 1 {
+		lastWord := words[len(words)-1]
+		if len(lastWord) > 0 {
+			initials += strings.ToUpper(string(lastWord[0]))
 		}
 	}
 	return initials

@@ -38,24 +38,28 @@ func (suite *ClientServiceTestSuite) TestCreateClient() {
 
 	input := service.CreateClientInput{
 		Name:         "Name User",
-		CPF:          "000.000.000-00",
-		BirthDate:    "2012-12-12",
+		CPF:          "058.997.950-77",
+		BirthDate:    "1990-12-12",
+		Email:        "client@mail.com",
+		Phone:        "12945678901",
 		EmailCreator: creator.Email,
 	}
 
 	expectedName := "Name Receita Federal"
-	expectedBirthDay := "12/12/2012"
+	expectedBirthDay := "12/12/1990"
 
 	client := &models.Client{
 		Validated: true,
 		Name:      expectedName,
-		CPF:       input.CPF,
+		CPF:       "05899795077",
 		Birthdate: input.BirthDate,
+		Email:     input.Email,
+		Phone:     input.Phone,
 		Creators:  []*models.Creator{creator},
 	}
 
 	suite.mockRFService.(*mocks.MockRFService).
-		On("ConsultaCPF", "000.000.000-00", "12/12/2012").
+		On("ConsultaCPF", "05899795077", "12/12/1990").
 		Return(&gov.ReceitaFederalResponse{
 			Status: true,
 			Result: gov.ConsultaData{
@@ -89,24 +93,28 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 
 	input := service.CreateClientInput{
 		Name:         "Name User",
-		CPF:          "000.000.000-00",
-		BirthDate:    "2012-12-12",
+		CPF:          "058.997.950-77",
+		BirthDate:    "1990-12-12",
+		Email:        "client@mail.com",
+		Phone:        "12945678901",
 		EmailCreator: creator.Email,
 	}
 
 	expectedName := "Name Receita Federal"
-	expectedBirthDay := "12/12/2012"
+	expectedBirthDay := "12/12/1990"
 
 	client := &models.Client{
 		Validated: true,
 		Name:      expectedName,
-		CPF:       input.CPF,
+		CPF:       "05899795077",
 		Birthdate: input.BirthDate,
+		Email:     input.Email,
+		Phone:     input.Phone,
 		Creators:  []*models.Creator{creator},
 	}
 
 	suite.mockRFService.(*mocks.MockRFService).
-		On("ConsultaCPF", "000.000.000-00", "12/12/2012").
+		On("ConsultaCPF", "05899795077", "12/12/1990").
 		Return(&gov.ReceitaFederalResponse{
 			Status: true,
 			Result: gov.ConsultaData{
@@ -128,7 +136,7 @@ func (suite *ClientServiceTestSuite) TestShouldReturnErrorIfClientExists() {
 
 	suite.Error(err)
 	suite.mockCreatorRepository.(*mocks_repo.MockCreatorRepository).AssertCalled(suite.T(), "FindCreatorByUserEmail", creator.Email)
-	suite.mockClientRepository.(*mocks_repo.MockClientRepository).AssertCalled(suite.T(), "FindByEmail", client.Contact.Email)
+	suite.mockClientRepository.(*mocks_repo.MockClientRepository).AssertCalled(suite.T(), "FindByEmail", client.Email)
 }
 
 func TestClientServiceTestSuite(t *testing.T) {

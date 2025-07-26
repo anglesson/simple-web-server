@@ -36,7 +36,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="email" class="col-form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ .Data.Client.Contact.Email }}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
+                            <input type="email" class="form-control" id="email" name="email" value="{{ .Data.Client.Email }}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
                             <div class="invalid-feedback">Por favor, insira um email válido.</div>
                             {{with .Errors.Email}}
                             <p class="text-danger">{{.}}</p>{{end}}
@@ -44,7 +44,7 @@
                         <div class="mb-3">
                             <label for="phone" class="col-form-label">Telefone <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ .Data.Client.Contact.Phone }}" placeholder="(XX) XXXXX-XXXX" required />
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ .Data.Client.Phone }}" placeholder="(XX) XXXXX-XXXX" required />
                                 <div class="invalid-feedback">Por favor, insira um telefone válido.</div>
                             </div>
                             {{with .Errors.Phone}}

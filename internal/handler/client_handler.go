@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/anglesson/simple-web-server/domain"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
@@ -70,7 +69,8 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	term := r.URL.Query().Get("term")
-	pagination := domain.NewPagination(page, perPage)
+
+	pagination := models.NewPagination(page, perPage)
 
 	log.Printf("User Logado: %v", loggedUser.Email)
 
@@ -79,12 +79,17 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 		web.RedirectBackWithErrors(w, r, err.Error())
 	}
 
-	clients, err := gorm.NewClientGormRepository().FindClientsByCreator(creator, domain.ClientFilter{
+	clients, err := gorm.NewClientGormRepository().FindClientsByCreator(creator, models.ClientFilter{
 		Term:       term,
 		Pagination: pagination,
 	})
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
+	}
+
+	// Set total count for pagination
+	if clients != nil {
+		pagination.SetTotal(int64(len(*clients)))
 	}
 
 	template.View(w, r, "client", map[string]any{

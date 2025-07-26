@@ -97,7 +97,7 @@
                         <div class="d-flex align-items-center">
                             <div class="form-check me-3">
                                 <input class="form-check-input" type="checkbox" name="clients[]" value="{{.ID}}"
-                                    data-client-name="{{.Name}}" data-client-email="{{.Contact.Email}}"
+                                    data-client-name="{{.Name}}" data-client-email="{{.Email}}"
                                     onclick="toggleEnableButton(event);">
                             </div>
                             <div class="flex-grow-1">
@@ -106,8 +106,8 @@
                                     <small class="text-muted">{{.CPF}}</small>
                                 </div>
                                 <div class="d-flex flex-column align-items-start text-muted">
-                                    <small class="me-3"><i class="fe fe-mail"></i>{{.Contact.Email}}</small>
-                                    <small><i class="fe fe-phone"></i>{{.Contact.Phone}}</small>
+                                    <small class="me-3"><i class="fe fe-mail"></i>{{.Email}}</small>
+<small><i class="fe fe-phone"></i>{{.Phone}}</small>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -120,7 +120,7 @@
                                         <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                             data-bs-target="#clientModal" data-bs-title="Editar Cliente"
                                             data-bs-id="{{.ID}}" data-bs-name="{{.Name}}" data-bs-cpf="{{.CPF}}"
-                                            data-bs-phone="{{.Contact.Phone}}" data-bs-email="{{.Contact.Email}}">
+                                            data-bs-phone="{{.Phone}}" data-bs-email="{{.Email}}">
                                             <i class="fe fe-edit-2 me-2"></i>Editar
                                         </a>
                                     </li>

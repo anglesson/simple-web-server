@@ -12,20 +12,20 @@ type Client struct {
 	Name      string     `json:"name"`
 	CPF       string     `gorm:"unique" json:"cpf"`
 	Birthdate string     `json:"birthdate"`
-	ContactID uint       `json:"contact_id"`
+	Email     string     `json:"email"`
+	Phone     string     `json:"phone"`
 	Validated bool       `json:"validated"`
-	Contact   Contact    `gorm:"foreignKey:ContactID"`
 	Creators  []*Creator `gorm:"many2many:client_creators"`
 	Purchases []*Purchase
 }
 
 func NewClient(name, cpf, birthDate, email, phone string, creator *Creator) *Client {
-	contact := NewContact(email, phone)
 	return &Client{
 		Name:      name,
 		CPF:       cpf,
 		Birthdate: birthDate,
-		Contact:   contact,
+		Email:     email,
+		Phone:     phone,
 		Validated: false,
 		Creators: []*Creator{
 			creator,
@@ -36,8 +36,8 @@ func NewClient(name, cpf, birthDate, email, phone string, creator *Creator) *Cli
 func (c *Client) Update(name, cpf, email, phone string) {
 	c.Name = name
 	c.CPF = cpf
-	c.Contact.Email = email
-	c.Contact.Phone = phone
+	c.Email = email
+	c.Phone = phone
 }
 
 func (c *Client) TotalPurchasesByEbook(ebookID uint) int {
