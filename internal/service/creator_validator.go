@@ -32,6 +32,10 @@ func validateCreatorInput(input InputCreateCreator) error {
 		return err
 	}
 
+	if err := validateTermsAccepted(input.TermsAccepted); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -245,4 +249,12 @@ func allPhoneDigitsSame(phone string) bool {
 		}
 	}
 	return true
+}
+
+// validateTermsAccepted validates that the user accepted the terms
+func validateTermsAccepted(termsAccepted string) error {
+	if termsAccepted != "on" {
+		return errors.New("você deve aceitar os Termos de Serviço e Política de Privacidade")
+	}
+	return nil
 }

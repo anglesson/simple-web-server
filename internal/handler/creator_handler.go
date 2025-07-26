@@ -18,6 +18,10 @@ func NewCreatorHandler(creatorService service.CreatorService) *CreatorHandler {
 	}
 }
 
+func (ch *CreatorHandler) RegisterView(w http.ResponseWriter, r *http.Request) {
+	template.View(w, r, "creator/register", nil, "guest")
+}
+
 func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
@@ -32,6 +36,7 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		CPF:                  r.FormValue("cpf"),
 		Password:             r.FormValue("password"),
 		PasswordConfirmation: r.FormValue("password_confirmation"),
+		TermsAccepted:        r.FormValue("terms_accepted"),
 	}
 
 	creator, err := ch.creatorService.CreateCreator(input)

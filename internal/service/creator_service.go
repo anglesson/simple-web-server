@@ -24,6 +24,7 @@ type InputCreateCreator struct {
 	Email                string `json:"email"`
 	Password             string `json:"password"`
 	PasswordConfirmation string `json:"passwordConfirmation"`
+	TermsAccepted        string `json:"termsAccepted"`
 }
 
 type creatorServiceImpl struct {

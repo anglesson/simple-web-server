@@ -62,7 +62,7 @@ func main() {
 		r.Use(middleware.AuthGuard)
 		r.Get("/login", handler.LoginView)
 		r.Post("/login", handler.LoginSubmit)
-		r.Get("/register", handler.RegisterView)
+		r.Get("/register", creatorHandler.RegisterView)
 		r.Post("/register", creatorHandler.RegisterCreatorSSR)
 		r.Get("/forget-password", handler.ForgetPasswordView)
 		r.Post("/forget-password", handler.ForgetPasswordSubmit)

@@ -2,25 +2,29 @@ package models
 
 import (
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	Username     string `json:"username" validate:"required"`
-	Password     string `json:"password" validate:"required"`
-	Email        string `json:"email" validate:"required,email" gorm:"unique"`
-	CSRFToken    string
-	SessionToken string
-	Subscription *Subscription `json:"subscription" gorm:"foreignKey:UserID"`
+	Username        string `json:"username" validate:"required"`
+	Password        string `json:"password" validate:"required"`
+	Email           string `json:"email" validate:"required,email" gorm:"unique"`
+	CSRFToken       string
+	SessionToken    string
+	TermsAcceptedAt *time.Time    `json:"terms_accepted_at"`
+	Subscription    *Subscription `json:"subscription" gorm:"foreignKey:UserID"`
 }
 
 func NewUser(username, password, email string) *User {
+	now := time.Now()
 	return &User{
-		Username: username,
-		Password: password,
-		Email:    email,
+		Username:        username,
+		Password:        password,
+		Email:           email,
+		TermsAcceptedAt: &now,
 	}
 }
 
@@ -58,4 +62,8 @@ func (u *User) IsSubscribed() bool {
 		return false
 	}
 	return u.Subscription.IsSubscribed()
+}
+
+func (u *User) HasAcceptedTerms() bool {
+	return u.TermsAcceptedAt != nil
 }

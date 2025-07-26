@@ -55,6 +55,7 @@ func (suite *CreatorServiceTestSuite) setupTestInput() {
 		CPF:                  validCPF,
 		Password:             validPassword,
 		PasswordConfirmation: validPassword,
+		TermsAccepted:        "on",
 	}
 
 	suite.testInputUser = service.InputCreateUser{
