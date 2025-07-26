@@ -31,7 +31,7 @@ Located in pkg/
 ## Tests
 The test are included in same path of implementation and you package has a sufix '_test' in package name. Exemple: If package is 'cookie', the test will be in 'cookie_test'
 To run tests use the command `make test`
-Always include tests for each features or problem encountered
+Always include tests for each feature or problem encountered or modifications
 
 ## Server
 To start web server use the command `make run`
