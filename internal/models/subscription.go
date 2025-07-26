@@ -47,7 +47,7 @@ func (s *Subscription) DaysLeftInTrial() int {
 	if s.TrialEndDate.IsZero() {
 		return 0
 	}
-	days := s.TrialEndDate.Sub(time.Now()).Hours() / 24
+	days := time.Until(s.TrialEndDate).Hours() / 24
 	if math.Ceil(days) < 0 {
 		return 0
 	}
