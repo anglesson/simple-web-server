@@ -17,10 +17,10 @@ func NewStripePaymentGateway(stripeService *StripeService) PaymentGateway {
 
 func (spg *StripePaymentGateway) CreateCustomer(email, name string) (string, error) {
 	if email == "" {
-		return "", errors.New("email is required")
+		return "", errors.New("e-mail é obrigatório")
 	}
 	if name == "" {
-		return "", errors.New("name is required")
+		return "", errors.New("nome é obrigatório")
 	}
 
 	customerID, err := spg.stripeService.CreateCustomer(email, name)
@@ -34,10 +34,10 @@ func (spg *StripePaymentGateway) CreateCustomer(email, name string) (string, err
 
 func (spg *StripePaymentGateway) CreateSubscription(customerID, priceID string) (string, error) {
 	if customerID == "" {
-		return "", errors.New("customer ID is required")
+		return "", errors.New("ID do cliente é obrigatório")
 	}
 	if priceID == "" {
-		return "", errors.New("price ID is required")
+		return "", errors.New("ID do preço é obrigatório")
 	}
 
 	err := spg.stripeService.CreateSubscription(customerID, priceID)
@@ -53,7 +53,7 @@ func (spg *StripePaymentGateway) CreateSubscription(customerID, priceID string) 
 
 func (spg *StripePaymentGateway) CancelSubscription(subscriptionID string) error {
 	if subscriptionID == "" {
-		return errors.New("subscription ID is required")
+		return errors.New("ID da assinatura é obrigatório")
 	}
 
 	err := spg.stripeService.CancelSubscription(subscriptionID)

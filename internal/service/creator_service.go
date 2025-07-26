@@ -72,7 +72,7 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.C
 	}
 
 	if creatorExists != nil {
-		return nil, errors.New("creator already exists")
+		return nil, errors.New("criador já existe")
 	}
 
 	// Validate with Receita Federal
@@ -137,7 +137,7 @@ func (cs *creatorServiceImpl) FindCreatorByUserID(userID uint) (*models.Creator,
 	creator, err := cs.creatorRepo.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Printf("Erro ao buscar creator: %s", err)
-		return nil, errors.New("creator not found")
+		return nil, errors.New("criador não encontrado")
 	}
 
 	log.Printf("Usuário encontrado! ID: %v", creator.Name)
@@ -149,7 +149,7 @@ func (cs *creatorServiceImpl) FindCreatorByEmail(email string) (*models.Creator,
 	creator, err := cs.creatorRepo.FindCreatorByUserEmail(email)
 	if err != nil {
 		log.Printf("Erro ao buscar creator: %s", err)
-		return nil, errors.New("creator not found")
+		return nil, errors.New("criador não encontrado")
 	}
 
 	log.Printf("Usuário encontrado! ID: %v", creator.Name)

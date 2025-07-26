@@ -9,7 +9,7 @@ import (
 	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
-var ErrUserAlreadyExists = errors.New("user already exists")
+var ErrUserAlreadyExists = errors.New("usuário já existe")
 
 type InputCreateUser struct {
 	Username             string

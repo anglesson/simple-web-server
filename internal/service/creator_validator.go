@@ -38,11 +38,11 @@ func validateCreatorInput(input InputCreateCreator) error {
 // validateName validates the creator name
 func validateName(name string) error {
 	if name == "" {
-		return errors.New("invalid name")
+		return errors.New("nome inválido")
 	}
 
 	if len(name) > 255 {
-		return errors.New("name too long")
+		return errors.New("nome muito longo")
 	}
 
 	return nil
@@ -56,18 +56,18 @@ func validateEmail(value string) error {
 	// Validate email format
 	addr, err := mail.ParseAddress(value)
 	if err != nil {
-		return fmt.Errorf("invalid email format: %w", err)
+		return fmt.Errorf("formato de e-mail inválido: %w", err)
 	}
 
 	// Additional validation rules
 	if len(addr.Address) > 254 { // RFC 5321
-		return fmt.Errorf("email address too long")
+		return fmt.Errorf("endereço de e-mail muito longo")
 	}
 
 	// Split email into local and domain parts
 	parts := strings.Split(addr.Address, "@")
 	if len(parts) != 2 {
-		return fmt.Errorf("invalid email format")
+		return fmt.Errorf("formato de e-mail inválido")
 	}
 
 	localPart := parts[0]
@@ -75,12 +75,12 @@ func validateEmail(value string) error {
 
 	// Validate local part length (RFC 5321)
 	if len(localPart) > 64 {
-		return fmt.Errorf("local part too long")
+		return fmt.Errorf("parte local do e-mail muito longa")
 	}
 
 	// Validate domain length (RFC 5321)
 	if len(domain) > 255 {
-		return fmt.Errorf("domain too long")
+		return fmt.Errorf("domínio do e-mail muito longo")
 	}
 
 	return nil
@@ -93,23 +93,23 @@ func validatePhone(value string) error {
 
 	// Check if the phone number has the correct length
 	if len(cleanNumber) != 11 {
-		return fmt.Errorf("invalid phone number length: must have 11 digits")
+		return fmt.Errorf("número de telefone inválido: deve ter 11 dígitos")
 	}
 
 	// Validate area code (DDD)
 	areaCode := cleanNumber[0:2]
 	if !isValidAreaCode(areaCode) {
-		return fmt.Errorf("invalid area code: %s", areaCode)
+		return fmt.Errorf("DDD inválido: %s", areaCode)
 	}
 
 	// Validate if it's a mobile number (must start with 9)
 	if cleanNumber[2] != '9' {
-		return fmt.Errorf("invalid phone number: mobile numbers must start with 9")
+		return fmt.Errorf("número de telefone inválido: celulares devem começar com 9")
 	}
 
 	// Validate if all digits are the same (invalid number)
 	if allPhoneDigitsSame(cleanNumber) {
-		return fmt.Errorf("invalid phone number: all digits are the same")
+		return fmt.Errorf("número de telefone inválido: todos os dígitos são iguais")
 	}
 
 	return nil
@@ -121,24 +121,24 @@ func validateCPF(value string) error {
 
 	// Check if CPF has 11 digits
 	if len(cpf) != 11 {
-		return fmt.Errorf("invalid CPF: must have 11 digits")
+		return fmt.Errorf("CPF inválido: deve ter 11 dígitos")
 	}
 
 	// Check if all digits are the same (invalid CPF)
 	if allDigitsSame(cpf) {
-		return fmt.Errorf("invalid CPF: all digits are the same")
+		return fmt.Errorf("CPF inválido: todos os dígitos são iguais")
 	}
 
 	// Validate first digit
 	digit1 := calculateDigit(cpf[:9], 10)
 	if digit1 != int(cpf[9]-'0') {
-		return fmt.Errorf("invalid CPF: first verification digit is incorrect")
+		return fmt.Errorf("CPF inválido: primeiro dígito verificador incorreto")
 	}
 
 	// Validate second digit
 	digit2 := calculateDigit(cpf[:10], 11)
 	if digit2 != int(cpf[10]-'0') {
-		return fmt.Errorf("invalid CPF: second verification digit is incorrect")
+		return fmt.Errorf("CPF inválido: segundo dígito verificador incorreto")
 	}
 
 	return nil
@@ -148,7 +148,7 @@ func validateCPF(value string) error {
 func validateBirthDate(birthDateStr string) error {
 	parsedDate, err := time.Parse("2006-01-02", birthDateStr)
 	if err != nil {
-		return fmt.Errorf("invalid birth date format: %w", err)
+		return fmt.Errorf("formato de data de nascimento inválido: %w", err)
 	}
 
 	year := parsedDate.Year()
@@ -158,17 +158,17 @@ func validateBirthDate(birthDateStr string) error {
 	// Validate year
 	currentYear := time.Now().Year()
 	if year < 1900 || year > currentYear {
-		return fmt.Errorf("invalid year: must be between 1900 and %d", currentYear)
+		return fmt.Errorf("ano inválido: deve estar entre 1900 e %d", currentYear)
 	}
 
 	// Validate if the date is valid (e.g., February 30th would be invalid)
 	if parsedDate.Year() != year || int(parsedDate.Month()) != month || parsedDate.Day() != day {
-		return fmt.Errorf("invalid date: %d-%02d-%02d", year, month, day)
+		return fmt.Errorf("data inválida: %d-%02d-%02d", year, month, day)
 	}
 
 	// Validate if the date is not in the future
 	if parsedDate.After(time.Now()) {
-		return fmt.Errorf("birth date cannot be in the future")
+		return fmt.Errorf("data de nascimento não pode ser no futuro")
 	}
 
 	// Validate if person is adult (18 years or older)
@@ -178,7 +178,7 @@ func validateBirthDate(birthDateStr string) error {
 	}
 
 	if age < 18 {
-		return errors.New("creator must be 18 years or older")
+		return errors.New("o criador deve ter 18 anos ou mais")
 	}
 
 	return nil

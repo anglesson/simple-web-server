@@ -17,7 +17,7 @@ func validateUserInput(input InputCreateUser) error {
 	}
 
 	if input.Password != input.PasswordConfirmation {
-		return errors.New("passwords do not match")
+		return errors.New("as senhas não coincidem")
 	}
 
 	return nil
@@ -26,11 +26,11 @@ func validateUserInput(input InputCreateUser) error {
 // validateUsername validates the username
 func validateUsername(username string) error {
 	if username == "" {
-		return errors.New("username is required")
+		return errors.New("nome de usuário é obrigatório")
 	}
 
 	if len(username) > 50 {
-		return errors.New("username too long (max 50 characters)")
+		return errors.New("nome de usuário muito longo (máximo 50 caracteres)")
 	}
 
 	return nil
@@ -39,11 +39,11 @@ func validateUsername(username string) error {
 // validatePassword validates the password
 func validatePassword(password string) error {
 	if password == "" {
-		return errors.New("password is required")
+		return errors.New("senha é obrigatória")
 	}
 
 	if len(password) < 8 {
-		return errors.New("password must be at least 8 characters long")
+		return errors.New("a senha deve ter pelo menos 8 caracteres")
 	}
 
 	// Check for at least one uppercase letter
@@ -66,19 +66,19 @@ func validatePassword(password string) error {
 	}
 
 	if !hasUpper {
-		return errors.New("password must contain at least one uppercase letter")
+		return errors.New("a senha deve conter pelo menos uma letra maiúscula")
 	}
 
 	if !hasLower {
-		return errors.New("password must contain at least one lowercase letter")
+		return errors.New("a senha deve conter pelo menos uma letra minúscula")
 	}
 
 	if !hasDigit {
-		return errors.New("password must contain at least one digit")
+		return errors.New("a senha deve conter pelo menos um dígito")
 	}
 
 	if !hasSpecial {
-		return errors.New("password must contain at least one special character")
+		return errors.New("a senha deve conter pelo menos um caractere especial")
 	}
 
 	return nil

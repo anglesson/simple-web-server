@@ -37,10 +37,10 @@ func NewSubscriptionService(
 
 func (ss *subscriptionServiceImpl) CreateSubscription(userID uint, planID string) (*models.Subscription, error) {
 	if userID == 0 {
-		return nil, errors.New("user ID is required")
+		return nil, errors.New("ID do usuário é obrigatório")
 	}
 	if planID == "" {
-		return nil, errors.New("plan ID is required")
+		return nil, errors.New("ID do plano é obrigatório")
 	}
 
 	subscription := models.NewSubscription(userID, planID)
@@ -55,7 +55,7 @@ func (ss *subscriptionServiceImpl) CreateSubscription(userID uint, planID string
 
 func (ss *subscriptionServiceImpl) FindByUserID(userID uint) (*models.Subscription, error) {
 	if userID == 0 {
-		return nil, errors.New("user ID is required")
+		return nil, errors.New("ID do usuário é obrigatório")
 	}
 
 	return ss.subscriptionRepository.FindByUserID(userID)
@@ -63,7 +63,7 @@ func (ss *subscriptionServiceImpl) FindByUserID(userID uint) (*models.Subscripti
 
 func (ss *subscriptionServiceImpl) FindByStripeCustomerID(customerID string) (*models.Subscription, error) {
 	if customerID == "" {
-		return nil, errors.New("customer ID is required")
+		return nil, errors.New("ID do cliente é obrigatório")
 	}
 
 	return ss.subscriptionRepository.FindByStripeCustomerID(customerID)
@@ -71,7 +71,7 @@ func (ss *subscriptionServiceImpl) FindByStripeCustomerID(customerID string) (*m
 
 func (ss *subscriptionServiceImpl) FindByStripeSubscriptionID(subscriptionID string) (*models.Subscription, error) {
 	if subscriptionID == "" {
-		return nil, errors.New("subscription ID is required")
+		return nil, errors.New("ID da assinatura é obrigatório")
 	}
 
 	return ss.subscriptionRepository.FindByStripeSubscriptionID(subscriptionID)
@@ -79,13 +79,13 @@ func (ss *subscriptionServiceImpl) FindByStripeSubscriptionID(subscriptionID str
 
 func (ss *subscriptionServiceImpl) ActivateSubscription(subscription *models.Subscription, stripeCustomerID, stripeSubscriptionID string) error {
 	if subscription == nil {
-		return errors.New("subscription is required")
+		return errors.New("assinatura é obrigatória")
 	}
 	if stripeCustomerID == "" {
-		return errors.New("stripe customer ID is required")
+		return errors.New("ID do cliente Stripe é obrigatório")
 	}
 	if stripeSubscriptionID == "" {
-		return errors.New("stripe subscription ID is required")
+		return errors.New("ID da assinatura Stripe é obrigatório")
 	}
 
 	subscription.ActivateSubscription(stripeCustomerID, stripeSubscriptionID)
@@ -95,10 +95,10 @@ func (ss *subscriptionServiceImpl) ActivateSubscription(subscription *models.Sub
 
 func (ss *subscriptionServiceImpl) UpdateSubscriptionStatus(subscription *models.Subscription, status string, endDate *time.Time) error {
 	if subscription == nil {
-		return errors.New("subscription is required")
+		return errors.New("assinatura é obrigatória")
 	}
 	if status == "" {
-		return errors.New("status is required")
+		return errors.New("status é obrigatório")
 	}
 
 	subscription.UpdateSubscriptionStatus(status, endDate)
@@ -108,7 +108,7 @@ func (ss *subscriptionServiceImpl) UpdateSubscriptionStatus(subscription *models
 
 func (ss *subscriptionServiceImpl) CancelSubscription(subscription *models.Subscription) error {
 	if subscription == nil {
-		return errors.New("subscription is required")
+		return errors.New("assinatura é obrigatória")
 	}
 
 	subscription.CancelSubscription()
@@ -118,7 +118,7 @@ func (ss *subscriptionServiceImpl) CancelSubscription(subscription *models.Subsc
 
 func (ss *subscriptionServiceImpl) EndTrial(subscription *models.Subscription) error {
 	if subscription == nil {
-		return errors.New("subscription is required")
+		return errors.New("assinatura é obrigatória")
 	}
 
 	subscription.EndTrial()
