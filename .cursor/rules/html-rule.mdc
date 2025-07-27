@@ -1,0 +1,61 @@
+---
+alwaysApply: true
+---
+# UI HTML Files Rule
+
+## Localização
+- Todos os arquivos de páginas HTML devem ser definidos no diretório `web/pages/`.
+- Todos os templates de email devem ser definidos no diretório `web/mails/`.
+- Todos os layouts HTML devem ser definidos no diretório `web/layouts/`.
+- Todos os assets (CSS, JS, imagens, fontes, etc.) devem ser definidos no diretório `web/assets/`.
+- Partials reutilizáveis devem ser definidos no diretório `web/partials/`.
+
+## Nomeação
+- O nome do arquivo deve ser descritivo e utilizar letras minúsculas e underscores para separar palavras (ex: `client_create.html`, `dashboard.html`).
+- Para páginas relacionadas a uma feature específica, utilize subdiretórios (ex: `client/create.html`, `file/upload.html`).
+
+## Estrutura
+- Cada arquivo HTML deve conter apenas a estrutura referente à sua responsabilidade (página, layout, partial ou email).
+- Layouts devem conter os elementos comuns (header, footer, etc.) e utilizar placeholders para conteúdo dinâmico.
+- Partials devem ser pequenos trechos reutilizáveis (ex: formulários, tabelas, mensagens de erro).
+- Templates de email devem ser auto-contidos e compatíveis com clientes de email.
+
+## Responsabilidade
+- Os arquivos HTML não devem conter lógica de negócio, apenas marcação e placeholders para dados dinâmicos.
+- A lógica de renderização e injeção de dados deve ser feita nos handlers do backend.
+
+## Boas práticas
+- Utilize nomes claros e descritivos para arquivos e blocos de código.
+- Separe o conteúdo em layouts, partials e páginas para facilitar a manutenção e reutilização.
+- Sempre que possível, reutilize partials para evitar duplicação de código.
+- Mantenha o HTML semântico e acessível.
+- Utilize classes do Bootstrap 5 para garantir responsividade e padronização visual.
+- Inclua comentários explicativos em trechos complexos ou não triviais.
+- Sempre incluir testes end-to-end (Cypress) para páginas e fluxos importantes.
+
+## Exemplo de estrutura mínima
+
+```
+web/
+  layouts/
+    admin.html
+    guest.html
+  pages/
+    client/
+      create.html
+      update.html
+    dashboard.html
+    login.html
+    ...
+  partials/
+    client_form.html
+    empty_table.html
+    ...
+  mails/
+    account_confirmation.html
+    ...
+  assets/
+    css/
+    js/
+    images/
+``` 
