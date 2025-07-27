@@ -68,14 +68,14 @@
                                 <div class="mb-4">
                                     <h5 class="mb-3">Selecionar Arquivos da Biblioteca</h5>
                                     
-                                    {{if .Files}}
+                                    {{if .Data.Files}}
                                     <div class="alert alert-info">
                                         <i class="mdi mdi-information me-2"></i>
                                         Selecione os arquivos que farão parte do seu ebook. Você pode selecionar múltiplos arquivos.
                                     </div>
                                     
                                     <div class="row" id="filesContainer">
-                                        {{range .Files}}
+                                        {{range .Data.Files}}
                                         <div class="col-md-6 mb-3">
                                             <div class="card file-card h-100">
                                                 <div class="card-body">

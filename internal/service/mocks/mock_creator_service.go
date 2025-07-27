@@ -21,3 +21,8 @@ func (m MockCreatorService) FindCreatorByUserID(userID uint) (*models.Creator, e
 	// Mock implementation
 	return nil, nil
 }
+
+func (m MockCreatorService) FindByID(id uint) (*models.Creator, error) {
+	// Mock implementation
+	return nil, nil
+}

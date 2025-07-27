@@ -50,6 +50,7 @@ func main() {
 	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
 	s3Storage := storage.NewS3Storage()
 	fileService := service.NewFileService(fileRepository, s3Storage)
+	ebookService := service.NewEbookService()
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(userService, sessionService)
@@ -57,6 +58,7 @@ func main() {
 	creatorHandler := handler.NewCreatorHandler(creatorService, sessionService)
 	settingsHandler := handler.NewSettingsHandler(sessionService)
 	fileHandler := handler.NewFileHandler(fileService, sessionService)
+	salesPageHandler := handler.NewSalesPageHandler(ebookService, creatorService)
 
 	r := chi.NewRouter()
 
@@ -75,6 +77,7 @@ func main() {
 		r.Get("/forget-password", handler.ForgetPasswordView)
 		r.Post("/forget-password", handler.ForgetPasswordSubmit)
 		r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)
+		r.Get("/sales/{slug}", salesPageHandler.SalesPageView) // Página de vendas pública
 	})
 
 	// Stripe routes
@@ -98,6 +101,7 @@ func main() {
 		r.Get("/ebook/edit/{id}", handler.EbookUpdateView)
 		r.Get("/ebook/view/{id}", handler.EbookShowView)
 		r.Post("/ebook/update/{id}", handler.EbookUpdateSubmit)
+		r.Get("/ebook/preview/{id}", salesPageHandler.SalesPagePreviewView) // Preview da página de vendas
 
 		// File routes
 		r.Get("/file", fileHandler.FileIndexView)

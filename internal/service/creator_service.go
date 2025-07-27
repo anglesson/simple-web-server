@@ -14,6 +14,7 @@ type CreatorService interface {
 	CreateCreator(input InputCreateCreator) (*models.Creator, error)
 	FindCreatorByEmail(email string) (*models.Creator, error)
 	FindCreatorByUserID(userID uint) (*models.Creator, error)
+	FindByID(id uint) (*models.Creator, error)
 }
 
 type InputCreateCreator struct {
@@ -156,6 +157,13 @@ func (cs *creatorServiceImpl) FindCreatorByEmail(email string) (*models.Creator,
 	log.Printf("Usuário encontrado! ID: %v", creator.Name)
 
 	return creator, nil
+}
+
+func (cs *creatorServiceImpl) FindByID(id uint) (*models.Creator, error) {
+	// Buscar criador pelo ID do usuário
+	// Como não temos um método direto FindByID, vamos buscar pelo UserID
+	// Isso pode precisar de ajuste dependendo da estrutura do banco
+	return cs.creatorRepo.FindCreatorByUserID(id)
 }
 
 // validateReceita validates CPF with Receita Federal and returns the validated name

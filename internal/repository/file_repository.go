@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/anglesson/simple-web-server/internal/models"
 	"gorm.io/gorm"
 )
@@ -24,7 +26,10 @@ func NewGormFileRepository(db *gorm.DB) *GormFileRepository {
 }
 
 func (r *GormFileRepository) Create(file *models.File) error {
-	return r.db.Create(file).Error
+	log.Printf("Criando arquivo: Nome=%s, CreatorID=%d, Tipo=%s", file.Name, file.CreatorID, file.FileType)
+	err := r.db.Create(file).Error
+	log.Printf("Arquivo criado com sucesso, ID=%d, erro: %v", file.Model.ID, err)
+	return err
 }
 
 func (r *GormFileRepository) FindByID(id uint) (*models.File, error) {
@@ -38,7 +43,9 @@ func (r *GormFileRepository) FindByID(id uint) (*models.File, error) {
 
 func (r *GormFileRepository) FindByCreator(creatorID uint) ([]*models.File, error) {
 	var files []*models.File
+	log.Printf("Executando consulta FindByCreator para creatorID: %d", creatorID)
 	err := r.db.Where("creator_id = ?", creatorID).Order("created_at DESC").Find(&files).Error
+	log.Printf("Consulta FindByCreator retornou %d arquivos, erro: %v", len(files), err)
 	return files, err
 }
 

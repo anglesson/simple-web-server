@@ -90,23 +90,21 @@ func EbookCreateView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Buscar arquivos da biblioteca
+	// Buscar arquivos da biblioteca - usar GetFilesByCreator para mostrar todos os arquivos
 	fileRepository := repository.NewGormFileRepository(database.DB)
 	s3Storage := storage.NewS3Storage()
 	fileService := service.NewFileService(fileRepository, s3Storage)
 
-	files, err := fileService.GetActiveByCreator(creator.ID)
+	files, err := fileService.GetFilesByCreator(creator.ID)
 	if err != nil {
 		log.Printf("Erro ao buscar arquivos: %v", err)
 		files = []*models.File{} // Lista vazia em caso de erro
 	}
 
-	data := map[string]interface{}{
+	template.View(w, r, "create_ebook", map[string]interface{}{
 		"Files":   files,
 		"Creator": creator,
-	}
-
-	template.View(w, r, "create_ebook", data, "admin")
+	}, "admin")
 }
 
 func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {

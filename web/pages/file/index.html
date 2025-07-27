@@ -1,3 +1,4 @@
+{{ define "title" }} Biblioteca de Arquivos {{ end }}
 {{define "content"}}
 <div class="container-fluid">
     <div class="row">
@@ -24,7 +25,7 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    {{if .Files}}
+                    {{if .Data.Files}}
                     <div class="table-responsive">
                         <table class="table table-centered table-striped dt-responsive nowrap w-100">
                             <thead>
@@ -38,7 +39,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {{range .Files}}
+                                {{range .Data.Files}}
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">

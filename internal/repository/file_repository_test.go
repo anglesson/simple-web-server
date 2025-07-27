@@ -281,6 +281,156 @@ func (suite *FileRepositoryTestSuite) TestDelete() {
 	assert.Error(suite.T(), result.Error) // Deve retornar erro pois não existe mais
 }
 
+func (suite *FileRepositoryTestSuite) TestFindByCreator_Integration() {
+	// Arrange - Criar múltiplos arquivos para o mesmo creator
+	file1 := &models.File{
+		Name:         "test-file-1.pdf",
+		OriginalName: "original-1.pdf",
+		Description:  "Primeiro arquivo de teste",
+		FileType:     "pdf",
+		FileSize:     1024 * 1024,
+		S3Key:        "files/1/test-file-1.pdf",
+		S3URL:        "https://bucket.s3.amazonaws.com/files/1/test-file-1.pdf",
+		Status:       true,
+		CreatorID:    suite.creator.ID,
+	}
+	file2 := &models.File{
+		Name:         "test-file-2.pdf",
+		OriginalName: "original-2.pdf",
+		Description:  "Segundo arquivo de teste",
+		FileType:     "pdf",
+		FileSize:     2048 * 1024,
+		S3Key:        "files/1/test-file-2.pdf",
+		S3URL:        "https://bucket.s3.amazonaws.com/files/1/test-file-2.pdf",
+		Status:       true,
+		CreatorID:    suite.creator.ID,
+	}
+
+	// Criar os arquivos
+	err := suite.fileRepository.Create(file1)
+	assert.NoError(suite.T(), err)
+	err = suite.fileRepository.Create(file2)
+	assert.NoError(suite.T(), err)
+
+	// Act - Buscar arquivos do creator
+	files, err := suite.fileRepository.FindByCreator(suite.creator.ID)
+
+	// Assert
+	assert.NoError(suite.T(), err)
+	assert.Len(suite.T(), files, 2)
+
+	// Verificar se os arquivos foram encontrados
+	foundFile1 := false
+	foundFile2 := false
+	for _, file := range files {
+		if file.OriginalName == "original-1.pdf" {
+			foundFile1 = true
+			assert.Equal(suite.T(), "Primeiro arquivo de teste", file.Description)
+			assert.Equal(suite.T(), "pdf", file.FileType)
+		}
+		if file.OriginalName == "original-2.pdf" {
+			foundFile2 = true
+			assert.Equal(suite.T(), "Segundo arquivo de teste", file.Description)
+			assert.Equal(suite.T(), "pdf", file.FileType)
+		}
+	}
+
+	assert.True(suite.T(), foundFile1, "Arquivo 1 não foi encontrado")
+	assert.True(suite.T(), foundFile2, "Arquivo 2 não foi encontrado")
+}
+
+func (suite *FileRepositoryTestSuite) TestFindByCreator_EmptyResult() {
+	// Arrange - Criar um creator diferente
+	user2 := &models.User{
+		Username: "testuser2",
+		Email:    "test2@example.com",
+		Password: "password123",
+	}
+	suite.db.Create(user2)
+
+	creator2 := &models.Creator{
+		Name:      "Test Creator 2",
+		Email:     "creator2@example.com",
+		CPF:       "12345678902",
+		Phone:     "11999999998",
+		BirthDate: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
+		UserID:    user2.ID,
+	}
+	suite.db.Create(creator2)
+
+	// Act - Buscar arquivos de um creator sem arquivos
+	files, err := suite.fileRepository.FindByCreator(creator2.ID)
+
+	// Assert
+	assert.NoError(suite.T(), err)
+	assert.Len(suite.T(), files, 0)
+}
+
+func (suite *FileRepositoryTestSuite) TestFindByCreator_OnlyOwnFiles() {
+	// Arrange - Criar um creator diferente
+	user2 := &models.User{
+		Username: "testuser2",
+		Email:    "test2@example.com",
+		Password: "password123",
+	}
+	suite.db.Create(user2)
+
+	creator2 := &models.Creator{
+		Name:      "Test Creator 2",
+		Email:     "creator2@example.com",
+		CPF:       "12345678902",
+		Phone:     "11999999998",
+		BirthDate: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
+		UserID:    user2.ID,
+	}
+	suite.db.Create(creator2)
+
+	// Criar arquivo para o primeiro creator
+	file1 := &models.File{
+		Name:         "creator1-file.pdf",
+		OriginalName: "original-creator1.pdf",
+		Description:  "Arquivo do creator 1",
+		FileType:     "pdf",
+		FileSize:     1024 * 1024,
+		S3Key:        "files/1/creator1-file.pdf",
+		S3URL:        "https://bucket.s3.amazonaws.com/files/1/creator1-file.pdf",
+		Status:       true,
+		CreatorID:    suite.creator.ID,
+	}
+
+	// Criar arquivo para o segundo creator
+	file2 := &models.File{
+		Name:         "creator2-file.pdf",
+		OriginalName: "original-creator2.pdf",
+		Description:  "Arquivo do creator 2",
+		FileType:     "pdf",
+		FileSize:     2048 * 1024,
+		S3Key:        "files/2/creator2-file.pdf",
+		S3URL:        "https://bucket.s3.amazonaws.com/files/2/creator2-file.pdf",
+		Status:       true,
+		CreatorID:    creator2.ID,
+	}
+
+	suite.db.Create(file1)
+	suite.db.Create(file2)
+
+	// Act - Buscar arquivos de cada creator
+	files1, err1 := suite.fileRepository.FindByCreator(suite.creator.ID)
+	files2, err2 := suite.fileRepository.FindByCreator(creator2.ID)
+
+	// Assert
+	assert.NoError(suite.T(), err1)
+	assert.NoError(suite.T(), err2)
+
+	// Creator 1 deve ver apenas seu arquivo
+	assert.Len(suite.T(), files1, 1)
+	assert.Equal(suite.T(), "original-creator1.pdf", files1[0].OriginalName)
+
+	// Creator 2 deve ver apenas seu arquivo
+	assert.Len(suite.T(), files2, 1)
+	assert.Equal(suite.T(), "original-creator2.pdf", files2[0].OriginalName)
+}
+
 func TestFileRepositoryTestSuite(t *testing.T) {
 	suite.Run(t, new(FileRepositoryTestSuite))
 }
