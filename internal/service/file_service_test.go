@@ -107,6 +107,7 @@ func TestFileService_GetFilesByCreator(t *testing.T) {
 	}
 
 	mockRepo.On("FindByCreator", creatorID).Return(expectedFiles, nil)
+	mockStorage.On("GenerateDownloadLink", mock.Anything).Return("https://dummy-presigned-url", nil)
 
 	// Act
 	files, err := fileService.GetFilesByCreator(creatorID)

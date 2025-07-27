@@ -85,7 +85,14 @@ func (s *fileService) UploadFile(file *multipart.FileHeader, description string,
 }
 
 func (s *fileService) GetFilesByCreator(creatorID uint) ([]*models.File, error) {
-	return s.fileRepository.FindByCreator(creatorID)
+	files, err := s.fileRepository.FindByCreator(creatorID)
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		file.S3URL = s.s3Storage.GenerateDownloadLink(file.S3Key)
+	}
+	return files, nil
 }
 
 func (s *fileService) GetActiveByCreator(creatorID uint) ([]*models.File, error) {
