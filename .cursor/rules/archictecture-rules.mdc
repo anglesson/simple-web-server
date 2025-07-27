@@ -6,22 +6,22 @@ alwaysApply: true
 The main server setup and entry point is defined in cmd/web/main.go
 
 ## SSR Handlers
-All SSR handlers are defined in internal/handler/
+- All SSR handlers are defined in internal/handler/
 
 ## Services
-All services are defined in internal/service/
+- All services are defined in internal/service/
 
 ## Repositories
-All repositories are defined in internal/repository/
+- All repositories are defined in internal/repository/
 
 ## UI
-All html pages are defined in web/pages
-All templates email are defined in web/mails
-All layouts are defined in web/layouts
-All assets are defined in web/assets
+- All html pages are defined in web/pages
+- All templates email are defined in web/mails
+- All layouts are defined in web/layouts
+- All assets are defined in web/assets
 
 ## External Services
-Located in pkg/
+- Located in pkg/
 
 ## Libraries
 - GORM: All models are localized in internal/models/
@@ -30,12 +30,12 @@ Located in pkg/
 - Bootstrap 5
 
 ## Tests
-The test are included in same path of implementation and you package has a sufix '_test' in package name. Exemple: If package is 'cookie', the test will be in 'cookie_test'
-To run tests use the command `make test`
-Always include tests for each feature or problem encountered or modifications
+- The test are included in same path of implementation and you package has a sufix '_test' in package name. Exemple: If package is 'cookie', the test will be in 'cookie_test'
+- To run tests use the command `make test`
+- Always include tests for each feature or problem encountered or modifications
 
 ## Server
-To start web server use the command `make run`
+- To start web server use the command `make run`
 
 ## Rules
 - Always use clear, descriptive, and meaningful names for variables, functions, and methods, following Clean Code recommendations to facilitate code readability and maintainability.
