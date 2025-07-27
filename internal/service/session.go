@@ -10,31 +10,46 @@ import (
 	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
-type SessionService struct {
+type SessionService interface {
+	GenerateSessionToken() string
+	GenerateCSRFToken() string
+	SetSessionToken(w http.ResponseWriter)
+	SetCSRFToken(w http.ResponseWriter)
+	ClearSessionToken(w http.ResponseWriter)
+	ClearCSRFToken(w http.ResponseWriter)
+	GetSessionToken(r *http.Request) string
+	GetCSRFToken(r *http.Request) string
+	ClearSession(w http.ResponseWriter)
+	SetSession(w http.ResponseWriter)
+	GetSession(w http.ResponseWriter, r *http.Request) (string, string)
+	InitSession(w http.ResponseWriter, email string)
+}
+
+type SessionServiceImpl struct {
 	SessionToken string
 	CSRFToken    string
 	encrypter    utils.Encrypter
 }
 
-func NewSessionService() *SessionService {
-	return &SessionService{
+func NewSessionService() SessionService {
+	return &SessionServiceImpl{
 		SessionToken: "",
 		CSRFToken:    "",
 		encrypter:    utils.NewEncrypter(),
 	}
 }
 
-func (s *SessionService) GenerateSessionToken() string {
+func (s *SessionServiceImpl) GenerateSessionToken() string {
 	s.SessionToken = s.encrypter.GenerateToken(32)
 	return s.SessionToken
 }
 
-func (s *SessionService) GenerateCSRFToken() string {
+func (s *SessionServiceImpl) GenerateCSRFToken() string {
 	s.CSRFToken = s.encrypter.GenerateToken(32)
 	return s.CSRFToken
 }
 
-func (s *SessionService) SetSessionToken(w http.ResponseWriter) {
+func (s *SessionServiceImpl) SetSessionToken(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    s.SessionToken,
@@ -45,7 +60,7 @@ func (s *SessionService) SetSessionToken(w http.ResponseWriter) {
 	})
 }
 
-func (s *SessionService) SetCSRFToken(w http.ResponseWriter) {
+func (s *SessionServiceImpl) SetCSRFToken(w http.ResponseWriter) {
 	cookie := &http.Cookie{
 		Name:     "csrf_token",
 		Value:    s.CSRFToken,
@@ -59,21 +74,21 @@ func (s *SessionService) SetCSRFToken(w http.ResponseWriter) {
 	log.Printf("CSRF token definido no cookie: %s", s.CSRFToken)
 }
 
-func (s *SessionService) ClearSessionToken(w http.ResponseWriter) {
+func (s *SessionServiceImpl) ClearSessionToken(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "session_token",
 		MaxAge: -1,
 	})
 }
 
-func (s *SessionService) ClearCSRFToken(w http.ResponseWriter) {
+func (s *SessionServiceImpl) ClearCSRFToken(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "csrf_token",
 		MaxAge: -1,
 	})
 }
 
-func (s *SessionService) GetSessionToken(r *http.Request) string {
+func (s *SessionServiceImpl) GetSessionToken(r *http.Request) string {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		return ""
@@ -81,7 +96,7 @@ func (s *SessionService) GetSessionToken(r *http.Request) string {
 	return cookie.Value
 }
 
-func (s *SessionService) GetCSRFToken(r *http.Request) string {
+func (s *SessionServiceImpl) GetCSRFToken(r *http.Request) string {
 	cookie, err := r.Cookie("csrf_token")
 	if err != nil {
 		return ""
@@ -89,23 +104,23 @@ func (s *SessionService) GetCSRFToken(r *http.Request) string {
 	return cookie.Value
 }
 
-func (s *SessionService) ClearSession(w http.ResponseWriter) {
+func (s *SessionServiceImpl) ClearSession(w http.ResponseWriter) {
 	s.ClearSessionToken(w)
 	s.ClearCSRFToken(w)
 }
 
-func (s *SessionService) SetSession(w http.ResponseWriter) {
+func (s *SessionServiceImpl) SetSession(w http.ResponseWriter) {
 	s.SetSessionToken(w)
 	s.SetCSRFToken(w)
 }
 
-func (s *SessionService) GetSession(w http.ResponseWriter, r *http.Request) (string, string) {
+func (s *SessionServiceImpl) GetSession(w http.ResponseWriter, r *http.Request) (string, string) {
 	sessionToken := s.GetSessionToken(r)
 	csrfToken := s.GetCSRFToken(r)
 	return sessionToken, csrfToken
 }
 
-func (s *SessionService) InitSession(w http.ResponseWriter, email string) {
+func (s *SessionServiceImpl) InitSession(w http.ResponseWriter, email string) {
 	// Generate new tokens
 	s.SessionToken = s.GenerateSessionToken()
 	s.CSRFToken = s.GenerateCSRFToken()

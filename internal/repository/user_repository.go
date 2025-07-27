@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/pkg/database"
 )
 
 type UserRepository interface {
@@ -29,7 +28,7 @@ func NewGormUserRepository(db *gorm.DB) *GormUserRepositoryImpl {
 }
 
 func (r *GormUserRepositoryImpl) Save(user *models.User) error {
-	result := database.DB.Save(user)
+	result := r.db.Save(user)
 	if result.Error != nil {
 		log.Printf("Erro ao salvar usuário: %v", result.Error)
 		return result.Error
@@ -42,7 +41,7 @@ func (r *GormUserRepositoryImpl) Save(user *models.User) error {
 // TODO: add error handler
 func (r *GormUserRepositoryImpl) FindByEmail(emailUser string) *models.User {
 	var user models.User
-	result := database.DB.Preload("Subscription").Where("email = ?", emailUser).First(&user)
+	result := r.db.Preload("Subscription").Where("email = ?", emailUser).First(&user)
 	if result.Error != nil {
 		log.Printf("Erro ao buscar usuário por email: %v", result.Error)
 		return nil
@@ -52,7 +51,7 @@ func (r *GormUserRepositoryImpl) FindByEmail(emailUser string) *models.User {
 
 func (r *GormUserRepositoryImpl) FindBySessionToken(token string) *models.User {
 	var user models.User
-	result := database.DB.Preload("Subscription").Where("session_token = ?", token).First(&user)
+	result := r.db.Preload("Subscription").Where("session_token = ?", token).First(&user)
 	if result.Error != nil {
 		log.Printf("Erro ao buscar usuário por session token: %v", result.Error)
 		return nil
@@ -62,7 +61,7 @@ func (r *GormUserRepositoryImpl) FindBySessionToken(token string) *models.User {
 
 func (r *GormUserRepositoryImpl) FindByStripeCustomerID(customerID string) *models.User {
 	var user models.User
-	err := database.DB.Where("stripe_customer_id = ?", customerID).First(&user).Error
+	err := r.db.Where("stripe_customer_id = ?", customerID).First(&user).Error
 	if err != nil {
 		log.Printf("Error finding user by Stripe customer ID: %v", err)
 		return nil

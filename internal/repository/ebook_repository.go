@@ -1,64 +1,107 @@
 package repository
 
 import (
-	"errors"
-	"log"
-
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/anglesson/simple-web-server/pkg/database"
 	"gorm.io/gorm"
 )
 
 type EbookQuery struct {
-	Title       string
-	Description string
-	Pagination  *models.Pagination
+	Title      string
+	Pagination *models.Pagination
 }
 
-type EbookRepository struct {
+type EbookRepository interface {
+	Create(ebook *models.Ebook) error
+	FindByID(id uint) (*models.Ebook, error)
+	FindByCreator(creatorID uint) ([]*models.Ebook, error)
+	FindBySlug(slug string) (*models.Ebook, error)
+	Update(ebook *models.Ebook) error
+	Delete(id uint) error
+	FindAll() ([]*models.Ebook, error)
+	FindActive() ([]*models.Ebook, error)
+	ListEbooksForUser(userID uint, query EbookQuery) (*[]models.Ebook, error)
 }
 
-func NewEbookRepository() *EbookRepository {
-	return &EbookRepository{}
+type GormEbookRepository struct {
+	db *gorm.DB
 }
 
-func (r *EbookRepository) FindEbooksByUser(UserID uint, query EbookQuery) (*[]models.Ebook, error) {
-	var ebooks []models.Ebook
-	log.Printf("UsuarioID: %v", UserID)
-	err := database.DB.
-		Model(&models.Ebook{}).
-		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
-		Where("creators.user_id = ?", UserID).
-		Scopes(ContainsTitleOrDescriptionWith(query.Title)).
-		Offset(getOffset(query.Pagination)).
-		Limit(getLimit(query.Pagination)).
-		Find(&ebooks).
-		Error
+func NewGormEbookRepository(db *gorm.DB) *GormEbookRepository {
+	return &GormEbookRepository{db: db}
+}
+
+func (r *GormEbookRepository) Create(ebook *models.Ebook) error {
+	return r.db.Create(ebook).Error
+}
+
+func (r *GormEbookRepository) FindByID(id uint) (*models.Ebook, error) {
+	var ebook models.Ebook
+	err := r.db.Preload("Creator").Preload("Files").First(&ebook, id).Error
 	if err != nil {
-		log.Panicf("Erro na busca de ebooks: %s", err)
-		return nil, errors.New("Erro na busca de dados")
+		return nil, err
+	}
+	return &ebook, nil
+}
+
+func (r *GormEbookRepository) FindByCreator(creatorID uint) ([]*models.Ebook, error) {
+	var ebooks []*models.Ebook
+	err := r.db.Where("creator_id = ?", creatorID).Preload("Files").Order("created_at DESC").Find(&ebooks).Error
+	return ebooks, err
+}
+
+func (r *GormEbookRepository) FindBySlug(slug string) (*models.Ebook, error) {
+	var ebook models.Ebook
+	err := r.db.Where("slug = ?", slug).Preload("Creator").Preload("Files").First(&ebook).Error
+	if err != nil {
+		return nil, err
+	}
+	return &ebook, nil
+}
+
+func (r *GormEbookRepository) Update(ebook *models.Ebook) error {
+	return r.db.Save(ebook).Error
+}
+
+func (r *GormEbookRepository) Delete(id uint) error {
+	return r.db.Delete(&models.Ebook{}, id).Error
+}
+
+func (r *GormEbookRepository) FindAll() ([]*models.Ebook, error) {
+	var ebooks []*models.Ebook
+	err := r.db.Preload("Creator").Preload("Files").Order("created_at DESC").Find(&ebooks).Error
+	return ebooks, err
+}
+
+func (r *GormEbookRepository) FindActive() ([]*models.Ebook, error) {
+	var ebooks []*models.Ebook
+	err := r.db.Where("status = ?", true).Preload("Creator").Preload("Files").Order("created_at DESC").Find(&ebooks).Error
+	return ebooks, err
+}
+
+func (r *GormEbookRepository) ListEbooksForUser(userID uint, query EbookQuery) (*[]models.Ebook, error) {
+	var ebooks []models.Ebook
+
+	db := r.db.Preload("Creator").Preload("Files")
+
+	// Buscar ebooks do criador associado ao usuário
+	db = db.Joins("JOIN creators ON ebooks.creator_id = creators.id").
+		Where("creators.user_id = ?", userID)
+
+	// Aplicar filtro de título se fornecido
+	if query.Title != "" {
+		db = db.Where("ebooks.title ILIKE ?", "%"+query.Title+"%")
+	}
+
+	// Aplicar paginação se fornecida
+	if query.Pagination != nil {
+		offset := (query.Pagination.Page - 1) * query.Pagination.Limit
+		db = db.Offset(offset).Limit(query.Pagination.Limit)
+	}
+
+	err := db.Order("ebooks.created_at DESC").Find(&ebooks).Error
+	if err != nil {
+		return nil, err
 	}
 
 	return &ebooks, nil
-}
-
-func ContainsTitleOrDescriptionWith(term string) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Where("title LIKE ? OR description LIKE ?", "%"+term+"%", "%"+term+"%")
-	}
-}
-
-// Helper functions for pagination
-func getOffset(pagination *models.Pagination) int {
-	if pagination == nil {
-		return 0
-	}
-	return (pagination.Page - 1) * pagination.Limit
-}
-
-func getLimit(pagination *models.Pagination) int {
-	if pagination == nil {
-		return 10 // default limit
-	}
-	return pagination.Limit
 }

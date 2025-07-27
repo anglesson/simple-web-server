@@ -7,7 +7,6 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/mail"
-	"github.com/anglesson/simple-web-server/pkg/storage"
 )
 
 type PurchaseService struct {
@@ -54,9 +53,13 @@ func (ps *PurchaseService) GetEbookFile(purchaseID int) (string, error) {
 		return "", errors.New("não é possível realizar o download, o pedido está expirado")
 	}
 
-	fileLocation, err := storage.GetFile(purchase.Ebook.File)
-	if err != nil {
-		return "", errors.New("erro no download do objeto")
+	// TODO: Implementar com novo sistema de arquivos
+	fileLocation := ""
+	if len(purchase.Ebook.Files) > 0 {
+		fileLocation = purchase.Ebook.Files[0].S3Key
+	}
+	if fileLocation == "" {
+		return "", errors.New("arquivo não encontrado")
 	}
 
 	outputFilePath, err := ApplyWatermark(fileLocation, fmt.Sprintf("%s - %s - %s", purchase.Client.Name, purchase.Client.CPF, purchase.Client.Email))

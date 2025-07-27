@@ -11,9 +11,10 @@
     "test:e2e:firefox": "cypress run --browser firefox"
   },
   "devDependencies": {
-    "cypress": "^13.6.0"
+    "cypress": "^13.6.0",
+    "cypress-file-upload": "^5.0.8"
   },
   "engines": {
     "node": ">=18.0.0"
   }
-} 
+}

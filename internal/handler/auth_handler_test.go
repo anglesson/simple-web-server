@@ -11,9 +11,17 @@ import (
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/internal/service/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestLoginView(t *testing.T) {
+	// Create mock services
+	mockUserService := new(mocks.MockUserService)
+	mockSessionService := new(mocks.MockSessionService)
+
+	// Create auth handler
+	authHandler := NewAuthHandler(mockUserService, mockSessionService)
+
 	req := httptest.NewRequest("GET", "/login", nil)
 	w := httptest.NewRecorder()
 
@@ -21,11 +29,18 @@ func TestLoginView(t *testing.T) {
 	// We'll skip it for now as it's more of an integration test
 	t.Skip("Skipping due to template rendering dependencies")
 
-	LoginView(w, req)
+	authHandler.LoginView(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestLoginSubmit_EmptyFields(t *testing.T) {
+	// Create mock services
+	mockUserService := new(mocks.MockUserService)
+	mockSessionService := new(mocks.MockSessionService)
+
+	// Create auth handler
+	authHandler := NewAuthHandler(mockUserService, mockSessionService)
+
 	// Create form data with empty fields
 	formData := url.Values{}
 	formData.Set("email", "")
@@ -35,7 +50,7 @@ func TestLoginSubmit_EmptyFields(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
 
-	LoginSubmit(w, req)
+	authHandler.LoginSubmit(w, req)
 
 	// Verify redirect back to login
 	assert.Equal(t, http.StatusSeeOther, w.Code)
@@ -57,14 +72,18 @@ func TestLoginSubmit_EmptyFields(t *testing.T) {
 }
 
 func TestLoginSubmit_InvalidCredentials(t *testing.T) {
-	// Create mock user service
+	// Create mock services
 	mockUserService := new(mocks.MockUserService)
+	mockSessionService := new(mocks.MockSessionService)
 
 	// Setup mock expectations for invalid credentials
 	mockUserService.On("AuthenticateUser", service.InputLogin{
 		Email:    "test@example.com",
 		Password: "wrongpassword",
 	}).Return(nil, service.ErrInvalidCredentials)
+
+	// Create auth handler
+	authHandler := NewAuthHandler(mockUserService, mockSessionService)
 
 	// Create form data
 	formData := url.Values{}
@@ -75,12 +94,7 @@ func TestLoginSubmit_InvalidCredentials(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
 
-	// Temporarily replace the global userService with mock
-	originalUserService := userService
-	userService = mockUserService
-	defer func() { userService = originalUserService }()
-
-	LoginSubmit(w, req)
+	authHandler.LoginSubmit(w, req)
 
 	// Verify redirect back to login
 	assert.Equal(t, http.StatusSeeOther, w.Code)
@@ -103,23 +117,27 @@ func TestLoginSubmit_InvalidCredentials(t *testing.T) {
 }
 
 func TestLogoutSubmit(t *testing.T) {
+	// Create mock services
+	mockUserService := new(mocks.MockUserService)
+	mockSessionService := new(mocks.MockSessionService)
+
+	// Setup mock expectations for logout
+	mockSessionService.On("ClearSession", mock.AnythingOfType("*httptest.ResponseRecorder")).Return()
+
+	// Create auth handler
+	authHandler := NewAuthHandler(mockUserService, mockSessionService)
+
 	req := httptest.NewRequest("POST", "/logout", nil)
 	w := httptest.NewRecorder()
 
-	LogoutSubmit(w, req)
+	authHandler.LogoutSubmit(w, req)
 
 	// Verify redirect to home
 	assert.Equal(t, http.StatusSeeOther, w.Code)
 	assert.Contains(t, w.Header().Get("Location"), "/")
 
-	// Verify session cookies are cleared
-	cookies := w.Result().Cookies()
-	sessionCookie := findCookie(cookies, "session_token")
-	csrfCookie := findCookie(cookies, "csrf_token")
-	assert.NotNil(t, sessionCookie)
-	assert.NotNil(t, csrfCookie)
-	assert.Equal(t, -1, sessionCookie.MaxAge)
-	assert.Equal(t, -1, csrfCookie.MaxAge)
+	// Verify that ClearSession was called
+	mockSessionService.AssertExpectations(t)
 }
 
 // Helper function to find a cookie by name

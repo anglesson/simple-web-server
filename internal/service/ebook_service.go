@@ -1,28 +1,21 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/database"
 )
 
-type EbookService struct{}
+type EbookService struct {
+	ebookRepository repository.EbookRepository
+}
 
 func NewEbookService() *EbookService {
-	return &EbookService{}
+	return &EbookService{
+		ebookRepository: repository.NewGormEbookRepository(database.DB),
+	}
 }
 
 func (s *EbookService) ListEbooksForUser(UserID uint, query repository.EbookQuery) (*[]models.Ebook, error) {
-	ebookRepository := repository.NewEbookRepository()
-	ebooks, err := ebookRepository.FindEbooksByUser(UserID, query)
-	if err != nil {
-		return nil, errors.New("ebooks não encontrados")
-	}
-
-	if len(*ebooks) == 0 {
-		return nil, nil
-	}
-
-	return ebooks, nil
+	return s.ebookRepository.ListEbooksForUser(UserID, query)
 }

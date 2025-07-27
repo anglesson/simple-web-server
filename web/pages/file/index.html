@@ -1,0 +1,191 @@
+{{define "content"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Biblioteca de Arquivos</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Minha Biblioteca de Arquivos</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Arquivos Disponíveis</h4>
+                    <a href="/file/upload" class="btn btn-primary">
+                        <i class="mdi mdi-plus"></i> Upload de Arquivo
+                    </a>
+                </div>
+                <div class="card-body">
+                    {{if .Files}}
+                    <div class="table-responsive">
+                        <table class="table table-centered table-striped dt-responsive nowrap w-100">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Tipo</th>
+                                    <th>Tamanho</th>
+                                    <th>Descrição</th>
+                                    <th>Data Upload</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .Files}}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-3">
+                                                {{if eq .FileType "pdf"}}
+                                                <div class="avatar-title bg-danger-lighten text-danger rounded">
+                                                    <i class="mdi mdi-file-pdf-box"></i>
+                                                </div>
+                                                {{else if eq .FileType "document"}}
+                                                <div class="avatar-title bg-primary-lighten text-primary rounded">
+                                                    <i class="mdi mdi-file-word-box"></i>
+                                                </div>
+                                                {{else if eq .FileType "image"}}
+                                                <div class="avatar-title bg-success-lighten text-success rounded">
+                                                    <i class="mdi mdi-file-image-box"></i>
+                                                </div>
+                                                {{else}}
+                                                <div class="avatar-title bg-secondary-lighten text-secondary rounded">
+                                                    <i class="mdi mdi-file"></i>
+                                                </div>
+                                                {{end}}
+                                            </div>
+                                            <div>
+                                                <h5 class="font-14 mb-0">{{.OriginalName}}</h5>
+                                                <small class="text-muted">{{.Name}}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{if eq .FileType "pdf"}}danger{{else if eq .FileType "document"}}primary{{else if eq .FileType "image"}}success{{else}}secondary{{end}}-lighten">
+                                            {{.FileType}}
+                                        </span>
+                                    </td>
+                                    <td>{{.GetFileSizeFormatted}}</td>
+                                    <td>
+                                        {{if .Description}}
+                                        <span class="text-muted">{{.Description}}</span>
+                                        {{else}}
+                                        <span class="text-muted">Sem descrição</span>
+                                        {{end}}
+                                    </td>
+                                    <td>{{.CreatedAt.Format "02/01/2006 15:04"}}</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="mdi mdi-dots-vertical"></i>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a href="#" class="dropdown-item" onclick="editFile({{.ID}}, '{{.Description}}')">
+                                                    <i class="mdi mdi-pencil me-1"></i> Editar
+                                                </a>
+                                                <a href="{{.S3URL}}" class="dropdown-item" target="_blank">
+                                                    <i class="mdi mdi-eye me-1"></i> Visualizar
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                                <a href="#" class="dropdown-item text-danger" onclick="deleteFile({{.ID}}, '{{.OriginalName}}')">
+                                                    <i class="mdi mdi-delete me-1"></i> Deletar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                    {{else}}
+                    <div class="text-center py-4">
+                        <div class="avatar-md mx-auto mb-3">
+                            <div class="avatar-title bg-light text-primary rounded-circle">
+                                <i class="mdi mdi-folder-open font-24"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-muted">Nenhum arquivo encontrado</h4>
+                        <p class="text-muted">Comece fazendo upload de seus primeiros arquivos para criar sua biblioteca.</p>
+                        <a href="/file/upload" class="btn btn-primary">
+                            <i class="mdi mdi-plus"></i> Fazer Primeiro Upload
+                        </a>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar arquivo -->
+<div class="modal fade" id="editFileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Arquivo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editFileForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Descreva o conteúdo deste arquivo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação para deletar -->
+<div class="modal fade" id="deleteFileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja deletar o arquivo <strong id="fileName"></strong>?</p>
+                <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteFileForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Deletar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editFile(fileId, description) {
+    document.getElementById('description').value = description;
+    document.getElementById('editFileForm').action = `/file/${fileId}/update`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editFileModal'));
+    modal.show();
+}
+
+function deleteFile(fileId, fileName) {
+    document.getElementById('fileName').textContent = fileName;
+    document.getElementById('deleteFileForm').action = `/file/${fileId}/delete`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteFileModal'));
+    modal.show();
+}
+</script>
+{{end}} 

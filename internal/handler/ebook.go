@@ -62,7 +62,51 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 }
 
 func EbookCreateView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "create_ebook", nil, "admin")
+	loggedUser := middleware.Auth(r)
+	if loggedUser.ID == 0 {
+		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
+		return
+	}
+
+	// Buscar arquivos do criador para seleção
+	creatorRepo := gorm.NewCreatorRepository(database.DB)
+	rfService := gov.NewHubDevService()
+	userRepository := repository.NewGormUserRepository(database.DB)
+	encrypter := utils.NewEncrypter()
+	userService := service.NewUserService(userRepository, encrypter)
+	subscriptionRepository := gorm.NewSubscriptionGormRepository()
+	stripeService := service.NewStripeService()
+	creatorService := service.NewCreatorService(
+		creatorRepo,
+		rfService,
+		userService,
+		service.NewSubscriptionService(subscriptionRepository, rfService),
+		service.NewStripePaymentGateway(stripeService),
+	)
+
+	creator, err := creatorService.FindCreatorByUserID(loggedUser.ID)
+	if err != nil {
+		http.Error(w, "Erro ao buscar criador", http.StatusInternalServerError)
+		return
+	}
+
+	// Buscar arquivos da biblioteca
+	fileRepository := repository.NewGormFileRepository(database.DB)
+	s3Storage := storage.NewS3Storage()
+	fileService := service.NewFileService(fileRepository, s3Storage)
+
+	files, err := fileService.GetActiveByCreator(creator.ID)
+	if err != nil {
+		log.Printf("Erro ao buscar arquivos: %v", err)
+		files = []*models.File{} // Lista vazia em caso de erro
+	}
+
+	data := map[string]interface{}{
+		"Files":   files,
+		"Creator": creator,
+	}
+
+	template.View(w, r, "create_ebook", data, "admin")
 }
 
 func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
@@ -79,10 +123,19 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Falha na conversão do e-book")
 		http.Error(w, "erro na conversão", http.StatusInternalServerError)
+		return
 	}
+
+	// Validar arquivos selecionados
+	selectedFiles := r.Form["selected_files"]
+	if len(selectedFiles) == 0 {
+		errors["files"] = "Selecione pelo menos um arquivo para o ebook"
+	}
+
 	form := models.EbookRequest{
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
+		SalesPage:   r.FormValue("sales_page"),
 		Value:       value,
 		Status:      true,
 	}
@@ -90,14 +143,6 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	errForm := utils.ValidateForm(form)
 	for key, value := range errForm {
 		errors[key] = value
-	}
-
-	file, _, err := r.FormFile("file")
-	if err == nil {
-		errFile := validateFile(file, "application/pdf")
-		for key, value := range errFile {
-			errors[key] = value
-		}
 	}
 
 	if len(errors) > 0 {
@@ -144,23 +189,39 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Criando e-book para creator: %v", creator.ID)
 
-	// Obtenha o arquivo do formulário
-	file, fileHeader, err := r.FormFile("file") // "file" deve ser o nome do campo no HTML
+	// Criar ebook
+	ebook := models.NewEbook(form.Title, form.Description, form.SalesPage, form.Value, *creator)
+
+	// Adicionar arquivos selecionados ao ebook
+	fileRepository := repository.NewGormFileRepository(database.DB)
+	for _, fileIDStr := range selectedFiles {
+		fileID, err := strconv.ParseUint(fileIDStr, 10, 32)
+		if err != nil {
+			continue
+		}
+
+		file, err := fileRepository.FindByID(uint(fileID))
+		if err != nil {
+			continue
+		}
+
+		// Verificar se o arquivo pertence ao criador
+		if file.CreatorID == creator.ID {
+			ebook.AddFile(file)
+		}
+	}
+
+	// Salvar ebook
+	ebookRepository := repository.NewGormEbookRepository(database.DB)
+	err = ebookRepository.Create(ebook)
 	if err != nil {
-		log.Printf("Erro ao obter arquivo: %v", err)
-		http.Error(w, "Erro ao obter arquivo", http.StatusBadRequest)
+		log.Printf("Falha ao salvar e-book: %s", err)
+		web.RedirectBackWithErrors(w, r, "Falha ao salvar e-book")
 		return
 	}
-	defer file.Close()
 
-	storage.Upload(file, fileHeader.Filename)
-	log.Println("Upload realizado")
-	ebook := models.NewEbook(form.Title, form.Description, fileHeader.Filename, form.Value, *creator)
-
-	log.Printf("dados do e-book: %v", &ebook)
-	database.DB.Create(&ebook)
-	log.Println("E-book criado")
-	http.Redirect(w, r, "/ebook", http.StatusSeeOther)
+	log.Println("E-book criado com sucesso")
+	web.RedirectBackWithSuccess(w, r, "E-book criado com sucesso!")
 }
 
 // TODO: Move to a service
@@ -187,19 +248,27 @@ func validateFile(file multipart.File, expectedContentType string) map[string]st
 
 // TODO: Move to a repository
 func GetEbookByID(w http.ResponseWriter, r *http.Request) *models.Ebook {
-	var ebook models.Ebook
+	ebookID := chi.URLParam(r, "id")
+	if ebookID == "" {
+		http.Error(w, "ID do e-book não fornecido", http.StatusBadRequest)
+		return nil
+	}
 
-	// Busca o criador com os ebooks associados
-	err := database.DB.
-		Preload("Creator").
-		Where("id = ?", chi.URLParam(r, "id")).
-		First(&ebook).Error
+	// Converter string para uint
+	id, err := strconv.ParseUint(ebookID, 10, 32)
+	if err != nil {
+		http.Error(w, "ID do e-book inválido", http.StatusBadRequest)
+		return nil
+	}
+
+	ebookRepository := repository.NewGormEbookRepository(database.DB)
+	ebook, err := ebookRepository.FindByID(uint(id))
 	if err != nil {
 		http.Error(w, "Erro ao buscar e-book", http.StatusInternalServerError)
 		return nil
 	}
 
-	return &ebook
+	return ebook
 }
 
 func EbookUpdateView(w http.ResponseWriter, r *http.Request) {
@@ -282,18 +351,20 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	user := GetSessionUser(r)
 
-	creator := models.Creator{
-		UserID: user.ID,
-	}
-	result := database.DB.First(&creator)
-
-	if result.Error != nil {
-		log.Printf("Falha ao cadastrar e-book: %s", result.Error)
+	// Verificar se o usuário é um criador
+	creatorRepository := gorm.NewCreatorRepository(database.DB)
+	_, err = creatorRepository.FindCreatorByUserID(user.ID)
+	if err != nil {
+		log.Printf("Falha ao buscar criador: %s", err)
 		http.Error(w, "Entre em contato", http.StatusInternalServerError)
 		return
 	}
 
 	ebook := GetEbookByID(w, r)
+	if ebook == nil {
+		http.Error(w, "E-book não encontrado", http.StatusNotFound)
+		return
+	}
 
 	// Obtenha o arquivo do formulário
 	file, fileHeader, err := r.FormFile("file") // "file" deve ser o nome do campo no HTML
@@ -309,7 +380,14 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	ebook.Value = form.Value
 	ebook.Status = form.Status
 
-	database.DB.Save(&ebook)
+	// Salvar usando o repositório
+	ebookRepository := repository.NewGormEbookRepository(database.DB)
+	err = ebookRepository.Update(ebook)
+	if err != nil {
+		log.Printf("Falha ao atualizar e-book: %s", err)
+		http.Error(w, "Erro ao atualizar e-book", http.StatusInternalServerError)
+		return
+	}
 
 	cookies.NotifySuccess(w, "Dados do e-book foram atualizados!")
 	http.Redirect(w, r, "/ebook", http.StatusSeeOther)

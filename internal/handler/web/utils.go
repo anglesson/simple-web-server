@@ -10,3 +10,8 @@ func RedirectBackWithErrors(w http.ResponseWriter, r *http.Request, erroMessage 
 	cookies.NotifyError(w, erroMessage)
 	http.Redirect(w, r, r.Referer(), http.StatusBadRequest)
 }
+
+func RedirectBackWithSuccess(w http.ResponseWriter, r *http.Request, successMessage string) {
+	cookies.NotifySuccess(w, successMessage)
+	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+}

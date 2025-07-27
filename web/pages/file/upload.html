@@ -1,0 +1,138 @@
+{{define "content"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/file">Biblioteca de Arquivos</a></li>
+                        <li class="breadcrumb-item active">Upload</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Upload de Arquivo</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">Adicionar Novo Arquivo à Biblioteca</h4>
+                    <p class="text-muted mb-0">Faça upload de arquivos para sua biblioteca pessoal. Estes arquivos poderão ser usados para compor seus ebooks.</p>
+                </div>
+                <div class="card-body">
+                    <form action="/file/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="file" class="form-label">Selecionar Arquivo</label>
+                                    <input type="file" class="form-control" id="file" name="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" required>
+                                    <div class="form-text">
+                                        <strong>Tipos aceitos:</strong> PDF, DOC, DOCX, JPG, JPEG, PNG, GIF<br>
+                                        <strong>Tamanho máximo:</strong> 50MB
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descrição do Arquivo</label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Descreva o conteúdo deste arquivo para facilitar a organização..."></textarea>
+                                    <div class="form-text">
+                                        Ex: "Capítulo 1 - Introdução ao Marketing Digital", "Template de apresentação", "Imagem de capa para ebook"
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Dicas para Organização</h5>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Use nomes descritivos
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Adicione descrições detalhadas
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Organize por categorias
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Mantenha arquivos atualizados
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card bg-primary text-white mt-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="mdi mdi-lightbulb me-2"></i>
+                                            Dica Pro
+                                        </h6>
+                                        <p class="card-text small">
+                                            Arquivos bem organizados facilitam a criação de ebooks profissionais e aumentam suas vendas!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="/file" class="btn btn-secondary">
+                                        <i class="mdi mdi-arrow-left me-1"></i>
+                                        Voltar à Biblioteca
+                                    </a>
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                                        <i class="mdi mdi-upload me-1"></i>
+                                        Fazer Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('file');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (!fileInput.files[0]) {
+        e.preventDefault();
+        alert('Por favor, selecione um arquivo.');
+        return;
+    }
+    
+    // Mostrar loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Fazendo Upload...';
+});
+
+// Preview do arquivo selecionado
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+        const fileName = file.name;
+        
+        // Atualizar descrição automaticamente se estiver vazia
+        const description = document.getElementById('description');
+        if (!description.value) {
+            description.value = `Arquivo: ${fileName} (${fileSize} MB)`;
+        }
+    }
+});
+</script>
+{{end}} 

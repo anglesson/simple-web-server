@@ -10,11 +10,13 @@ import (
 
 type CreatorHandler struct {
 	creatorService service.CreatorService
+	sessionService service.SessionService
 }
 
-func NewCreatorHandler(creatorService service.CreatorService) *CreatorHandler {
+func NewCreatorHandler(creatorService service.CreatorService, sessionService service.SessionService) *CreatorHandler {
 	return &CreatorHandler{
-		creatorService,
+		creatorService: creatorService,
+		sessionService: sessionService,
 	}
 }
 
@@ -49,7 +51,7 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	sessionService.InitSession(w, creator.Email)
+	ch.sessionService.InitSession(w, creator.Email)
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }

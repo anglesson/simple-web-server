@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/storage"
 	"github.com/anglesson/simple-web-server/pkg/utils"
 
 	handler "github.com/anglesson/simple-web-server/internal/handler"
@@ -35,20 +36,27 @@ func main() {
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
 	clientRepository := gorm.NewClientGormRepository()
 	userRepository := repository.NewGormUserRepository(database.DB)
+	fileRepository := repository.NewGormFileRepository(database.DB)
 
 	// Services
 	commonRFService := gov.NewHubDevService()
 	userService := service.NewUserService(userRepository, encrypter)
+	sessionService := service.NewSessionService()
 	subscriptionRepository := gorm.NewSubscriptionGormRepository()
 	subscriptionService := service.NewSubscriptionService(subscriptionRepository, commonRFService)
 	stripeService := service.NewStripeService()
 	paymentGateway := service.NewStripePaymentGateway(stripeService)
 	creatorService := service.NewCreatorService(creatorRepository, commonRFService, userService, subscriptionService, paymentGateway)
 	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
+	s3Storage := storage.NewS3Storage()
+	fileService := service.NewFileService(fileRepository, s3Storage)
 
 	// Handlers
+	authHandler := handler.NewAuthHandler(userService, sessionService)
 	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory)
-	creatorHandler := handler.NewCreatorHandler(creatorService)
+	creatorHandler := handler.NewCreatorHandler(creatorService, sessionService)
+	settingsHandler := handler.NewSettingsHandler(sessionService)
+	fileHandler := handler.NewFileHandler(fileService, sessionService)
 
 	r := chi.NewRouter()
 
@@ -60,8 +68,8 @@ func main() {
 	// Public routes
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthGuard)
-		r.Get("/login", handler.LoginView)
-		r.Post("/login", handler.LoginSubmit)
+		r.Get("/login", authHandler.LoginView)
+		r.Post("/login", authHandler.LoginSubmit)
 		r.Get("/register", creatorHandler.RegisterView)
 		r.Post("/register", creatorHandler.RegisterCreatorSSR)
 		r.Get("/forget-password", handler.ForgetPasswordView)
@@ -79,9 +87,9 @@ func main() {
 		r.Use(middleware.AuthMiddleware)
 		r.Use(middleware.TrialMiddleware)
 
-		r.Post("/logout", handler.LogoutSubmit)
+		r.Post("/logout", authHandler.LogoutSubmit)
 		r.Get("/dashboard", handler.DashboardView)
-		r.Get("/settings", handler.SettingsView)
+		r.Get("/settings", settingsHandler.SettingsView)
 
 		// Ebook routes
 		r.Get("/ebook", handler.EbookIndexView)
@@ -90,6 +98,13 @@ func main() {
 		r.Get("/ebook/edit/{id}", handler.EbookUpdateView)
 		r.Get("/ebook/view/{id}", handler.EbookShowView)
 		r.Post("/ebook/update/{id}", handler.EbookUpdateSubmit)
+
+		// File routes
+		r.Get("/file", fileHandler.FileIndexView)
+		r.Get("/file/upload", fileHandler.FileUploadView)
+		r.Post("/file/upload", fileHandler.FileUploadSubmit)
+		r.Post("/file/{id}/update", fileHandler.FileUpdateSubmit)
+		r.Post("/file/{id}/delete", fileHandler.FileDeleteSubmit)
 
 		// Client routes
 		r.Get("/client", clientHandler.ClientIndexView)

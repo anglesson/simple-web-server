@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"os"
 
 	"github.com/anglesson/simple-web-server/internal/config"
@@ -29,45 +30,72 @@ func getConfig() aws.Config {
 	return cfg
 }
 
-func Upload(file io.Reader, filename string) (string, error) {
+type S3Storage interface {
+	UploadFile(file *multipart.FileHeader, key string) (string, error)
+	DeleteFile(key string) error
+	GenerateDownloadLink(key string) string
+}
+
+type s3Storage struct {
+	client *s3.Client
+	bucket string
+	region string
+}
+
+func NewS3Storage() S3Storage {
 	cfg := getConfig()
+	client := s3.NewFromConfig(cfg)
 
-	// Instancia o client S3
-	s3Client := s3.NewFromConfig(cfg)
+	return &s3Storage{
+		client: client,
+		bucket: config.AppConfig.S3BucketName,
+		region: config.AppConfig.S3Region,
+	}
+}
 
-	// Envia o arquivo
-	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String(config.AppConfig.S3BucketName), // Substitua pelo nome do seu bucket
-		Key:    aws.String(filename),                      // Caminho dentro do bucket
-		Body:   file,
+func (s *s3Storage) UploadFile(file *multipart.FileHeader, key string) (string, error) {
+	// Abrir arquivo
+	src, err := file.Open()
+	if err != nil {
+		return "", fmt.Errorf("erro ao abrir arquivo: %w", err)
+	}
+	defer src.Close()
+
+	// Upload para S3
+	_, err = s.client.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+		Body:   src,
 	})
 	if err != nil {
-		log.Fatalf("erro ao fazer upload: %v", err)
+		return "", fmt.Errorf("erro ao fazer upload: %w", err)
 	}
 
-	fmt.Println("Upload realizado com sucesso!")
-	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", config.AppConfig.S3BucketName, config.AppConfig.S3Region, filename)
+	// Gerar URL pública
+	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.bucket, s.region, key)
 	return fileURL, nil
 }
 
-func GenerateDownloadLink(filename string) string {
-	cfg := getConfig()
+func (s *s3Storage) DeleteFile(key string) error {
+	_, err := s.client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	return err
+}
 
-	s3Client := s3.NewFromConfig(cfg)
-	presigner := s3.NewPresignClient(s3Client)
+func (s *s3Storage) GenerateDownloadLink(key string) string {
+	presigner := s3.NewPresignClient(s.client)
 
-	// Cria o comando GetObject
 	params := &s3.GetObjectInput{
-		Bucket: aws.String(config.AppConfig.S3BucketName),
-		Key:    aws.String(filename),
-		// Opcional: Content-Disposition para forçar download com nome customizado
-		// ResponseContentDisposition: aws.String("attachment; filename=\"arquivo.txt\""),
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
 	}
 
-	// Gera o link pré-assinado com tempo de expiração
 	presignedURL, err := presigner.PresignGetObject(context.TODO(), params, func(opts *s3.PresignOptions) {})
 	if err != nil {
-		log.Panicf("Erro ao gerar URL pré-assinada: %v", err)
+		log.Printf("Erro ao gerar URL pré-assinada: %v", err)
+		return ""
 	}
 
 	return presignedURL.URL
@@ -105,4 +133,37 @@ func GetFile(filename string) (string, error) {
 	}
 
 	return localPath, nil
+}
+
+// Upload faz upload de um arquivo para o S3
+func Upload(file multipart.File, filename string) error {
+	cfg := getConfig()
+	s3Client := s3.NewFromConfig(cfg)
+
+	_, err := s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(config.AppConfig.S3BucketName),
+		Key:    aws.String(filename),
+		Body:   file,
+	})
+	return err
+}
+
+// GenerateDownloadLink gera um link de download para um arquivo
+func GenerateDownloadLink(filename string) string {
+	cfg := getConfig()
+	s3Client := s3.NewFromConfig(cfg)
+	presigner := s3.NewPresignClient(s3Client)
+
+	params := &s3.GetObjectInput{
+		Bucket: aws.String(config.AppConfig.S3BucketName),
+		Key:    aws.String(filename),
+	}
+
+	presignedURL, err := presigner.PresignGetObject(context.TODO(), params, func(opts *s3.PresignOptions) {})
+	if err != nil {
+		log.Printf("Erro ao gerar URL pré-assinada: %v", err)
+		return ""
+	}
+
+	return presignedURL.URL
 }

@@ -5,10 +5,21 @@ import (
 	"net/http"
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
-func SettingsView(w http.ResponseWriter, r *http.Request) {
+type SettingsHandler struct {
+	sessionService service.SessionService
+}
+
+func NewSettingsHandler(sessionService service.SessionService) *SettingsHandler {
+	return &SettingsHandler{
+		sessionService: sessionService,
+	}
+}
+
+func (h *SettingsHandler) SettingsView(w http.ResponseWriter, r *http.Request) {
 	user := middleware.Auth(r)
 	if user == nil {
 		log.Printf("Usuário não autenticado ao acessar configurações")
@@ -18,8 +29,8 @@ func SettingsView(w http.ResponseWriter, r *http.Request) {
 
 	// Gerar novo token CSRF se necessário
 	if user.CSRFToken == "" {
-		user.CSRFToken = sessionService.GenerateCSRFToken()
-		sessionService.SetCSRFToken(w)
+		user.CSRFToken = h.sessionService.GenerateCSRFToken()
+		h.sessionService.SetCSRFToken(w)
 	}
 
 	log.Printf("Renderizando página de configurações para o usuário: %s", user.Email)

@@ -5,30 +5,33 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
-	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/template"
-	"github.com/anglesson/simple-web-server/pkg/utils"
 )
 
-var sessionService = service.NewSessionService()
-var userService = service.NewUserService(
-	repository.NewGormUserRepository(database.DB),
-	utils.NewEncrypter(),
-)
+type AuthHandler struct {
+	userService    service.UserService
+	sessionService service.SessionService
+}
+
+func NewAuthHandler(userService service.UserService, sessionService service.SessionService) *AuthHandler {
+	return &AuthHandler{
+		userService:    userService,
+		sessionService: sessionService,
+	}
+}
 
 // LoginView renders the login page with CSRF token
-func LoginView(w http.ResponseWriter, r *http.Request) {
-	csrfToken := sessionService.GenerateCSRFToken()
-	sessionService.SetCSRFToken(w)
+func (h *AuthHandler) LoginView(w http.ResponseWriter, r *http.Request) {
+	csrfToken := h.sessionService.GenerateCSRFToken()
+	h.sessionService.SetCSRFToken(w)
 	template.View(w, r, "login", map[string]interface{}{
 		"csrf_token": csrfToken,
 	}, "guest")
 }
 
 // LoginSubmit handles user login authentication
-func LoginSubmit(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return
@@ -51,32 +54,32 @@ func LoginSubmit(w http.ResponseWriter, r *http.Request) {
 
 	// If there are validation errors, redirect back with errors
 	if len(errors) > 0 {
-		redirectWithErrors(w, r, loginInput, errors)
+		h.redirectWithErrors(w, r, loginInput, errors)
 		return
 	}
 
 	// Authenticate user using UserService
-	user, err := userService.AuthenticateUser(loginInput)
+	user, err := h.userService.AuthenticateUser(loginInput)
 	if err != nil {
 		errors["password"] = "Email ou senha inválidos"
-		redirectWithErrors(w, r, loginInput, errors)
+		h.redirectWithErrors(w, r, loginInput, errors)
 		return
 	}
 
 	// Initialize session for authenticated user
-	sessionService.InitSession(w, user.Email)
+	h.sessionService.InitSession(w, user.Email)
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 // LogoutSubmit handles user logout
-func LogoutSubmit(w http.ResponseWriter, r *http.Request) {
-	sessionService.ClearSession(w)
+func (h *AuthHandler) LogoutSubmit(w http.ResponseWriter, r *http.Request) {
+	h.sessionService.ClearSession(w)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 // redirectWithErrors is a helper function to redirect with form data and errors
-func redirectWithErrors(w http.ResponseWriter, r *http.Request, form interface{}, errors map[string]string) {
+func (h *AuthHandler) redirectWithErrors(w http.ResponseWriter, r *http.Request, form interface{}, errors map[string]string) {
 	formJSON, _ := json.Marshal(form)
 	errorsJSON, _ := json.Marshal(errors)
 

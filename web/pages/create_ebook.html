@@ -1,66 +1,257 @@
 {{ define "title" }} Ebooks {{ end }}
 {{ define "content" }}
-<!-- Container fluid -->
-<div class="container-fluid p-6">
-  <div class="row">
-    <div class="col-lg-12 col-md-12 col-12">
-      <!-- Page header -->
-      <div class="border-bottom pb-4 mb-4 ">
-        <h3 class="mb-0 fw-bold">Cadastro de E-book</h3>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-lg-12 col-md-12 col-12">
-      <div class="card">
-        <div class="card-body">
-          <form id="ebook-form" action="/ebook/create" method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-              <label for="ebookTitle" class="form-label">Título do E-book</label>
-              <input type="text" class="form-control" id="ebookTitle" name="title" placeholder="Digite o título do e-book" required value="{{.Form.Title}}">
-              {{with .Errors.Title}}
-              <p class="text-danger">{{.}}</p>{{end}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/ebook">Ebooks</a></li>
+                        <li class="breadcrumb-item active">Criar Ebook</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Criar Novo Ebook</h4>
             </div>
-            <div class="mb-3">
-              <label for="ebookDescription" class="form-label">Descrição</label>
-              <textarea class="form-control" id="ebookDescription" name="description" rows="3" placeholder="Digite a descrição do e-book" required>{{.Form.Description}}</textarea>
-              {{with .Errors.Description}}
-              <p class="text-danger">{{.}}</p>{{end}}
-            </div>
-            <div class="mb-3">
-              <label for="ebookPrice" class="form-label">Valor</label>
-              <input type="text" class="form-control" id="ebookPrice" name="value" placeholder="Digite o valor do e-book" maxlength="15" max="100000" required value="{{.Form.Value}}">
-              {{with .Errors.Value}}
-              <p class="text-danger">{{.}}</p>{{end}}
-            </div>
-            <div class="mb-3">
-              <label for="ebookFile" class="form-label">Arquivo do E-book</label>
-              <input id="ebookFile" type="file" class="form-control" name="file" accept=".pdf" required>
-              {{with .Errors.File}}
-              <p class="text-danger">{{.}}</p>{{end}}
-            </div>
-            <button type="submit" class="btn btn-primary">Cadastrar</button>
-            <a class="btn btn-secondary" href="/ebook" role="button">Cancelar</a>
-          </form>
         </div>
-      </div>
     </div>
-  </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">Informações do Ebook</h4>
+                    <p class="text-muted mb-0">Crie um ebook profissional selecionando arquivos de sua biblioteca e criando uma página de vendas atrativa.</p>
+                </div>
+                <div class="card-body">
+                    <form action="/ebook/create" method="POST" id="createEbookForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Informações Básicas -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3">Informações Básicas</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Título do Ebook *</label>
+                                        <input type="text" class="form-control" id="title" name="title" required 
+                                               placeholder="Ex: Guia Completo de Marketing Digital">
+                                        <div class="form-text">Crie um título atrativo que desperte interesse</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Descrição Curta *</label>
+                                        <textarea class="form-control" id="description" name="description" rows="3" required
+                                                  placeholder="Descreva brevemente o que o leitor encontrará neste ebook..."></textarea>
+                                        <div class="form-text">Máximo 120 caracteres</div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="value" class="form-label">Preço (R$) *</label>
+                                                <input type="number" class="form-control" id="value" name="value" step="0.01" min="0" required
+                                                       placeholder="29.90">
+                                                <div class="form-text">Defina um preço competitivo</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="image" class="form-label">Imagem de Capa</label>
+                                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                                <div class="form-text">Recomendado: 800x600px</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Seleção de Arquivos -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3">Selecionar Arquivos da Biblioteca</h5>
+                                    
+                                    {{if .Files}}
+                                    <div class="alert alert-info">
+                                        <i class="mdi mdi-information me-2"></i>
+                                        Selecione os arquivos que farão parte do seu ebook. Você pode selecionar múltiplos arquivos.
+                                    </div>
+                                    
+                                    <div class="row" id="filesContainer">
+                                        {{range .Files}}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card file-card h-100">
+                                                <div class="card-body">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="selected_files" 
+                                                               value="{{.ID}}" id="file_{{.ID}}">
+                                                        <label class="form-check-label w-100" for="file_{{.ID}}">
+                                                            <div class="d-flex align-items-center mb-2">
+                                                                <div class="avatar-sm me-2">
+                                                                    {{if eq .FileType "pdf"}}
+                                                                    <div class="avatar-title bg-danger-lighten text-danger rounded">
+                                                                        <i class="mdi mdi-file-pdf-box"></i>
+                                                                    </div>
+                                                                    {{else if eq .FileType "document"}}
+                                                                    <div class="avatar-title bg-primary-lighten text-primary rounded">
+                                                                        <i class="mdi mdi-file-word-box"></i>
+                                                                    </div>
+                                                                    {{else if eq .FileType "image"}}
+                                                                    <div class="avatar-title bg-success-lighten text-success rounded">
+                                                                        <i class="mdi mdi-file-image-box"></i>
+                                                                    </div>
+                                                                    {{else}}
+                                                                    <div class="avatar-title bg-secondary-lighten text-secondary rounded">
+                                                                        <i class="mdi mdi-file"></i>
+                                                                    </div>
+                                                                    {{end}}
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <h6 class="mb-0">{{.OriginalName}}</h6>
+                                                                    <small class="text-muted">{{.GetFileSizeFormatted}}</small>
+                                                                </div>
+                                                            </div>
+                                                            {{if .Description}}
+                                                            <p class="text-muted small mb-0">{{.Description}}</p>
+                                                            {{end}}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{end}}
+                                    </div>
+                                    {{else}}
+                                    <div class="alert alert-warning">
+                                        <i class="mdi mdi-alert me-2"></i>
+                                        Você ainda não tem arquivos em sua biblioteca. 
+                                        <a href="/file/upload" class="alert-link">Faça upload de arquivos</a> para criar seu primeiro ebook.
+                                    </div>
+                                    {{end}}
+                                </div>
+
+                                <!-- Página de Vendas -->
+                                <div class="mb-4">
+                                    <h5 class="mb-3">Página de Vendas</h5>
+                                    <p class="text-muted mb-3">Crie uma página de vendas persuasiva que converta visitantes em compradores.</p>
+                                    
+                                    <div class="mb-3">
+                                        <label for="sales_page" class="form-label">Conteúdo da Página de Vendas *</label>
+                                        <textarea class="form-control" id="sales_page" name="sales_page" rows="15" required
+                                                  placeholder="Escreva aqui o conteúdo da sua página de vendas..."></textarea>
+                                        <div class="form-text">
+                                            <strong>Dicas para uma página de vendas eficaz:</strong><br>
+                                            • Comece com um título impactante<br>
+                                            • Apresente o problema que seu ebook resolve<br>
+                                            • Liste os benefícios e resultados<br>
+                                            • Inclua depoimentos ou social proof<br>
+                                            • Crie urgência e escassez<br>
+                                            • Termine com uma call-to-action clara
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <!-- Preview e Dicas -->
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="mdi mdi-lightbulb me-2"></i>
+                                            Dicas para Ebooks de Sucesso
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Escolha arquivos de qualidade
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Organize o conteúdo logicamente
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Crie uma página de vendas persuasiva
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="mdi mdi-check-circle text-success me-2"></i>
+                                                Defina um preço competitivo
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Estatísticas -->
+                                <div class="card bg-primary text-white mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="mdi mdi-chart-line me-2"></i>
+                                            Estatísticas
+                                        </h6>
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <h4 class="mb-0" id="fileCount">0</h4>
+                                                <small>Arquivos</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <h4 class="mb-0" id="totalSize">0 MB</h4>
+                                                <small>Tamanho Total</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ações -->
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                                        <i class="mdi mdi-plus me-1"></i>
+                                        Criar Ebook
+                                    </button>
+                                    <a href="/ebook" class="btn btn-secondary">
+                                        <i class="mdi mdi-arrow-left me-1"></i>
+                                        Cancelar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
 <script>
-  const priceInput = document.getElementById('ebookPrice');
+// Atualizar estatísticas quando arquivos são selecionados
+document.querySelectorAll('input[name="selected_files"]').forEach(checkbox => {
+    checkbox.addEventListener('change', updateStats);
+});
 
-  priceInput.addEventListener('input', () => {
-    let value = priceInput.value.replace(/\D/g, '');
-    value = (value / 100).toFixed(2).replace('.', ',');
-    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    priceInput.value = `R$ ${value}`;
-  });
+function updateStats() {
+    const selectedFiles = document.querySelectorAll('input[name="selected_files"]:checked');
+    const fileCount = selectedFiles.length;
+    
+    // Calcular tamanho total (simplificado - em produção você teria os tamanhos dos arquivos)
+    const totalSize = fileCount * 2; // Estimativa de 2MB por arquivo
+    
+    document.getElementById('fileCount').textContent = fileCount;
+    document.getElementById('totalSize').textContent = totalSize + ' MB';
+}
 
-  const form = document.getElementById("ebook-form")
-  form.onsubmit(e => {
-    e.preventDefault
-    console.log("Prevent default")
-  })
+// Validação do formulário
+document.getElementById('createEbookForm').addEventListener('submit', function(e) {
+    const selectedFiles = document.querySelectorAll('input[name="selected_files"]:checked');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (selectedFiles.length === 0) {
+        e.preventDefault();
+        alert('Por favor, selecione pelo menos um arquivo para o ebook.');
+        return;
+    }
+    
+    // Mostrar loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Criando Ebook...';
+});
+
+// Editor de texto rico para a página de vendas (opcional)
+// Você pode integrar um editor como TinyMCE ou CKEditor aqui
 </script>
 {{end}}
