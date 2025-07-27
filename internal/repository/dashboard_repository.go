@@ -241,13 +241,12 @@ func (dr *DashboardRepository) GetTopClients() ([]TopClient, error) {
 
 	err := database.DB.
 		Table("clients").
-		Select("clients.name, contacts.email, COUNT(purchases.id) as total_purchases").
+		Select("clients.name, clients.email, COUNT(purchases.id) as total_purchases").
 		Joins("INNER JOIN purchases ON purchases.client_id = clients.id").
 		Joins("INNER JOIN ebooks ON ebooks.id = purchases.ebook_id").
 		Joins("INNER JOIN creators ON creators.id = ebooks.creator_id").
-		Joins("INNER JOIN contacts ON contacts.id = clients.contact_id").
 		Where("creators.user_id = ?", dr.UserID).
-		Group("clients.id, contacts.email").
+		Group("clients.id, clients.email").
 		Order("total_purchases DESC").
 		Limit(10).
 		Scan(&clients).Error
