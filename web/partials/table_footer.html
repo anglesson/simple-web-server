@@ -1,10 +1,11 @@
 {{ define "table-footer" }}
+{{ if .Data.Pagination }}
 <div class="card-footer d-md-flex justify-content-between align-items-center">
     <span>Mostrando {{ .Data.Pagination.Start }} até {{ .Data.Pagination.End }} de {{.Data.Pagination.Total}}
         registros</span>
     <nav class="mt-2 mt-md-0">
         <ul class="pagination mb-0">
-            <li class="page-item {{if le .Data.Pagination.Page 1 }}disabled{{end}}">
+            <li class="page-item {{if and .Data.Pagination.Page (le .Data.Pagination.Page 1) }}disabled{{end}}">
                 <a class="page-link" href="?page={{.Data.Pagination.PrevPage}}&page_size={{.Data.Pagination.PageSize}}">Anterior</a>
             </li>
 
@@ -12,40 +13,41 @@
             {{ $prev := .Data.Pagination.PrevPage }}
             {{ $next := .Data.Pagination.NextPage }}
             {{ $size := .Data.Pagination.PageSize }}
+            {{ $totalPages := .Data.Pagination.TotalPages }}
 
-            {{if eq $page $prev}}
-            <li class="page-item {{if eq $page $prev}}active{{end}}">
+            {{if and $page $prev (eq $page $prev)}}
+            <li class="page-item active">
                 <a class="page-link" href="?page={{$prev}}&page_size={{$size}}">{{$prev}}</a>
             </li>
-            {{else }}
-                <li class="page-item {{if eq $page $prev}}active{{end}}">
+            {{else if and $prev (gt $prev 0) }}
+                <li class="page-item">
                     <a class="page-link" href="?page={{$prev}}&page_size={{$size}}">{{$prev}}</a>
                 </li>
-                {{end}}
+            {{end}}
 
-                {{if eq $page $prev}}
+            {{if and $page $prev (eq $page $prev)}}
+            <li class="page-item">
+                <a class="page-link" href="?page={{$next}}&page_size={{$size}}">{{$next}}</a>
+            </li>
+            {{else if and $page $prev $next (ne $page $prev) (ne $page $next) }}
+                <li class="page-item active">
+                    <a class="page-link" href="#">{{$page}}</a>
+                </li>
+            {{end}}
+
+            {{if and $page $prev (eq $page $prev) $totalPages (ge $totalPages 3) }}
+            <li class="page-item">
+                <a class="page-link" href="?page=3&page_size={{$size}}">3</a>
+            </li>
+            {{else if and $next (gt $next 0) }}
                 <li class="page-item">
                     <a class="page-link" href="?page={{$next}}&page_size={{$size}}">{{$next}}</a>
                 </li>
-                {{else }}
-                    <li class="page-item {{if ne $page $prev}}{{if ne $page $next}}active{{end}}{{end}}">
-                        <a class="page-link" href="#">{{$page}}</a>
-                    </li>
-                    {{end}}
+            {{end}}
 
-                    {{if eq $page $prev}}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=3&page_size={{$size}}">3</a>
-                    </li>
-                    {{else }}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{$next}}&page_size={{$size}}">{{$next}}</a>
-                        </li>
-                        {{end}}
-
-                        <li class="page-item {{if lt .Data.Pagination.NextPage .Data.Pagination.TotalPages }}disabled{{end}}">
-                            <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&page_size={{.Data.Pagination.PageSize}}">Próximo</a>
-                        </li>
+            <li class="page-item {{if and $next $totalPages (ge $next $totalPages) }}disabled{{end}}">
+                <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&page_size={{.Data.Pagination.PageSize}}">Próximo</a>
+            </li>
         </ul>
     </nav>
     <div class="page-item">
@@ -61,4 +63,5 @@
         </form>
     </div>
 </div>
+{{ end }}
 {{ end }}

@@ -173,7 +173,9 @@
               </tbody>
             </table>
           </div>
+          {{ if .Data.Pagination }}
           {{ template "table-footer" . }}
+          {{ end }}
           {{ else }}
             {{ template "empty-ebook-table" . }}
           {{ end }}

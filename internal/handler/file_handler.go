@@ -46,10 +46,6 @@ func (h *FileHandler) FileIndexView(w http.ResponseWriter, r *http.Request) {
 
 	// Log para debug
 	log.Printf("Arquivos encontrados: %d", len(files))
-	for i, file := range files {
-		log.Printf("Arquivo %d: ID=%d, Nome=%s, Tipo=%s, CreatorID=%d",
-			i+1, file.Model.ID, file.OriginalName, file.FileType, file.CreatorID)
-	}
 
 	data := map[string]interface{}{
 		"Files": files,

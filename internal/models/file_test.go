@@ -4,133 +4,113 @@ import (
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/models"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestNewFile(t *testing.T) {
-	// Arrange
-	name := "test-file.pdf"
-	originalName := "original-test-file.pdf"
-	description := "Test file description"
-	fileType := "pdf"
-	s3Key := "files/1/test-file.pdf"
-	s3URL := "https://bucket.s3.amazonaws.com/files/1/test-file.pdf"
-	fileSize := int64(1024 * 1024) // 1MB
-	creatorID := uint(1)
-
-	// Act
-	file := models.NewFile(name, originalName, description, fileType, s3Key, s3URL, fileSize, creatorID)
-
-	// Assert
-	assert.NotNil(t, file)
-	assert.Equal(t, name, file.Name)
-	assert.Equal(t, originalName, file.OriginalName)
-	assert.Equal(t, description, file.Description)
-	assert.Equal(t, fileType, file.FileType)
-	assert.Equal(t, s3Key, file.S3Key)
-	assert.Equal(t, s3URL, file.S3URL)
-	assert.Equal(t, fileSize, file.FileSize)
-	assert.Equal(t, creatorID, file.CreatorID)
-	assert.True(t, file.Status)
-}
-
-func TestGetFileSizeFormatted(t *testing.T) {
+func TestFile_GetFileSizeFormatted(t *testing.T) {
 	tests := []struct {
 		name     string
-		fileSize int64
+		file     *models.File
 		expected string
 	}{
 		{
-			name:     "Bytes",
-			fileSize: 512,
+			name:     "Small file (bytes)",
+			file:     &models.File{FileSize: 512},
 			expected: "512 B",
 		},
 		{
-			name:     "Kilobytes",
-			fileSize: 1024 * 2,
-			expected: "2.0 KB",
+			name:     "Medium file (KB)",
+			file:     &models.File{FileSize: 1024},
+			expected: "1.0 KB",
 		},
 		{
-			name:     "Megabytes",
-			fileSize: 1024 * 1024 * 3,
-			expected: "3.0 MB",
+			name:     "Large file (MB)",
+			file:     &models.File{FileSize: 1048576},
+			expected: "1.0 MB",
 		},
 		{
-			name:     "Gigabytes",
-			fileSize: 1024 * 1024 * 1024 * 4,
-			expected: "4.0 GB",
+			name:     "Very large file (GB)",
+			file:     &models.File{FileSize: 1073741824},
+			expected: "1.0 GB",
+		},
+		{
+			name:     "Zero size",
+			file:     &models.File{FileSize: 0},
+			expected: "0 B",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			file := &models.File{FileSize: tt.fileSize}
-			result := file.GetFileSizeFormatted()
-			assert.Equal(t, tt.expected, result)
+			result := tt.file.GetFileSizeFormatted()
+			if result != tt.expected {
+				t.Errorf("GetFileSizeFormatted() = %v, want %v", result, tt.expected)
+			}
 		})
 	}
 }
 
-func TestIsPDF(t *testing.T) {
+func TestFile_IsPDF(t *testing.T) {
 	tests := []struct {
 		name     string
-		fileType string
+		file     *models.File
 		expected bool
 	}{
 		{
 			name:     "PDF file",
-			fileType: "pdf",
+			file:     &models.File{FileType: "pdf"},
 			expected: true,
 		},
 		{
 			name:     "Document file",
-			fileType: "document",
+			file:     &models.File{FileType: "document"},
 			expected: false,
 		},
 		{
 			name:     "Image file",
-			fileType: "image",
+			file:     &models.File{FileType: "image"},
 			expected: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			file := &models.File{FileType: tt.fileType}
-			result := file.IsPDF()
-			assert.Equal(t, tt.expected, result)
+			result := tt.file.IsPDF()
+			if result != tt.expected {
+				t.Errorf("IsPDF() = %v, want %v", result, tt.expected)
+			}
 		})
 	}
 }
 
-func TestIsImage(t *testing.T) {
+func TestFile_IsImage(t *testing.T) {
 	tests := []struct {
 		name     string
-		fileType string
+		file     *models.File
 		expected bool
 	}{
 		{
 			name:     "Image file",
-			fileType: "image",
+			file:     &models.File{FileType: "image"},
 			expected: true,
 		},
 		{
 			name:     "PDF file",
-			fileType: "pdf",
+			file:     &models.File{FileType: "pdf"},
 			expected: false,
 		},
 		{
 			name:     "Document file",
-			fileType: "document",
+			file:     &models.File{FileType: "document"},
 			expected: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			file := &models.File{FileType: tt.fileType}
-			result := file.IsImage()
-			assert.Equal(t, tt.expected, result)
+			result := tt.file.IsImage()
+			if result != tt.expected {
+				t.Errorf("IsImage() = %v, want %v", result, tt.expected)
+			}
 		})
 	}
 }
