@@ -400,9 +400,10 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 		errors[key] = value
 	}
 
-	file, _, err := r.FormFile("file")
-	if err == nil {
-		errFile := validateFile(file, "application/pdf")
+	// Validar arquivo apenas se foi enviado
+	uploadFile, uploadFileHeader, uploadErr := r.FormFile("file")
+	if uploadErr == nil && uploadFile != nil && uploadFileHeader != nil && uploadFileHeader.Filename != "" {
+		errFile := validateFile(uploadFile, "application/pdf")
 		for key, value := range errFile {
 			errors[key] = value
 		}
