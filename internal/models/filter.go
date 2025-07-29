@@ -16,6 +16,9 @@ type Pagination struct {
 	NextPage   int
 	PageSize   int
 	TotalPages int
+	HasPrev    bool
+	HasNext    bool
+	Pages      []int
 }
 
 // NewPagination creates a new pagination with calculated fields
@@ -62,4 +65,51 @@ func (p *Pagination) SetTotal(total int64) {
 	if p.NextPage > p.TotalPages {
 		p.NextPage = p.TotalPages
 	}
+
+	// Calcular HasPrev e HasNext
+	p.HasPrev = p.Page > 1
+	p.HasNext = p.Page < p.TotalPages
+
+	// Gerar array de páginas para navegação
+	p.Pages = p.generatePageNumbers()
+}
+
+// generatePageNumbers generates an array of page numbers to display
+func (p *Pagination) generatePageNumbers() []int {
+	var pages []int
+
+	if p.TotalPages <= 7 {
+		// Se tem 7 páginas ou menos, mostrar todas
+		for i := 1; i <= p.TotalPages; i++ {
+			pages = append(pages, i)
+		}
+	} else {
+		// Se tem mais de 7 páginas, mostrar páginas estratégicas
+		if p.Page <= 4 {
+			// Páginas iniciais: 1, 2, 3, 4, 5, ..., TotalPages
+			for i := 1; i <= 5; i++ {
+				pages = append(pages, i)
+			}
+			pages = append(pages, -1) // Separador
+			pages = append(pages, p.TotalPages)
+		} else if p.Page >= p.TotalPages-3 {
+			// Páginas finais: 1, ..., TotalPages-4, TotalPages-3, TotalPages-2, TotalPages-1, TotalPages
+			pages = append(pages, 1)
+			pages = append(pages, -1) // Separador
+			for i := p.TotalPages - 4; i <= p.TotalPages; i++ {
+				pages = append(pages, i)
+			}
+		} else {
+			// Páginas do meio: 1, ..., Page-1, Page, Page+1, ..., TotalPages
+			pages = append(pages, 1)
+			pages = append(pages, -1) // Separador
+			for i := p.Page - 1; i <= p.Page+1; i++ {
+				pages = append(pages, i)
+			}
+			pages = append(pages, -1) // Separador
+			pages = append(pages, p.TotalPages)
+		}
+	}
+
+	return pages
 }

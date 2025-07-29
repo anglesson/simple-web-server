@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -80,6 +81,14 @@ func (m *MockFileRepository) FindByType(creatorID uint, fileType string) ([]*mod
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]*models.File), args.Error(1)
+}
+
+func (m *MockFileRepository) FindByCreatorPaginated(query repository.FileQuery) ([]*models.File, int64, error) {
+	args := m.Called(query)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*models.File), args.Get(1).(int64), args.Error(2)
 }
 
 func TestNewFileService(t *testing.T) {

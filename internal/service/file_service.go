@@ -16,6 +16,7 @@ import (
 type FileService interface {
 	UploadFile(file *multipart.FileHeader, description string, creatorID uint) (*models.File, error)
 	GetFilesByCreator(creatorID uint) ([]*models.File, error)
+	GetFilesByCreatorPaginated(creatorID uint, query repository.FileQuery) ([]*models.File, int64, error)
 	GetActiveByCreator(creatorID uint) ([]*models.File, error)
 	GetFileByID(id uint) (*models.File, error)
 	UpdateFile(id uint, description string) error
@@ -93,6 +94,18 @@ func (s *fileService) GetFilesByCreator(creatorID uint) ([]*models.File, error) 
 		file.S3URL = s.s3Storage.GenerateDownloadLink(file.S3Key)
 	}
 	return files, nil
+}
+
+func (s *fileService) GetFilesByCreatorPaginated(creatorID uint, query repository.FileQuery) ([]*models.File, int64, error) {
+	query.CreatorID = creatorID
+	files, total, err := s.fileRepository.FindByCreatorPaginated(query)
+	if err != nil {
+		return nil, 0, err
+	}
+	for _, file := range files {
+		file.S3URL = s.s3Storage.GenerateDownloadLink(file.S3Key)
+	}
+	return files, total, nil
 }
 
 func (s *fileService) GetActiveByCreator(creatorID uint) ([]*models.File, error) {

@@ -1,29 +1,47 @@
 {{ define "title" }} Ebooks {{ end }}
 {{ define "content" }}
 <div class="container-fluid">
+    <!-- Breadcrumb -->
     <div class="row">
         <div class="col-12">
-            <div class="page-title-box">
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="/ebook">Ebooks</a></li>
-                        <li class="breadcrumb-item active">Criar Ebook</li>
-                    </ol>
-                </div>
-                <h4 class="page-title">Criar Novo Ebook</h4>
-            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent px-0 py-2">
+                    <li class="breadcrumb-item">
+                        <a href="/dashboard" class="text-decoration-none">
+                            <i class="mdi mdi-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/ebook" class="text-decoration-none">
+                            <i class="mdi mdi-book me-1"></i>Ebooks
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="mdi mdi-plus me-1"></i>Criar Ebook
+                    </li>
+                </ol>
+            </nav>
         </div>
     </div>
+
+
 
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h4 class="header-title">Informações do Ebook</h4>
-                    <p class="text-muted mb-0">Crie um ebook profissional selecionando arquivos de sua biblioteca e criando uma página de vendas atrativa.</p>
-                </div>
                 <div class="card-body">
+                    <!-- Card Header -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="me-3">
+                            <div class="avatar-lg bg-success-lighten text-success rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="mdi mdi-book-plus fs-2"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="mb-1 fw-bold">Criar Novo Ebook</h3>
+                            <p class="text-muted mb-0">Crie um ebook profissional selecionando arquivos e criando uma página de vendas atrativa</p>
+                        </div>
+                    </div>
                     <form action="/ebook/create" method="POST" id="createEbookForm">
                         <div class="row">
                             <div class="col-md-8">
@@ -74,50 +92,143 @@
                                         Selecione os arquivos que farão parte do seu ebook. Você pode selecionar múltiplos arquivos.
                                     </div>
                                     
-                                    <div class="row" id="filesContainer">
-                                        {{range .Data.Files}}
-                                        <div class="col-md-6 mb-3">
-                                            <div class="card file-card h-100">
-                                                <div class="card-body">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="selected_files" 
-                                                               value="{{.ID}}" id="file_{{.ID}}">
-                                                        <label class="form-check-label w-100" for="file_{{.ID}}">
-                                                            <div class="d-flex align-items-center mb-2">
-                                                                <div class="avatar-sm me-2">
-                                                                    {{if eq .FileType "pdf"}}
-                                                                    <div class="avatar-title bg-danger-lighten text-danger rounded">
-                                                                        <i class="mdi mdi-file-pdf-box"></i>
-                                                                    </div>
-                                                                    {{else if eq .FileType "document"}}
-                                                                    <div class="avatar-title bg-primary-lighten text-primary rounded">
-                                                                        <i class="mdi mdi-file-word-box"></i>
-                                                                    </div>
-                                                                    {{else if eq .FileType "image"}}
-                                                                    <div class="avatar-title bg-success-lighten text-success rounded">
-                                                                        <i class="mdi mdi-file-image-box"></i>
-                                                                    </div>
-                                                                    {{else}}
-                                                                    <div class="avatar-title bg-secondary-lighten text-secondary rounded">
-                                                                        <i class="mdi mdi-file"></i>
-                                                                    </div>
-                                                                    {{end}}
-                                                                </div>
-                                                                <div class="flex-grow-1">
-                                                                    <h6 class="mb-0">{{.OriginalName}}</h6>
-                                                                    <small class="text-muted">{{.GetFileSizeFormatted}}</small>
-                                                                </div>
-                                                            </div>
-                                                            {{if .Description}}
-                                                            <p class="text-muted small mb-0">{{.Description}}</p>
-                                                            {{end}}
-                                                        </label>
-                                                    </div>
-                                                </div>
+                                    <!-- Controles de Seleção -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
+                                                <i class="mdi mdi-checkbox-multiple-marked me-1"></i>Selecionar Todos
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">
+                                                <i class="mdi mdi-checkbox-multiple-blank me-1"></i>Desmarcar Todos
+                                            </button>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted small">Selecionados: <span id="selectedCount">0</span></span>
+                                            <div class="input-group input-group-sm" style="width: 250px;">
+                                                <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+                                                <input type="text" class="form-control" id="fileSearch" placeholder="Buscar arquivos...">
                                             </div>
                                         </div>
-                                        {{end}}
                                     </div>
+                                    
+                                    <!-- Tabela de Arquivos -->
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="filesTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th width="50">
+                                                        <input type="checkbox" class="form-check-input" id="selectAllCheckbox">
+                                                    </th>
+                                                    <th width="60">Tipo</th>
+                                                    <th>Nome do Arquivo</th>
+                                                    <th width="100">Tamanho</th>
+                                                    <th width="120">Data</th>
+                                                    <th width="100">Ações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {{range .Data.Files}}
+                                                <tr class="file-row" data-filename="{{.OriginalName}}" data-type="{{.FileType}}">
+                                                    <td>
+                                                        <input type="checkbox" class="form-check-input file-checkbox" 
+                                                               name="selected_files" value="{{.ID}}" id="file_{{.ID}}">
+                                                    </td>
+                                                    <td>
+                                                        {{if eq .FileType "pdf"}}
+                                                        <span class="badge bg-danger">
+                                                            <i class="mdi mdi-file-pdf-box me-1"></i>PDF
+                                                        </span>
+                                                        {{else if eq .FileType "document"}}
+                                                        <span class="badge bg-primary">
+                                                            <i class="mdi mdi-file-word-box me-1"></i>DOC
+                                                        </span>
+                                                        {{else if eq .FileType "image"}}
+                                                        <span class="badge bg-success">
+                                                            <i class="mdi mdi-file-image-box me-1"></i>IMG
+                                                        </span>
+                                                        {{else}}
+                                                        <span class="badge bg-secondary">
+                                                            <i class="mdi mdi-file me-1"></i>FILE
+                                                        </span>
+                                                        {{end}}
+                                                    </td>
+                                                    <td>
+                                                        <div>
+                                                            <strong>{{.OriginalName}}</strong>
+                                                            {{if .Description}}
+                                                            <br><small class="text-muted">{{.Description}}</small>
+                                                            {{end}}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-muted">{{.GetFileSizeFormatted}}</span>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">{{.CreatedAt.Format "02/01/2006"}}</small>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                                onclick="previewFile('{{.ID}}', '{{.OriginalName}}')" 
+                                                                title="Visualizar">
+                                                            <i class="mdi mdi-eye"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {{end}}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Estatísticas -->
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="text-muted small">
+                                            Total: <span id="totalFiles">{{.Data.Pagination.Total}}</span> arquivos
+                                        </div>
+                                        <div class="text-muted small">
+                                            Tamanho total selecionado: <span id="totalSize">0 MB</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Paginação -->
+                                    {{if .Data.Pagination}}
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="text-muted small">
+                                            Página {{.Data.Pagination.Page}} de {{.Data.Pagination.TotalPages}} 
+                                            ({{.Data.Pagination.Limit}} por página)
+                                        </div>
+                                        <nav aria-label="Paginação de arquivos">
+                                            <ul class="pagination pagination-sm mb-0">
+                                                {{if .Data.Pagination.HasPrev}}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{.Data.Pagination.PrevPage}}&per_page={{.Data.Pagination.Limit}}">
+                                                        <i class="mdi mdi-chevron-left"></i>
+                                                    </a>
+                                                </li>
+                                                {{end}}
+                                                
+                                                {{range .Data.Pagination.Pages}}
+                                                {{if eq . -1}}
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                                {{else}}
+                                                <li class="page-item {{if eq . $.Data.Pagination.Page}}active{{end}}">
+                                                    <a class="page-link" href="?page={{.}}&per_page={{$.Data.Pagination.Limit}}">{{.}}</a>
+                                                </li>
+                                                {{end}}
+                                                {{end}}
+                                                
+                                                {{if .Data.Pagination.HasNext}}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&per_page={{.Data.Pagination.Limit}}">
+                                                        <i class="mdi mdi-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                                {{end}}
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                    {{end}}
                                     {{else}}
                                     <div class="alert alert-warning">
                                         <i class="mdi mdi-alert me-2"></i>
@@ -179,20 +290,26 @@
                                 </div>
 
                                 <!-- Estatísticas -->
-                                <div class="card bg-primary text-white mb-3">
+                                <div class="card border-0 shadow-sm mb-3 bg-light">
                                     <div class="card-body">
-                                        <h6 class="card-title">
-                                            <i class="mdi mdi-chart-line me-2"></i>
-                                            Estatísticas
+                                        <h6 class="card-title mb-3 d-flex align-items-center text-dark">
+                                            <div class="avatar-sm rounded-circle bg-primary d-flex align-items-center justify-content-center me-2">
+                                                <i class="mdi mdi-chart-line text-white"></i>
+                                            </div>
+                                            Estatísticas da Seleção
                                         </h6>
-                                        <div class="row text-center">
+                                        <div class="row g-3">
                                             <div class="col-6">
-                                                <h4 class="mb-0" id="fileCount">0</h4>
-                                                <small>Arquivos</small>
+                                                <div class="text-center p-3 rounded border bg-white" style="min-height: 80px; display: flex; flex-direction: column; justify-content: center;">
+                                                    <h3 class="mb-1 text-primary fw-bold" id="fileCount">0</h3>
+                                                    <small class="text-muted fw-medium">Arquivos</small>
+                                                </div>
                                             </div>
                                             <div class="col-6">
-                                                <h4 class="mb-0" id="totalSize">0 MB</h4>
-                                                <small>Tamanho Total</small>
+                                                <div class="text-center p-3 rounded border bg-white" style="min-height: 80px; display: flex; flex-direction: column; justify-content: center;">
+                                                    <h3 class="mb-1 text-success fw-bold" id="totalSize">0 MB</h3>
+                                                    <small class="text-muted fw-medium">Tamanho</small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -219,20 +336,94 @@
 </div>
 
 <script>
-// Atualizar estatísticas quando arquivos são selecionados
-document.querySelectorAll('input[name="selected_files"]').forEach(checkbox => {
-    checkbox.addEventListener('change', updateStats);
+// Funcionalidades da tabela de arquivos
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos da tabela
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deselectAllBtn = document.getElementById('deselectAllBtn');
+    const fileSearch = document.getElementById('fileSearch');
+    const fileRows = document.querySelectorAll('.file-row');
+    
+    // Selecionar/Deselecionar todos
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            fileCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateStats();
+        });
+    }
+    
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            fileCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            if (selectAllCheckbox) selectAllCheckbox.checked = true;
+            updateStats();
+        });
+    }
+    
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', function() {
+            fileCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            updateStats();
+        });
+    }
+    
+    // Busca de arquivos
+    if (fileSearch) {
+        fileSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            fileRows.forEach(row => {
+                const filename = row.getAttribute('data-filename').toLowerCase();
+                const type = row.getAttribute('data-type').toLowerCase();
+                const isVisible = filename.includes(searchTerm) || type.includes(searchTerm);
+                row.style.display = isVisible ? '' : 'none';
+            });
+        });
+    }
+    
+    // Atualizar estatísticas quando checkboxes mudam
+    fileCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateStats);
+    });
+    
+    // Função para atualizar estatísticas
+    function updateStats() {
+        const selectedFiles = document.querySelectorAll('.file-checkbox:checked');
+        const selectedCount = selectedFiles.length;
+        
+        // Atualizar contadores
+        const selectedCountElement = document.getElementById('selectedCount');
+        if (selectedCountElement) selectedCountElement.textContent = selectedCount;
+        
+        // Atualizar sidebar
+        const fileCountElement = document.getElementById('fileCount');
+        if (fileCountElement) fileCountElement.textContent = selectedCount;
+        
+        // Calcular tamanho total (simplificado)
+        const totalSize = selectedCount * 2; // Estimativa de 2MB por arquivo
+        const totalSizeElement = document.getElementById('totalSize');
+        if (totalSizeElement) totalSizeElement.textContent = totalSize + ' MB';
+        
+        // Atualizar sidebar
+        const sidebarTotalSizeElement = document.querySelector('.card-body h4:last-of-type');
+        if (sidebarTotalSizeElement) sidebarTotalSizeElement.textContent = totalSize + ' MB';
+    }
+    
+    // Inicializar estatísticas
+    updateStats();
 });
 
-function updateStats() {
-    const selectedFiles = document.querySelectorAll('input[name="selected_files"]:checked');
-    const fileCount = selectedFiles.length;
-    
-    // Calcular tamanho total (simplificado - em produção você teria os tamanhos dos arquivos)
-    const totalSize = fileCount * 2; // Estimativa de 2MB por arquivo
-    
-    document.getElementById('fileCount').textContent = fileCount;
-    document.getElementById('totalSize').textContent = totalSize + ' MB';
+// Função para visualizar arquivo (placeholder)
+function previewFile(fileId, fileName) {
+    alert('Visualização do arquivo: ' + fileName + ' (ID: ' + fileId + ')\n\nEsta funcionalidade pode ser implementada para abrir o arquivo em uma nova aba ou modal.');
 }
 
 // Validação do formulário

@@ -8,6 +8,7 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -76,6 +77,14 @@ func (m *MockFileService) ValidateFile(file *multipart.FileHeader) error {
 func (m *MockFileService) GetFileType(ext string) string {
 	args := m.Called(ext)
 	return args.String(0)
+}
+
+func (m *MockFileService) GetFilesByCreatorPaginated(creatorID uint, query repository.FileQuery) ([]*models.File, int64, error) {
+	args := m.Called(creatorID, query)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*models.File), args.Get(1).(int64), args.Error(2)
 }
 
 func TestNewFileHandler(t *testing.T) {

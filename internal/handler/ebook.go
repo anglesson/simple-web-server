@@ -90,20 +90,37 @@ func EbookCreateView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Buscar arquivos da biblioteca - usar GetFilesByCreator para mostrar todos os arquivos
+	// Configurar paginação
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	perPage, _ := strconv.Atoi(r.URL.Query().Get("per_page"))
+	if perPage == 0 {
+		perPage = 20 // Padrão: 20 arquivos por página
+	}
+	pagination := models.NewPagination(page, perPage)
+
+	// Buscar arquivos da biblioteca com paginação
 	fileRepository := repository.NewGormFileRepository(database.DB)
 	s3Storage := storage.NewS3Storage()
 	fileService := service.NewFileService(fileRepository, s3Storage)
 
-	files, err := fileService.GetFilesByCreator(creator.ID)
+	query := repository.FileQuery{
+		Pagination: pagination,
+	}
+
+	files, total, err := fileService.GetFilesByCreatorPaginated(creator.ID, query)
 	if err != nil {
 		log.Printf("Erro ao buscar arquivos: %v", err)
 		files = []*models.File{} // Lista vazia em caso de erro
+		total = 0
 	}
 
+	// Configurar paginação com total
+	pagination.SetTotal(total)
+
 	template.View(w, r, "ebook/create", map[string]interface{}{
-		"Files":   files,
-		"Creator": creator,
+		"Files":      files,
+		"Creator":    creator,
+		"Pagination": pagination,
 	}, "admin")
 }
 
@@ -286,8 +303,73 @@ func EbookUpdateView(w http.ResponseWriter, r *http.Request) {
 
 	ebook.FileURL = storage.GenerateDownloadLink(ebook.File)
 
+	// Buscar arquivos disponíveis da biblioteca para adicionar ao ebook
+	creatorRepo := gorm.NewCreatorRepository(database.DB)
+	rfService := gov.NewHubDevService()
+	userRepository := repository.NewGormUserRepository(database.DB)
+	encrypter := utils.NewEncrypter()
+	userService := service.NewUserService(userRepository, encrypter)
+	subscriptionRepository := gorm.NewSubscriptionGormRepository()
+	stripeService := service.NewStripeService()
+	creatorService := service.NewCreatorService(
+		creatorRepo,
+		rfService,
+		userService,
+		service.NewSubscriptionService(subscriptionRepository, rfService),
+		service.NewStripePaymentGateway(stripeService),
+	)
+
+	creator, err := creatorService.FindCreatorByUserID(loggedUser.ID)
+	if err != nil {
+		log.Printf("Erro ao buscar criador: %v", err)
+		http.Error(w, "Erro ao buscar criador", http.StatusInternalServerError)
+		return
+	}
+
+	// Configurar paginação para arquivos disponíveis
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	perPage, _ := strconv.Atoi(r.URL.Query().Get("per_page"))
+	if perPage == 0 {
+		perPage = 20 // Padrão: 20 arquivos por página
+	}
+	pagination := models.NewPagination(page, perPage)
+
+	// Buscar todos os arquivos da biblioteca com paginação
+	fileRepository := repository.NewGormFileRepository(database.DB)
+	s3Storage := storage.NewS3Storage()
+	fileService := service.NewFileService(fileRepository, s3Storage)
+
+	query := repository.FileQuery{
+		Pagination: pagination,
+	}
+
+	allFiles, total, err := fileService.GetFilesByCreatorPaginated(creator.ID, query)
+	if err != nil {
+		log.Printf("Erro ao buscar arquivos: %v", err)
+		allFiles = []*models.File{} // Lista vazia em caso de erro
+		total = 0
+	}
+
+	// Filtrar arquivos que não estão no ebook atual
+	var availableFiles []*models.File
+	ebookFileIDs := make(map[uint]bool)
+	for _, file := range ebook.Files {
+		ebookFileIDs[file.ID] = true
+	}
+
+	for _, file := range allFiles {
+		if !ebookFileIDs[file.ID] {
+			availableFiles = append(availableFiles, file)
+		}
+	}
+
+	// Configurar paginação com total
+	pagination.SetTotal(total)
+
 	template.View(w, r, "ebook/update", map[string]interface{}{
-		"ebook": ebook,
+		"ebook":          ebook,
+		"AvailableFiles": availableFiles,
+		"Pagination":     pagination,
 	}, "admin")
 }
 
@@ -308,6 +390,7 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	form := models.EbookRequest{
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
+		SalesPage:   r.FormValue("sales_page"),
 		Value:       value,
 		Status:      status,
 	}
@@ -375,8 +458,31 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	ebook.Title = form.Title
 	ebook.Description = form.Description
+	ebook.SalesPage = form.SalesPage
 	ebook.Value = form.Value
 	ebook.Status = form.Status
+
+	// Processar novos arquivos selecionados
+	newFiles := r.Form["new_files"]
+	if len(newFiles) > 0 {
+		fileRepository := repository.NewGormFileRepository(database.DB)
+		for _, fileIDStr := range newFiles {
+			fileID, err := strconv.ParseUint(fileIDStr, 10, 32)
+			if err != nil {
+				continue
+			}
+
+			file, err := fileRepository.FindByID(uint(fileID))
+			if err != nil {
+				continue
+			}
+
+			// Verificar se o arquivo pertence ao criador
+			if file.CreatorID == ebook.CreatorID {
+				ebook.AddFile(file)
+			}
+		}
+	}
 
 	// Salvar usando o repositório
 	ebookRepository := repository.NewGormEbookRepository(database.DB)
