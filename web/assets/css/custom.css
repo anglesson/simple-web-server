@@ -1,0 +1,27 @@
+/* Card flat style: remove background and border from header, body, footer */
+.card,
+.card > .card-header,
+.card > .card-body,
+.card > .card-footer {
+  background-color: #fff !important;
+  border: none !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.03); /* leve sombra opcional */
+}
+
+.card-header,
+.card-footer {
+  border-bottom: none !important;
+  border-top: none !important;
+  background: transparent !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  padding-bottom: 0.75rem !important;
+  padding-top: 0.75rem !important;
+}
+
+/* Se quiser ainda mais "flat", remova a sombra: */
+/*
+.card {
+  box-shadow: none !important;
+}
+*/ 

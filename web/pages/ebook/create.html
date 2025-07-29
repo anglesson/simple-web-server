@@ -1,313 +1,345 @@
-{{ define "title" }} Ebooks {{ end }}
+{{ define "title" }}Criar Ebook{{ end }}
 {{ define "content" }}
 <div class="container-fluid">
-    <!-- Breadcrumb -->
+    <!-- Page Header -->
     <div class="row">
         <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb bg-transparent px-0 py-2">
-                    <li class="breadcrumb-item">
-                        <a href="/dashboard" class="text-decoration-none">
-                            <i class="mdi mdi-home me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="/ebook" class="text-decoration-none">
-                            <i class="mdi mdi-book me-1"></i>Ebooks
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <i class="mdi mdi-plus me-1"></i>Criar Ebook
-                    </li>
-                </ol>
-            </nav>
+            <div class="page-title-box d-flex align-items-center justify-content-between">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item">
+                            <a href="/dashboard" class="text-decoration-none">
+                                <i class="fa-solid fa-house icon-dual icon-xs me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/ebook" class="text-decoration-none">
+                                <i class="fa-solid fa-book icon-dual icon-xs me-1"></i>Ebooks
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <i class="fa-solid fa-plus icon-dual icon-xs me-1"></i>Criar Ebook
+                        </li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
-
-
 
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-body">
-                    <!-- Card Header -->
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="me-3">
-                            <div class="avatar-lg bg-success-lighten text-success rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="mdi mdi-book-plus fs-2"></i>
-                            </div>
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-success-lighten text-success rounded-circle d-flex align-items-center justify-content-center me-3">
+                            <i class="fa-solid fa-book icon-dual" style="font-size: 2.5rem;"></i>
                         </div>
                         <div>
-                            <h3 class="mb-1 fw-bold">Criar Novo Ebook</h3>
+                            <h4 class="mb-1 fw-bold">Criar Novo Ebook</h4>
                             <p class="text-muted mb-0">Crie um ebook profissional selecionando arquivos e criando uma página de vendas atrativa</p>
                         </div>
                     </div>
-                    <form action="/ebook/create" method="POST" id="createEbookForm">
+                </div>
+                <div class="card-body">
+                    <form action="/ebook/create" method="POST" id="createEbookForm" enctype="multipart/form-data">
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-lg-8">
                                 <!-- Informações Básicas -->
-                                <div class="mb-4">
-                                    <h5 class="mb-3">Informações Básicas</h5>
-                                    
-                                    <div class="mb-3">
-                                        <label for="title" class="form-label">Título do Ebook *</label>
-                                        <input type="text" class="form-control" id="title" name="title" required 
-                                               placeholder="Ex: Guia Completo de Marketing Digital">
-                                        <div class="form-text">Crie um título atrativo que desperte interesse</div>
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-transparent">
+                                        <h5 class="mb-0">
+                                            <i class="fa-solid fa-circle-info icon-dual icon-sm me-2"></i>
+                                            Informações Básicas
+                                        </h5>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">Descrição Curta *</label>
-                                        <textarea class="form-control" id="description" name="description" rows="3" required
-                                                  placeholder="Descreva brevemente o que o leitor encontrará neste ebook..."></textarea>
-                                        <div class="form-text">Máximo 120 caracteres</div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="value" class="form-label">Preço (R$) *</label>
-                                                <input type="number" class="form-control" id="value" name="value" step="0.01" min="0" required
-                                                       placeholder="29.90">
-                                                <div class="form-text">Defina um preço competitivo</div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="title" class="form-label fw-semibold">Título do Ebook <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="title" name="title" required 
+                                                   placeholder="Ex: Guia Completo de Marketing Digital">
+                                            <div class="form-text">
+                                                <i class="fa-solid fa-lightbulb icon-dual icon-xs me-1"></i>
+                                                Crie um título atrativo que desperte interesse
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="image" class="form-label">Imagem de Capa</label>
-                                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                                                <div class="form-text">Recomendado: 800x600px</div>
+
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label fw-semibold">Descrição Curta <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="description" name="description" rows="3" required
+                                                      placeholder="Descreva brevemente o que o leitor encontrará neste ebook..."></textarea>
+                                            <div class="form-text">
+                                                <i class="fa-solid fa-circle-info icon-dual icon-xs me-1"></i>
+                                                Máximo 120 caracteres
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="value" class="form-label fw-semibold">Preço (R$) <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">R$</span>
+                                                        <input type="number" class="form-control" id="value" name="value" step="0.01" min="0" required
+                                                               placeholder="29.90">
+                                                    </div>
+                                                    <div class="form-text">
+                                                        <i class="fa-solid fa-dollar-sign icon-dual icon-xs me-1"></i>
+                                                        Defina um preço competitivo
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="image" class="form-label fw-semibold">Imagem de Capa</label>
+                                                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                                    <div class="form-text">
+                                                        <i class="fa-solid fa-image icon-dual icon-xs me-1"></i>
+                                                        Recomendado: 800x600px
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Seleção de Arquivos -->
-                                <div class="mb-4">
-                                    <h5 class="mb-3">Selecionar Arquivos da Biblioteca</h5>
-                                    
-                                    {{if .Data.Files}}
-                                    <div class="alert alert-info">
-                                        <i class="mdi mdi-information me-2"></i>
-                                        Selecione os arquivos que farão parte do seu ebook. Você pode selecionar múltiplos arquivos.
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-transparent">
+                                        <h5 class="mb-0">
+                                            <i class="fa-solid fa-folder icon-dual icon-sm me-2"></i>
+                                            Selecionar Arquivos da Biblioteca
+                                        </h5>
                                     </div>
-                                    
-                                    <!-- Controles de Seleção -->
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
-                                                <i class="mdi mdi-checkbox-multiple-marked me-1"></i>Selecionar Todos
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">
-                                                <i class="mdi mdi-checkbox-multiple-blank me-1"></i>Desmarcar Todos
-                                            </button>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="text-muted small">Selecionados: <span id="selectedCount">0</span></span>
-                                            <div class="input-group input-group-sm" style="width: 250px;">
-                                                <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
-                                                <input type="text" class="form-control" id="fileSearch" placeholder="Buscar arquivos...">
+                                    <div class="card-body">
+                                        {{if .Data.Files}}
+                                        <div class="alert alert-info border-0">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa-solid fa-circle-info icon-dual icon-sm me-2"></i>
+                                                <div>
+                                                    <strong>Dica:</strong> Selecione os arquivos que farão parte do seu ebook. Você pode selecionar múltiplos arquivos.
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <!-- Tabela de Arquivos -->
-                                    <div class="table-responsive">
-                                        <table class="table table-hover" id="filesTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th width="50">
-                                                        <input type="checkbox" class="form-check-input" id="selectAllCheckbox">
-                                                    </th>
-                                                    <th width="60">Tipo</th>
-                                                    <th>Nome do Arquivo</th>
-                                                    <th width="100">Tamanho</th>
-                                                    <th width="120">Data</th>
-                                                    <th width="100">Ações</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {{range .Data.Files}}
-                                                <tr class="file-row" data-filename="{{.OriginalName}}" data-type="{{.FileType}}">
-                                                    <td>
-                                                        <input type="checkbox" class="form-check-input file-checkbox" 
-                                                               name="selected_files" value="{{.ID}}" id="file_{{.ID}}">
-                                                    </td>
-                                                    <td>
-                                                        {{if eq .FileType "pdf"}}
-                                                        <span class="badge bg-danger">
-                                                            <i class="mdi mdi-file-pdf-box me-1"></i>PDF
-                                                        </span>
-                                                        {{else if eq .FileType "document"}}
-                                                        <span class="badge bg-primary">
-                                                            <i class="mdi mdi-file-word-box me-1"></i>DOC
-                                                        </span>
-                                                        {{else if eq .FileType "image"}}
-                                                        <span class="badge bg-success">
-                                                            <i class="mdi mdi-file-image-box me-1"></i>IMG
-                                                        </span>
-                                                        {{else}}
-                                                        <span class="badge bg-secondary">
-                                                            <i class="mdi mdi-file me-1"></i>FILE
-                                                        </span>
-                                                        {{end}}
-                                                    </td>
-                                                    <td>
-                                                        <div>
-                                                            <strong>{{.OriginalName}}</strong>
-                                                            {{if .Description}}
-                                                            <br><small class="text-muted">{{.Description}}</small>
+                                        
+                                        <!-- Controles de Seleção -->
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
+                                                    <i class="fa-solid fa-square-check icon-dual icon-xs me-1"></i>Selecionar Todos
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">
+                                                    <i class="fa-regular fa-square icon-dual icon-xs me-1"></i>Desmarcar Todos
+                                                </button>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <span class="text-muted small">
+                                                    Selecionados: <span class="badge bg-primary" id="selectedCount">0</span>
+                                                </span>
+                                                <div class="input-group input-group-sm" style="width: 250px;">
+                                                    <span class="input-group-text">
+                                                        <i class="fa-solid fa-magnifying-glass icon-dual icon-xs"></i>
+                                                    </span>
+                                                    <input type="text" class="form-control" id="fileSearch" placeholder="Buscar arquivos...">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tabela de Arquivos -->
+                                        <div class="table-responsive">
+                                            <table class="table table-hover text-nowrap" id="filesTable">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th width="50">
+                                                            <input type="checkbox" class="form-check-input" id="selectAllCheckbox">
+                                                        </th>
+                                                        <th width="60">Tipo</th>
+                                                        <th>Nome do Arquivo</th>
+                                                        <th width="100">Tamanho</th>
+                                                        <th width="120">Data</th>
+                                                        <th width="100">Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {{range .Data.Files}}
+                                                    <tr class="file-row" data-filename="{{.OriginalName}}" data-type="{{.FileType}}">
+                                                        <td>
+                                                            <input type="checkbox" class="form-check-input file-checkbox" 
+                                                                   name="selected_files" value="{{.ID}}" id="file_{{.ID}}">
+                                                        </td>
+                                                        <td>
+                                                            {{if eq .FileType "pdf"}}
+                                                            <span class="badge bg-danger">
+                                                                <i class="fa-regular fa-file-lines icon-dual icon-xs me-1"></i>PDF
+                                                            </span>
+                                                            {{else if eq .FileType "document"}}
+                                                            <span class="badge bg-primary">
+                                                                <i class="fa-regular fa-file-lines icon-dual icon-xs me-1"></i>DOC
+                                                            </span>
+                                                            {{else if eq .FileType "image"}}
+                                                            <span class="badge bg-success">
+                                                                <i class="fa-regular fa-image icon-dual icon-xs me-1"></i>IMG
+                                                            </span>
+                                                            {{else}}
+                                                            <span class="badge bg-secondary">
+                                                                <i class="fa-regular fa-file icon-dual icon-xs me-1"></i>FILE
+                                                            </span>
                                                             {{end}}
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="text-muted">{{.GetFileSizeFormatted}}</span>
-                                                    </td>
-                                                    <td>
-                                                        <small class="text-muted">{{.CreatedAt.Format "02/01/2006"}}</small>
-                                                    </td>
-                                                    <td>
-                                                        <button type="button" class="btn btn-sm btn-outline-info" 
-                                                                onclick="previewFile('{{.ID}}', '{{.OriginalName}}')" 
-                                                                title="Visualizar">
-                                                            <i class="mdi mdi-eye"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                {{end}}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    
-                                    <!-- Estatísticas -->
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <div class="text-muted small">
-                                            Total: <span id="totalFiles">{{.Data.Pagination.Total}}</span> arquivos
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="avatar-sm me-2">
+                                                                    {{if eq .FileType "pdf"}}
+                                                                    <div class="avatar-title bg-danger-lighten text-danger rounded">
+                                                                        <i class="fa-regular fa-file-lines icon-dual icon-sm"></i>
+                                                                    </div>
+                                                                    {{else if eq .FileType "document"}}
+                                                                    <div class="avatar-title bg-primary-lighten text-primary rounded">
+                                                                        <i class="fa-regular fa-file-lines icon-dual icon-sm"></i>
+                                                                    </div>
+                                                                    {{else if eq .FileType "image"}}
+                                                                    <div class="avatar-title bg-success-lighten text-success rounded">
+                                                                        <i class="fa-regular fa-image icon-dual icon-sm"></i>
+                                                                    </div>
+                                                                    {{else}}
+                                                                    <div class="avatar-title bg-secondary-lighten text-secondary rounded">
+                                                                        <i class="fa-regular fa-file icon-dual icon-sm"></i>
+                                                                    </div>
+                                                                    {{end}}
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0">{{.OriginalName}}</h6>
+                                                                    {{if .Description}}
+                                                                    <small class="text-muted">{{.Description}}</small>
+                                                                    {{end}}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span class="text-muted">{{.GetFileSizeFormatted}}</span>
+                                                        </td>
+                                                        <td>
+                                                            <small class="text-muted">{{.CreatedAt.Format "02/01/2006"}}</small>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                                                    onclick="previewFile('{{.ID}}', '{{.OriginalName}}')" 
+                                                                    title="Visualizar">
+                                                                <i class="fa-solid fa-eye icon-dual icon-xs"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    {{end}}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <div class="text-muted small">
-                                            Tamanho total selecionado: <span id="totalSize">0 MB</span>
+                                        
+                                        <!-- Estatísticas -->
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <div class="text-muted small">
+                                                Total: <span id="totalFiles">{{.Data.Pagination.Total}}</span> arquivos
+                                            </div>
+                                            <div class="text-muted small">
+                                                Tamanho total selecionado: <span id="totalSize">0 MB</span>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Paginação -->
-                                    {{if .Data.Pagination}}
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <div class="text-muted small">
-                                            Página {{.Data.Pagination.Page}} de {{.Data.Pagination.TotalPages}} 
-                                            ({{.Data.Pagination.Limit}} por página)
+                                        <!-- Paginação -->
+                                        {{if .Data.Pagination}}
+                                        {{ template "table-footer" . }}
+                                        {{end}}
+                                        {{else}}
+                                        <div class="alert alert-warning border-0">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa-solid fa-triangle-exclamation icon-dual icon-sm me-2"></i>
+                                                <div>
+                                                    Você ainda não tem arquivos em sua biblioteca. 
+                                                    <a href="/file/upload" class="alert-link fw-semibold">Faça upload de arquivos</a> para criar seu primeiro ebook.
+                                                </div>
+                                            </div>
                                         </div>
-                                        <nav aria-label="Paginação de arquivos">
-                                            <ul class="pagination pagination-sm mb-0">
-                                                {{if .Data.Pagination.HasPrev}}
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?page={{.Data.Pagination.PrevPage}}&per_page={{.Data.Pagination.Limit}}">
-                                                        <i class="mdi mdi-chevron-left"></i>
-                                                    </a>
-                                                </li>
-                                                {{end}}
-                                                
-                                                {{range .Data.Pagination.Pages}}
-                                                {{if eq . -1}}
-                                                <li class="page-item disabled">
-                                                    <span class="page-link">...</span>
-                                                </li>
-                                                {{else}}
-                                                <li class="page-item {{if eq . $.Data.Pagination.Page}}active{{end}}">
-                                                    <a class="page-link" href="?page={{.}}&per_page={{$.Data.Pagination.Limit}}">{{.}}</a>
-                                                </li>
-                                                {{end}}
-                                                {{end}}
-                                                
-                                                {{if .Data.Pagination.HasNext}}
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&per_page={{.Data.Pagination.Limit}}">
-                                                        <i class="mdi mdi-chevron-right"></i>
-                                                    </a>
-                                                </li>
-                                                {{end}}
-                                            </ul>
-                                        </nav>
+                                        {{end}}
                                     </div>
-                                    {{end}}
-                                    {{else}}
-                                    <div class="alert alert-warning">
-                                        <i class="mdi mdi-alert me-2"></i>
-                                        Você ainda não tem arquivos em sua biblioteca. 
-                                        <a href="/file/upload" class="alert-link">Faça upload de arquivos</a> para criar seu primeiro ebook.
-                                    </div>
-                                    {{end}}
                                 </div>
 
                                 <!-- Página de Vendas -->
-                                <div class="mb-4">
-                                    <h5 class="mb-3">Página de Vendas</h5>
-                                    <p class="text-muted mb-3">Crie uma página de vendas persuasiva que converta visitantes em compradores.</p>
-                                    
-                                    <div class="mb-3">
-                                        <label for="sales_page" class="form-label">Conteúdo da Página de Vendas *</label>
-                                        <textarea class="form-control" id="sales_page" name="sales_page" rows="15" required
-                                                  placeholder="Escreva aqui o conteúdo da sua página de vendas..."></textarea>
-                                        <div class="form-text">
-                                            <strong>Dicas para uma página de vendas eficaz:</strong><br>
-                                            • Comece com um título impactante<br>
-                                            • Apresente o problema que seu ebook resolve<br>
-                                            • Liste os benefícios e resultados<br>
-                                            • Inclua depoimentos ou social proof<br>
-                                            • Crie urgência e escassez<br>
-                                            • Termine com uma call-to-action clara
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-transparent">
+                                        <h5 class="mb-0">
+                                            <i class="fa-solid fa-pen-to-square icon-dual icon-sm me-2"></i>
+                                            Página de Vendas
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted mb-3">Crie uma página de vendas persuasiva que converta visitantes em compradores.</p>
+                                        
+                                        <div class="mb-3">
+                                            <label for="sales_page" class="form-label fw-semibold">Conteúdo da Página de Vendas <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="sales_page" name="sales_page" rows="15" required
+                                                      placeholder="Escreva aqui o conteúdo da sua página de vendas..."></textarea>
+                                            <div class="form-text">
+                                                <strong>Dicas para uma página de vendas eficaz:</strong><br>
+                                                • Comece com um título impactante<br>
+                                                • Apresente o problema que seu ebook resolve<br>
+                                                • Liste os benefícios e resultados<br>
+                                                • Inclua depoimentos ou social proof<br>
+                                                • Crie urgência e escassez<br>
+                                                • Termine com uma call-to-action clara
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
-                                <!-- Preview e Dicas -->
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body">
-                                        <h6 class="card-title">
-                                            <i class="mdi mdi-lightbulb me-2"></i>
+                            <div class="col-lg-4">
+                                <!-- Dicas -->
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-transparent">
+                                        <h6 class="mb-0">
+                                            <i class="fa-regular fa-lightbulb icon-dual icon-sm me-2"></i>
                                             Dicas para Ebooks de Sucesso
                                         </h6>
+                                    </div>
+                                    <div class="card-body">
                                         <ul class="list-unstyled mb-0">
-                                            <li class="mb-2">
-                                                <i class="mdi mdi-check-circle text-success me-2"></i>
-                                                Escolha arquivos de qualidade
+                                            <li class="mb-3 d-flex align-items-start">
+                                                <i class="fa-solid fa-circle-check icon-dual icon-sm me-2 mt-1"></i>
+                                                <span>Escolha arquivos de qualidade</span>
                                             </li>
-                                            <li class="mb-2">
-                                                <i class="mdi mdi-check-circle text-success me-2"></i>
-                                                Organize o conteúdo logicamente
+                                            <li class="mb-3 d-flex align-items-start">
+                                                <i class="fa-solid fa-circle-check icon-dual icon-sm text-success me-2 mt-1"></i>
+                                                <span>Organize o conteúdo logicamente</span>
                                             </li>
-                                            <li class="mb-2">
-                                                <i class="mdi mdi-check-circle text-success me-2"></i>
-                                                Crie uma página de vendas persuasiva
+                                            <li class="mb-3 d-flex align-items-start">
+                                                <i class="fa-solid fa-circle-check icon-dual icon-sm text-success me-2 mt-1"></i>
+                                                <span>Crie uma página de vendas persuasiva</span>
                                             </li>
-                                            <li class="mb-2">
-                                                <i class="mdi mdi-check-circle text-success me-2"></i>
-                                                Defina um preço competitivo
+                                            <li class="mb-3 d-flex align-items-start">
+                                                <i class="fa-solid fa-circle-check icon-dual icon-sm text-success me-2 mt-1"></i>
+                                                <span>Defina um preço competitivo</span>
                                             </li>
                                         </ul>
                                     </div>
                                 </div>
 
                                 <!-- Estatísticas -->
-                                <div class="card border-0 shadow-sm mb-3 bg-light">
-                                    <div class="card-body">
-                                        <h6 class="card-title mb-3 d-flex align-items-center text-dark">
-                                            <div class="avatar-sm rounded-circle bg-primary d-flex align-items-center justify-content-center me-2">
-                                                <i class="mdi mdi-chart-line text-white"></i>
-                                            </div>
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-header bg-transparent">
+                                        <h6 class="mb-0">
+                                            <i class="fa-regular fa-chart-bar icon-dual icon-sm me-2"></i>
                                             Estatísticas da Seleção
                                         </h6>
+                                    </div>
+                                    <div class="card-body">
                                         <div class="row g-3">
                                             <div class="col-6">
-                                                <div class="text-center p-3 rounded border bg-white" style="min-height: 80px; display: flex; flex-direction: column; justify-content: center;">
+                                                <div class="text-center p-3 rounded border bg-light">
                                                     <h3 class="mb-1 text-primary fw-bold" id="fileCount">0</h3>
                                                     <small class="text-muted fw-medium">Arquivos</small>
                                                 </div>
                                             </div>
                                             <div class="col-6">
-                                                <div class="text-center p-3 rounded border bg-white" style="min-height: 80px; display: flex; flex-direction: column; justify-content: center;">
-                                                    <h3 class="mb-1 text-success fw-bold" id="totalSize">0 MB</h3>
+                                                <div class="text-center p-3 rounded border bg-light">
+                                                    <h3 class="mb-1 text-success fw-bold" id="totalSizeDisplay">0 MB</h3>
                                                     <small class="text-muted fw-medium">Tamanho</small>
                                                 </div>
                                             </div>
@@ -316,15 +348,19 @@
                                 </div>
 
                                 <!-- Ações -->
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-primary" id="submitBtn">
-                                        <i class="mdi mdi-plus me-1"></i>
-                                        Criar Ebook
-                                    </button>
-                                    <a href="/ebook" class="btn btn-secondary">
-                                        <i class="mdi mdi-arrow-left me-1"></i>
-                                        Cancelar
-                                    </a>
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                                <i class="fa-solid fa-plus icon-dual icon-sm me-1"></i>
+                                                Criar Ebook
+                                            </button>
+                                            <a href="/ebook" class="btn btn-secondary">
+                                                <i class="fa-solid fa-arrow-left icon-dual icon-sm me-1"></i>
+                                                Cancelar
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -376,16 +412,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Busca de arquivos
+    // Busca de arquivos com debounce
     if (fileSearch) {
+        let searchTimeout;
         fileSearch.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            fileRows.forEach(row => {
-                const filename = row.getAttribute('data-filename').toLowerCase();
-                const type = row.getAttribute('data-type').toLowerCase();
-                const isVisible = filename.includes(searchTerm) || type.includes(searchTerm);
-                row.style.display = isVisible ? '' : 'none';
-            });
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = this.value.toLowerCase();
+                fileRows.forEach(row => {
+                    const filename = row.getAttribute('data-filename').toLowerCase();
+                    const type = row.getAttribute('data-type').toLowerCase();
+                    const isVisible = filename.includes(searchTerm) || type.includes(searchTerm);
+                    row.style.display = isVisible ? '' : 'none';
+                });
+            }, 300);
         });
     }
     
@@ -410,20 +450,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calcular tamanho total (simplificado)
         const totalSize = selectedCount * 2; // Estimativa de 2MB por arquivo
         const totalSizeElement = document.getElementById('totalSize');
+        const totalSizeDisplayElement = document.getElementById('totalSizeDisplay');
         if (totalSizeElement) totalSizeElement.textContent = totalSize + ' MB';
-        
-        // Atualizar sidebar
-        const sidebarTotalSizeElement = document.querySelector('.card-body h4:last-of-type');
-        if (sidebarTotalSizeElement) sidebarTotalSizeElement.textContent = totalSize + ' MB';
+        if (totalSizeDisplayElement) totalSizeDisplayElement.textContent = totalSize + ' MB';
     }
     
     // Inicializar estatísticas
     updateStats();
 });
 
-// Função para visualizar arquivo (placeholder)
+// Função para visualizar arquivo
 function previewFile(fileId, fileName) {
-    alert('Visualização do arquivo: ' + fileName + ' (ID: ' + fileId + ')\n\nEsta funcionalidade pode ser implementada para abrir o arquivo em uma nova aba ou modal.');
+    // Abrir em nova aba ou modal
+    window.open(`/file/preview/${fileId}`, '_blank');
 }
 
 // Validação do formulário
@@ -433,16 +472,17 @@ document.getElementById('createEbookForm').addEventListener('submit', function(e
     
     if (selectedFiles.length === 0) {
         e.preventDefault();
+        // Usar toast ou alert mais elegante
         alert('Por favor, selecione pelo menos um arquivo para o ebook.');
         return;
     }
     
     // Mostrar loading
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Criando Ebook...';
+    submitBtn.innerHTML = '<i data-feather="loader" class="icon-dual icon-sm me-1 animate-spin"></i> Criando Ebook...';
 });
 
-// Editor de texto rico para a página de vendas (opcional)
-// Você pode integrar um editor como TinyMCE ou CKEditor aqui
+// Inicializar Feather Icons
+// (Removido para uso do FontAwesome)
 </script>
 {{end}}
