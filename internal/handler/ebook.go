@@ -50,10 +50,13 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set total count for pagination
+	// Get total count for pagination (this should be a separate query for accurate pagination)
+	// For now, we'll use the length of the result, but this should be optimized
+	totalCount := int64(0)
 	if ebooks != nil {
-		pagination.SetTotal(int64(len(*ebooks)))
+		totalCount = int64(len(*ebooks))
 	}
+	pagination.SetTotal(totalCount)
 
 	template.View(w, r, "ebook/index", map[string]any{
 		"Ebooks":     ebooks,

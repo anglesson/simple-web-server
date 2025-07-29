@@ -5,8 +5,25 @@
   <div class="row">
     <div class="col-lg-12 col-md-12 col-12">
       <!-- Page header -->
-      <div class="border-bottom pb-4 mb-4 ">
-        <h3 class="mb-0 fw-bold">Ebooks</h3>
+      <div class="border-bottom pb-4 mb-4">
+        <div class="row align-items-center">
+          <div class="col">
+            <h3 class="mb-0 fw-bold">Ebooks</h3>
+            <p class="mb-0 text-muted">Gerencie seus ebooks e suas configurações</p>
+          </div>
+          <div class="col-auto">
+            <div class="d-flex gap-2">
+              <a href="/ebook/create" class="btn btn-primary">
+                <i data-feather="plus" class="icon-xs me-2"></i>
+                Cadastrar Ebook
+              </a>
+              <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importEbookModal">
+                <i data-feather="upload" class="icon-xs me-2"></i>
+                Importar
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -19,92 +36,135 @@
         <div class="card h-100">
           <!-- card header  -->
           <div class="card-header bg-white py-4">
-            <div class="row g-2">
-              <div class="col-lg-8 col-md-5 d-grid d-lg-block">
-                <a href="/ebook/create" class="btn btn-primary">+ Cadastrar e-book</a>
-              </div>
-              <div class="col-md-7 col-lg-4">
-                <form action="" method="get">
-                  <input id="searchForm" name="title" type="search" class="form-control w-100" placeholder="Busque por Ebooks">
-                  <script>
-                    window.onload = () => {
-                      const searchInput = document.getElementById("searchForm");
-
-                      const urlParams = new URLSearchParams(window.location.search);
-                      const searchTerm = urlParams.get('title');
-
-                      if (searchTerm) {
-                        searchInput.value = searchTerm;
-                      }
-
-                      searchInput.addEventListener("input", function () {
-                        if (searchInput.value === '') {
-                          history.replaceState(null, '', window.location.pathname);
-                          document.location.reload()
-                        }
-                      })
-
-                      if (window.location.hostname === "localhost") {
-                        const debug = false;
-                        if (debug) {
-                          console.log("URL search params:", window.location.search);
-                          console.log("Search term:", searchTerm);
-                        }
-                      }
-                    }
-                  </script>
+            <div class="row g-2 align-items-center">
+              <div class="col-lg-8 col-md-6">
+                <form action="" method="get" class="d-flex gap-2">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">
+                      <i data-feather="search" class="icon-xs"></i>
+                    </span>
+                    <input id="searchForm" name="title" type="search" class="form-control border-start-0" placeholder="Buscar por título ou descrição..." />
+                  </div>
+                  <button type="submit" class="btn btn-outline-primary">Buscar</button>
                 </form>
+              </div>
+              <div class="col-lg-4 col-md-6 text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                  <select class="form-select form-select-sm" style="width: auto;">
+                    <option>Filtrar por</option>
+                    <option>Todos</option>
+                    <option>Ativos</option>
+                    <option>Inativos</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
           <!-- table  -->
           {{ if .Data.Ebooks }}
           <div class="table-responsive">
-            <table class="table text-truncate">
+            <table class="table table-hover text-nowrap">
               <thead class="table-light">
                 <tr>
-                  <th>Imagem</th>
-                  <th>Título</th>
-                  <th>Descrição</th>
-                  <th>Valor</th>
-                  <th>Ativo</th>
-                  <th></th>
+                  <th scope="col" class="border-0">Ebook</th>
+                  <th scope="col" class="border-0">Descrição</th>
+                  <th scope="col" class="border-0">Valor</th>
+                  <th scope="col" class="border-0">Status</th>
+                  <th scope="col" class="border-0">Estatísticas</th>
+                  <th scope="col" class="border-0">Data Criação</th>
+                  <th scope="col" class="border-0 text-end">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {{ range .Data.Ebooks }}
                 <tr>
                   <td class="align-middle">
-                    <img src="/assets/images/svg/ebook.svg" width="50" height="50" />
-                  </td>
-                  <td class="align-middle text-truncate" style="max-width: 200px;">
                     <div class="d-flex align-items-center">
+                      <div class="avatar avatar-sm me-3">
+                        {{ if .Image }}
+                        <img src="{{ .Image }}" alt="{{ .Title }}" class="rounded" width="50" height="50" />
+                        {{ else }}
+                        <div class="avatar-content bg-primary">
+                          <i data-feather="book" class="icon-xs text-white"></i>
+                        </div>
+                        {{ end }}
+                      </div>
                       <div class="lh-1">
-                        <h5 class="mb-1">
-                          <a href="/ebook/view/{{.ID}}">
-                            {{.Title}}
-                          </a>
+                        <h5 class="mb-1 fw-semi-bold">
+                          <a href="/ebook/view/{{.ID}}" class="text-inherit">{{ .Title }}</a>
                         </h5>
+                        <p class="mb-0 fs-6 text-muted">
+                          <i data-feather="file-text" class="icon-xs me-1"></i>
+                          {{ .GetFileCount }} arquivo(s)
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td class="align-middle text-truncate" style="max-width: 200px;">{{ .Description }}</td>
-                  <td class="align-middle">{{ .GetValue }}</td>
+                  <td class="align-middle">
+                    <div class="lh-1">
+                      <p class="mb-0 text-truncate" style="max-width: 200px;">{{ .Description }}</p>
+                      {{ if .Keywords }}
+                      <p class="mb-0 fs-6 text-muted">
+                        <i data-feather="tag" class="icon-xs me-1"></i>
+                        {{ .Keywords }}
+                      </p>
+                      {{ end }}
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <span class="text-dark fw-semi-bold">{{ .GetValue }}</span>
+                  </td>
                   <td class="align-middle">
                     {{ if .Status }}
-                    <span class="badge bg-success">sim</span>
+                    <span class="badge bg-success-subtle text-success">
+                      <i data-feather="check-circle" class="icon-xs me-1"></i>
+                      Ativo
+                    </span>
                     {{ else }}
-                    <span class="badge bg-danger">não</span>
+                    <span class="badge bg-danger-subtle text-danger">
+                      <i data-feather="x-circle" class="icon-xs me-1"></i>
+                      Inativo
+                    </span>
                     {{ end }}
                   </td>
                   <td class="align-middle">
+                    <div class="lh-1">
+                      <p class="mb-1 fw-semi-bold">
+                        <i data-feather="eye" class="icon-xs me-1"></i>
+                        {{ .Views }} visualizações
+                      </p>
+                      <p class="mb-0 fs-6 text-muted">
+                        <i data-feather="shopping-cart" class="icon-xs me-1"></i>
+                        {{ .Sales }} vendas
+                      </p>
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <span class="text-muted fs-6">{{ .CreatedAt.Format "02/01/2006" }}</span>
+                  </td>
+                  <td class="align-middle text-end">
                     <div class="dropdown dropstart">
-                      <a class="text-muted text-primary-hover" href="#" role="button" id="dropdownEbookActions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="icon-xxs" data-feather="more-vertical"></i>
+                      <a class="btn btn-sm btn-icon btn-ghost-secondary rounded-circle" href="#" role="button" id="dropdownEbookActions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i data-feather="more-vertical" class="icon-xs"></i>
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownEbookActions">
-                        <a class="dropdown-item" href="/ebook/edit/{{.ID}}">Editar</a>
-                        <a class="dropdown-item" href="#">Excluir</a>
+                        <a class="dropdown-item" href="/ebook/view/{{.ID}}">
+                          <i data-feather="eye" class="icon-xs me-2"></i>
+                          Visualizar
+                        </a>
+                        <a class="dropdown-item" href="/ebook/edit/{{.ID}}">
+                          <i data-feather="edit-2" class="icon-xs me-2"></i>
+                          Editar
+                        </a>
+                        <a class="dropdown-item" href="/ebook/sales-page/{{.ID}}">
+                          <i data-feather="external-link" class="icon-xs me-2"></i>
+                          Página de Vendas
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{.ID}})">
+                          <i data-feather="trash-2" class="icon-xs me-2"></i>
+                          Excluir
+                        </a>
                       </div>
                     </div>
                   </td>
@@ -115,10 +175,45 @@
           </div>
           {{ template "table-footer" . }}
           {{ else }}
-          {{ template "empty-table" . }}
+            {{ template "empty-ebook-table" . }}
           {{ end }}
         </div>
       </div>
     </div>
   </div>
-  {{end}}
+</div>
+
+<script>
+  window.onload = () => {
+    const searchInput = document.getElementById("searchForm");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchTerm = urlParams.get('title');
+
+    if (searchTerm) {
+      searchInput.value = searchTerm;
+    }
+
+    // Auto-submit search on input change with debounce
+    let searchTimeout;
+    searchInput.addEventListener("input", function () {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        if (searchInput.value === "") {
+          history.replaceState(null, "", window.location.pathname);
+          document.location.reload();
+        } else {
+          searchInput.form.submit();
+        }
+      }, 500);
+    });
+  };
+
+    function confirmDelete(ebookId) {
+    if (confirm('Tem certeza que deseja excluir este ebook?')) {
+      // Implementar exclusão
+      console.log('Excluir ebook:', ebookId);
+    }
+  }
+</script>
+{{end}}

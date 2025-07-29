@@ -93,21 +93,79 @@ func TestEbook_GetTotalFileSize(t *testing.T) {
 }
 
 func TestEbook_GetFileCount(t *testing.T) {
-	// Arrange
-	ebook := &models.Ebook{Title: "Test Ebook"}
-	file1 := &models.File{Name: "file1.pdf"}
-	file2 := &models.File{Name: "file2.pdf"}
-	file3 := &models.File{Name: "file3.pdf"}
+	tests := []struct {
+		name     string
+		ebook    *models.Ebook
+		expected int
+	}{
+		{
+			name:     "No files",
+			ebook:    &models.Ebook{},
+			expected: 0,
+		},
+		{
+			name: "One file",
+			ebook: &models.Ebook{
+				Files: []*models.File{
+					{Name: "file1.pdf"},
+				},
+			},
+			expected: 1,
+		},
+		{
+			name: "Multiple files",
+			ebook: &models.Ebook{
+				Files: []*models.File{
+					{Name: "file1.pdf"},
+					{Name: "file2.pdf"},
+					{Name: "file3.pdf"},
+				},
+			},
+			expected: 3,
+		},
+	}
 
-	ebook.AddFile(file1)
-	ebook.AddFile(file2)
-	ebook.AddFile(file3)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.ebook.GetFileCount()
+			if result != tt.expected {
+				t.Errorf("GetFileCount() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
 
-	// Act
-	count := ebook.GetFileCount()
+func TestEbook_GetValue(t *testing.T) {
+	tests := []struct {
+		name     string
+		ebook    *models.Ebook
+		expected string
+	}{
+		{
+			name:     "Zero value",
+			ebook:    &models.Ebook{Value: 0},
+			expected: "R$ 0,00",
+		},
+		{
+			name:     "Positive value",
+			ebook:    &models.Ebook{Value: 29.90},
+			expected: "R$ 29,90",
+		},
+		{
+			name:     "Large value",
+			ebook:    &models.Ebook{Value: 199.99},
+			expected: "R$ 199,99",
+		},
+	}
 
-	// Assert
-	assert.Equal(t, 3, count)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.ebook.GetValue()
+			if result != tt.expected {
+				t.Errorf("GetValue() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
 }
 
 func TestEbook_IncrementViews(t *testing.T) {
