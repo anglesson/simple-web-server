@@ -20,8 +20,6 @@ type Ebook struct {
 	CreatorID   uint    `json:"creator_id"`
 	Creator     Creator `gorm:"foreignKey:CreatorID"`
 	Files       []*File `gorm:"many2many:ebook_files;"`
-	File        string  `json:"file"`     // Nome do arquivo principal
-	FileURL     string  `json:"file_url"` // URL do arquivo principal
 
 	// Campos para SEO e marketing
 	MetaTitle       string `json:"meta_title"`

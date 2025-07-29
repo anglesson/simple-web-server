@@ -133,3 +133,25 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 		return
 	}
 }
+
+func ViewWithoutLayout(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}) {
+	if data == nil {
+		data = make(map[string]interface{})
+	}
+
+	// Parse the page template directly
+	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseFiles("web/pages/" + page + ".html")
+	if err != nil {
+		log.Printf("Erro ao carregar página: %v", err)
+		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
+		return
+	}
+
+	// Execute the template - use the page name as template name
+	err = tmpl.ExecuteTemplate(w, page, data)
+	if err != nil {
+		log.Printf("Erro ao renderizar template: %v", err)
+		http.Error(w, "Erro ao renderizar página", http.StatusInternalServerError)
+		return
+	}
+}

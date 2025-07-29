@@ -342,42 +342,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Upload de Arquivo Principal -->
-                                <div class="mb-4">
-                                    <h5 class="mb-3">Arquivo Principal do Ebook</h5>
-                                    
-                                    {{if .Data.ebook.File}}
-                                    <div class="mb-3 p-3 border rounded bg-light">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <i class="mdi mdi-file-pdf-box fs-4 me-2 text-danger"></i>
-                                                <span class="text-truncate" style="max-width: 300px;">{{.Data.ebook.File}}</span>
-                                            </div>
-                                            <div>
-                                                <a href="{{.Data.ebook.FileURL}}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                                    <i class="mdi mdi-download"></i> Download
-                                                </a>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary" id="changeFileBtn">
-                                                    <i class="mdi mdi-arrow-repeat"></i> Substituir
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div id="fileUploadContainer" style="display: none;">
-                                        <input id="file" type="file" class="form-control" name="file" accept=".pdf">
-                                        <div class="form-text">Deixe em branco para manter o arquivo atual</div>
-                                    </div>
-                                    {{else}}
-                                    <div class="mb-3">
-                                        <input id="file" type="file" class="form-control" name="file" accept=".pdf" required>
-                                        <div class="form-text">Arquivo PDF principal do ebook</div>
-                                    </div>
-                                    {{end}}
-                                    {{with .Errors.File}}
-                                    <div class="text-danger small">{{.}}</div>
-                                    {{end}}
-                                </div>
                             </div>
 
                             <div class="col-md-4">

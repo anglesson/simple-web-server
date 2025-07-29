@@ -76,9 +76,11 @@ func main() {
 		r.Post("/register", creatorHandler.RegisterCreatorSSR)
 		r.Get("/forget-password", handler.ForgetPasswordView)
 		r.Post("/forget-password", handler.ForgetPasswordSubmit)
-		r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)
 		r.Get("/sales/{slug}", salesPageHandler.SalesPageView) // Página de vendas pública
 	})
+
+	// Completely public routes (no middleware)
+	r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)
 
 	// Stripe routes
 	r.Post("/api/create-checkout-session", handler.CreateCheckoutSession)
@@ -120,7 +122,6 @@ func main() {
 
 		// Purchase routes
 		r.Post("/purchase/ebook/{id}", handler.PurchaseCreateHandler)
-		r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)
 		r.Get("/send", handler.SendViewHandler)
 	})
 

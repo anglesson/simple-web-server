@@ -301,8 +301,6 @@ func EbookUpdateView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ebook.FileURL = storage.GenerateDownloadLink(ebook.File)
-
 	// Buscar arquivos disponíveis da biblioteca para adicionar ao ebook
 	creatorRepo := gorm.NewCreatorRepository(database.DB)
 	rfService := gov.NewHubDevService()
@@ -448,15 +446,6 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Obtenha o arquivo do formulário
-	file, fileHeader, err := r.FormFile("file") // "file" deve ser o nome do campo no HTML
-	if err == nil {
-		defer file.Close()
-		storage.Upload(file, fileHeader.Filename)
-		ebook.FileURL = storage.GenerateDownloadLink(fileHeader.Filename)
-		ebook.File = fileHeader.Filename
-	}
-
 	ebook.Title = form.Title
 	ebook.Description = form.Description
 	ebook.SalesPage = form.SalesPage
@@ -525,8 +514,6 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusUnauthorized)
 		return
 	}
-
-	ebook.FileURL = storage.GenerateDownloadLink(ebook.File)
 
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))

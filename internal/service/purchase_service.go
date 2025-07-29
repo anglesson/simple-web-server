@@ -39,7 +39,7 @@ func (ps *PurchaseService) CreatePurchase(ebookId uint, clients []uint) error {
 	return nil
 }
 
-func (ps *PurchaseService) GetEbookFile(purchaseID int) (string, error) {
+func (ps *PurchaseService) GetEbookFile(purchaseID int, fileID uint) (string, error) {
 	purchase, err := ps.purchaseRepository.FindByID(uint(purchaseID))
 	if err != nil {
 		return "", errors.New(err.Error())
@@ -53,16 +53,22 @@ func (ps *PurchaseService) GetEbookFile(purchaseID int) (string, error) {
 		return "", errors.New("não é possível realizar o download, o pedido está expirado")
 	}
 
-	// TODO: Implementar com novo sistema de arquivos
-	fileLocation := ""
-	if len(purchase.Ebook.Files) > 0 {
-		fileLocation = purchase.Ebook.Files[0].S3Key
-	}
-	if fileLocation == "" {
-		return "", errors.New("arquivo não encontrado")
+	// Buscar o arquivo específico do ebook
+	var targetFile *models.File
+	for _, file := range purchase.Ebook.Files {
+		if file.ID == fileID {
+			targetFile = file
+			break
+		}
 	}
 
-	outputFilePath, err := ApplyWatermark(fileLocation, fmt.Sprintf("%s - %s - %s", purchase.Client.Name, purchase.Client.CPF, purchase.Client.Email))
+	if targetFile == nil {
+		return "", errors.New("arquivo não encontrado neste ebook")
+	}
+
+	// Aplicar marca d'água no arquivo
+	watermarkText := fmt.Sprintf("%s - %s - %s", purchase.Client.Name, purchase.Client.CPF, purchase.Client.Email)
+	outputFilePath, err := ApplyWatermark(targetFile.S3Key, watermarkText)
 	if err != nil {
 		return "", err
 	}
@@ -71,4 +77,26 @@ func (ps *PurchaseService) GetEbookFile(purchaseID int) (string, error) {
 	ps.purchaseRepository.Update(purchase)
 
 	return outputFilePath, nil
+}
+
+// GetEbookFiles retorna todos os arquivos do ebook para um cliente
+func (ps *PurchaseService) GetEbookFiles(purchaseID int) ([]*models.File, error) {
+	purchase, err := ps.purchaseRepository.FindByID(uint(purchaseID))
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	if !purchase.AvailableDownloads() {
+		return nil, errors.New("não é possível realizar o download, limite de downloads atingido")
+	}
+
+	if purchase.IsExpired() {
+		return nil, errors.New("não é possível realizar o download, o pedido está expirado")
+	}
+
+	if len(purchase.Ebook.Files) == 0 {
+		return nil, errors.New("nenhum arquivo encontrado neste ebook")
+	}
+
+	return purchase.Ebook.Files, nil
 }

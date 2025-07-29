@@ -31,18 +31,18 @@ func (p *Purchase) AvailableDownloads() bool {
 		return true
 	}
 
-	if p.DownloadsUsed == p.DownloadLimit {
+	if p.DownloadsUsed >= p.DownloadLimit {
 		return false
 	}
 
-	return false
+	return true
 }
 
 func (p *Purchase) IsExpired() bool {
 	if p.ExpiresAt.IsZero() {
 		return false
 	}
-	return p.ExpiresAt.After(time.Now())
+	return p.ExpiresAt.Before(time.Now())
 }
 
 func (p *Purchase) UseDownload() {

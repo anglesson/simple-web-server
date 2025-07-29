@@ -7,6 +7,8 @@ import (
 	"log"
 	"mime/multipart"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -112,24 +114,35 @@ func GetFile(filename string) (string, error) {
 	}
 	output, err := s3Client.GetObject(context.TODO(), params)
 	if err != nil {
-		log.Panicf("Erro ao gerar URL pré-assinada: %v", err)
-		return "", err
+		return "", fmt.Errorf("erro ao baixar arquivo do S3: %w", err)
+	}
+	defer output.Body.Close()
+
+	// Criar diretório temporário se não existir
+	tempDir := "./temp"
+	if err := os.MkdirAll(tempDir, 0755); err != nil {
+		return "", fmt.Errorf("erro ao criar diretório temporário: %w", err)
 	}
 
+	// Criar nome de arquivo seguro (remover caracteres problemáticos)
+	safeFilename := strings.ReplaceAll(filename, "/", "_")
+	safeFilename = strings.ReplaceAll(safeFilename, "\\", "_")
+	safeFilename = strings.ReplaceAll(safeFilename, ":", "_")
+
 	// Caminho local onde você quer salvar o arquivo
-	localPath := "/tmp/" + filename
+	localPath := filepath.Join(tempDir, safeFilename)
 
 	// Criar arquivo local
 	f, err := os.Create(localPath)
 	if err != nil {
-		log.Fatalf("erro ao criar arquivo local: %v", err)
+		return "", fmt.Errorf("erro ao criar arquivo local: %w", err)
 	}
 	defer f.Close()
 
 	// Copiar conteúdo do S3 para o arquivo local
 	_, err = io.Copy(f, output.Body)
 	if err != nil {
-		log.Fatalf("erro ao salvar conteúdo: %v", err)
+		return "", fmt.Errorf("erro ao salvar conteúdo: %w", err)
 	}
 
 	return localPath, nil

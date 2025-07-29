@@ -29,7 +29,7 @@ func (pr *PurchaseRepository) CreateManyPurchases(purchases []*models.Purchase) 
 	}
 
 	err = database.DB.
-		Preload("Client.Contact").
+		Preload("Client").
 		Preload("Ebook").
 		Find(&purchases, "id IN ?", ids).Error
 	if err != nil {
@@ -43,12 +43,17 @@ func (pr *PurchaseRepository) CreateManyPurchases(purchases []*models.Purchase) 
 func (pr *PurchaseRepository) FindByID(id uint) (*models.Purchase, error) {
 	var purchase models.Purchase
 	log.Printf("Buscando a compra: %v", id)
-	err := database.DB.Preload("Client.Contact").
-		Preload("Ebook").First(&purchase, id).Error
+	err := database.DB.Preload("Client").
+		Preload("Ebook.Creator").
+		Preload("Ebook.Files").
+		First(&purchase, id).Error
 	if err != nil {
 		log.Printf("Erro na busca da compra: %s", err)
 		return nil, errors.New("erro na busca da compra")
 	}
+
+	log.Printf("✅ Compra encontrada: ID=%d, DownloadsUsed=%d, DownloadLimit=%d",
+		purchase.ID, purchase.DownloadsUsed, purchase.DownloadLimit)
 
 	return &purchase, nil
 }

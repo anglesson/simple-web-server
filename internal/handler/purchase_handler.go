@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
@@ -12,6 +13,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/mail"
+	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -66,12 +68,35 @@ func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
-	// Get ID Purchase
+	log.Printf("🔍 PurchaseDownloadHandler chamado: %s", r.URL.Path)
+
+	// Get ID Purchase and File ID
 	idStrPurchase := chi.URLParam(r, "id")
+	fileIDStr := r.URL.Query().Get("file_id")
 
-	purchaseID, _ := strconv.Atoi(idStrPurchase)
+	log.Printf("📋 Purchase ID: %s, File ID: %s", idStrPurchase, fileIDStr)
 
-	outputPath, err := purchaseServiceFactory().GetEbookFile(purchaseID)
+	purchaseID, err := strconv.Atoi(idStrPurchase)
+	if err != nil {
+		log.Printf("❌ Erro ao converter purchase ID: %v", err)
+		http.Error(w, "ID da compra inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Se não especificou arquivo, mostrar lista de arquivos disponíveis
+	if fileIDStr == "" {
+		log.Printf("📄 Mostrando lista de arquivos para purchase ID: %d", purchaseID)
+		showEbookFiles(w, r, purchaseID)
+		return
+	}
+
+	fileID, err := strconv.ParseUint(fileIDStr, 10, 32)
+	if err != nil {
+		http.Error(w, "ID do arquivo inválido", http.StatusBadRequest)
+		return
+	}
+
+	outputPath, err := purchaseServiceFactory().GetEbookFile(purchaseID, uint(fileID))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -79,7 +104,46 @@ func PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer os.Remove(outputPath)
 
-	w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(outputPath))
+	// Extrair nome do arquivo do path
+	fileName := outputPath
+	if idx := strings.LastIndex(outputPath, "/"); idx != -1 {
+		fileName = outputPath[idx+1:]
+	}
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(fileName))
 	w.Header().Set("Content-Type", "application/octet-stream")
 	http.ServeFile(w, r, outputPath)
+}
+
+func showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
+	log.Printf("🔍 showEbookFiles chamado para purchase ID: %d", purchaseID)
+
+	files, err := purchaseServiceFactory().GetEbookFiles(purchaseID)
+	if err != nil {
+		log.Printf("❌ Erro ao buscar arquivos: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Arquivos encontrados: %d", len(files))
+
+	// Buscar informações da compra para o template
+	purchase, err := repository.NewPurchaseRepository().FindByID(uint(purchaseID))
+	if err != nil {
+		log.Printf("❌ Erro ao buscar purchase: %v", err)
+		http.Error(w, "Compra não encontrada", http.StatusNotFound)
+		return
+	}
+
+	log.Printf("✅ Purchase carregada: %s", purchase.Ebook.Title)
+
+	data := map[string]interface{}{
+		"Data": map[string]interface{}{
+			"Purchase": purchase,
+			"Files":    files,
+		},
+		"Title": "Download do Ebook",
+	}
+
+	template.ViewWithoutLayout(w, r, "ebook/download", data)
 }
