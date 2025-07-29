@@ -41,3 +41,4 @@ The main server setup and entry point is defined in cmd/web/main.go
 - Always use clear, descriptive, and meaningful names for variables, functions, and methods, following Clean Code recommendations to facilitate code readability and maintainability.
 - Implement code adhering to S.O.L.I.D principles, ensuring high cohesion, low coupling, and easy extensibility and maintainability.
 - Always use the good practices of dependency injection
+- Never use emoji in code

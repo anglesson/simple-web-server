@@ -6,9 +6,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
@@ -118,15 +120,6 @@ func PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
 func showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
 	log.Printf("🔍 showEbookFiles chamado para purchase ID: %d", purchaseID)
 
-	files, err := purchaseServiceFactory().GetEbookFiles(purchaseID)
-	if err != nil {
-		log.Printf("❌ Erro ao buscar arquivos: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("✅ Arquivos encontrados: %d", len(files))
-
 	// Buscar informações da compra para o template
 	purchase, err := repository.NewPurchaseRepository().FindByID(uint(purchaseID))
 	if err != nil {
@@ -137,6 +130,29 @@ func showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
 
 	log.Printf("✅ Purchase carregada: %s", purchase.Ebook.Title)
 
+	// Verificar se o download está expirado
+	if purchase.IsExpired() {
+		log.Printf("❌ Download expirado para purchase ID: %d", purchaseID)
+		showExpiredDownloadPage(w, r, purchase)
+		return
+	}
+
+	// Verificar se o limite de downloads foi atingido
+	if !purchase.AvailableDownloads() {
+		log.Printf("❌ Limite de downloads atingido para purchase ID: %d", purchaseID)
+		showLimitExceededPage(w, r, purchase)
+		return
+	}
+
+	files, err := purchaseServiceFactory().GetEbookFiles(purchaseID)
+	if err != nil {
+		log.Printf("❌ Erro ao buscar arquivos: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Arquivos encontrados: %d", len(files))
+
 	data := map[string]interface{}{
 		"Data": map[string]interface{}{
 			"Purchase": purchase,
@@ -146,4 +162,34 @@ func showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
 	}
 
 	template.ViewWithoutLayout(w, r, "ebook/download", data)
+}
+
+func showLimitExceededPage(w http.ResponseWriter, r *http.Request, purchase *models.Purchase) {
+	log.Printf("🔍 Mostrando página de limite excedido para purchase ID: %d", purchase.ID)
+
+	data := map[string]interface{}{
+		"Data": map[string]interface{}{
+			"Purchase": purchase,
+		},
+		"Title": "Limite de Downloads Atingido",
+	}
+
+	template.ViewWithoutLayout(w, r, "ebook/download-limit-exceeded", data)
+}
+
+func showExpiredDownloadPage(w http.ResponseWriter, r *http.Request, purchase *models.Purchase) {
+	log.Printf("🔍 Mostrando página de download expirado para purchase ID: %d", purchase.ID)
+
+	// Calcular quantos dias se passaram desde a expiração
+	daysExpired := int(time.Since(purchase.ExpiresAt).Hours() / 24)
+
+	data := map[string]interface{}{
+		"Data": map[string]interface{}{
+			"Purchase":    purchase,
+			"DaysExpired": daysExpired,
+		},
+		"Title": "Download Expirado",
+	}
+
+	template.ViewWithoutLayout(w, r, "ebook/download-expired", data)
 }

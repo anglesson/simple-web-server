@@ -1,0 +1,274 @@
+{{define "ebook/download-limit-exceeded"}}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limite de Downloads Atingido - {{.Data.Purchase.Ebook.Title}}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .limit-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 60px 0;
+        }
+        
+        .info-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .contact-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-btn:hover {
+            transform: scale(1.05);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .warning-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+        
+        .stats-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <section class="limit-section">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-12">
+                    <div class="mb-4">
+                        <i class="fas fa-exclamation-triangle fa-4x mb-3"></i>
+                        <h1 class="display-4 fw-bold">Limite de Downloads Atingido</h1>
+                        <p class="lead">Você já utilizou todos os downloads disponíveis para este ebook.</p>
+                    </div>
+                    
+                    <div class="alert alert-warning bg-white text-dark">
+                        <h4><i class="fas fa-info-circle me-2"></i>Informação Importante</h4>
+                        <p class="mb-0">
+                            <strong>{{.Data.Purchase.Ebook.Title}}</strong><br>
+                            Por: {{.Data.Purchase.Ebook.Creator.Name}}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card info-card">
+                        <div class="card-body text-center">
+                            <div class="warning-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            
+                            <h3 class="card-title mb-4">Status dos Seus Downloads</h3>
+                            
+                            <div class="stats-card">
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <h4 class="text-primary">{{.Data.Purchase.DownloadsUsed}}</h4>
+                                        <p class="text-muted mb-0">Downloads Realizados</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h4 class="text-warning">{{.Data.Purchase.DownloadLimit}}</h4>
+                                        <p class="text-muted mb-0">Limite de Downloads</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h4 class="text-success">0</h4>
+                                        <p class="text-muted mb-0">Downloads Disponíveis</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Progresso dos Downloads</span>
+                                        <span>{{.Data.Purchase.DownloadsUsed}}/{{.Data.Purchase.DownloadLimit}}</span>
+                                    </div>
+                                    <div class="progress-bar-custom">
+                                        <div class="progress-fill" style="width: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-4">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Dica:</strong> Se você precisar de mais downloads, entre em contato com o autor do ebook.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center mb-5">
+                        <i class="fas fa-question-circle me-2"></i>
+                        O que você pode fazer?
+                    </h2>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 text-center mb-4">
+                    <div class="card info-card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                            <h5>Entre em Contato</h5>
+                            <p class="text-muted">Entre em contato com o autor do ebook para solicitar mais downloads ou esclarecer dúvidas.</p>
+                            <a href="mailto:{{.Data.Purchase.Ebook.Creator.Email}}" class="contact-btn">
+                                <i class="fas fa-envelope me-2"></i>
+                                Enviar Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 text-center mb-4">
+                    <div class="card info-card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-sync-alt fa-3x text-warning mb-3"></i>
+                            <h5>Verificar Período</h5>
+                            <p class="text-muted">Verifique se o período de validade da sua compra ainda está ativo.</p>
+                            {{if .Data.Purchase.ExpiresAt}}
+                            <div class="alert alert-warning">
+                                <small>
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Expira em: {{.Data.Purchase.ExpiresAt.Format "02/01/2006"}}
+                                </small>
+                            </div>
+                            {{else}}
+                            <div class="alert alert-success">
+                                <small>
+                                    <i class="fas fa-infinity me-1"></i>
+                                    Sem data de expiração
+                                </small>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 text-center mb-4">
+                    <div class="card info-card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-headset fa-3x text-success mb-3"></i>
+                            <h5>Suporte Técnico</h5>
+                            <p class="text-muted">Se você está enfrentando problemas técnicos, nossa equipe está aqui para ajudar.</p>
+                            <a href="mailto:suporte@docffy.com" class="contact-btn">
+                                <i class="fas fa-headset me-2"></i>
+                                Suporte
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Purchase Info Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card info-card">
+                        <div class="card-body">
+                            <h4 class="card-title text-center mb-4">
+                                <i class="fas fa-receipt me-2"></i>
+                                Informações da Sua Compra
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Ebook:</strong> {{.Data.Purchase.Ebook.Title}}</p>
+                                    <p><strong>Autor:</strong> {{.Data.Purchase.Ebook.Creator.Name}}</p>
+                                    <p><strong>Data da Compra:</strong> {{.Data.Purchase.CreatedAt.Format "02/01/2006"}}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Cliente:</strong> {{.Data.Purchase.Client.Name}}</p>
+                                    <p><strong>Email:</strong> {{.Data.Purchase.Client.Email}}</p>
+                                    {{if .Data.Purchase.ExpiresAt}}
+                                    <p><strong>Validade:</strong> {{.Data.Purchase.ExpiresAt.Format "02/01/2006"}}</p>
+                                    {{else}}
+                                    <p><strong>Validade:</strong> Ilimitada</p>
+                                    {{end}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p class="mb-0">
+                <i class="fas fa-heart text-danger me-1"></i>
+                Obrigado por escolher nossos produtos!
+            </p>
+            <small class="text-muted">
+                Este link é válido apenas para você. Não compartilhe com outras pessoas.
+            </small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{{end}} 
