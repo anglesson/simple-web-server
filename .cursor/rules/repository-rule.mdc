@@ -22,8 +22,17 @@ alwaysApply: true
 - O repository deve ser responsável apenas por:
   - Realizar operações de acesso a dados (CRUD) e consultas específicas.
   - Mapear entidades do domínio para o banco de dados e vice-versa.
+  - Implementar consultas otimizadas para listagens e dashboards.
 - Não deve conter lógica de negócio (deve ser feita nos services).
 - Não deve conter lógica de apresentação ou manipulação de HTTP.
+
+## DashUI Query Optimization
+- **Pagination Support**: Implementar queries com `LIMIT` e `OFFSET` para paginação eficiente
+- **Search Queries**: Criar consultas otimizadas para busca em múltiplos campos
+- **Filter Support**: Implementar filtros dinâmicos para diferentes critérios
+- **Count Queries**: Separar queries de contagem para paginação precisa
+- **Eager Loading**: Usar `Preload` para carregar relacionamentos necessários
+- **Index Optimization**: Garantir que queries frequentes tenham índices adequados
 
 ## Boas práticas
 - Utilizar nomes claros e descritivos para métodos, refletindo a ação executada (ex: `Create`, `FindByID`, `Update`, `Delete`).

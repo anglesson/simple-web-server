@@ -21,7 +21,15 @@ alwaysApply: true
   - Receber e validar requisições HTTP.
   - Chamar os serviços apropriados.
   - Retornar respostas HTTP.
+  - Renderizar templates DashUI com dados apropriados.
 - Não deve conter lógica de negócio, que deve estar nos serviços.
+
+## DashUI Integration
+- **Template Rendering**: Usar `template.View(w, r, "page", data, "admin")` para páginas administrativas
+- **Data Structure**: Dados devem ser passados como `map[string]any` e acessados via `.Data.Variavel` no template
+- **Flash Messages**: Implementar mensagens de feedback usando `web.FlashMessageFactory`
+- **Pagination**: Usar `models.Pagination` para listagens com paginação
+- **Search/Filter**: Implementar busca e filtros para melhorar UX
 
 ## Boas práticas
 - Utilizar nomes claros e descritivos para métodos, refletindo a ação executada (ex: `CreateClient`, `UpdateClient`).

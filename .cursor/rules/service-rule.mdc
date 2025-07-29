@@ -22,8 +22,16 @@ alwaysApply: true
   - Conter a lógica de negócio da aplicação.
   - Orquestrar chamadas a repositórios e outros serviços.
   - Garantir regras de negócio e validações complexas.
+  - Preparar dados para apresentação no DashUI.
 - Não deve conter lógica de acesso a dados diretamente (deve delegar aos repositórios).
 - Não deve conter lógica de apresentação ou manipulação de HTTP (deve ser feito nos handlers).
+
+## DashUI Data Preparation
+- **Model Methods**: Implementar métodos nos models para formatação de dados (ex: `GetInitials()`, `GetFormattedDate()`)
+- **Data Transformation**: Transformar dados do banco para formato adequado ao template
+- **Pagination Support**: Retornar dados paginados para listagens
+- **Search/Filter Logic**: Implementar lógica de busca e filtros
+- **Status Management**: Gerenciar estados e status para badges e indicadores visuais
 
 ## Boas práticas
 - Utilizar nomes claros e descritivos para métodos, refletindo a ação executada (ex: `CreateClient`, `UpdateClient`).

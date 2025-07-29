@@ -3,12 +3,13 @@ package handler_test
 import (
 	"context"
 	"errors"
-	mocks_service "github.com/anglesson/simple-web-server/internal/service/mocks"
-	mocks_cookies "github.com/anglesson/simple-web-server/pkg/cookie/mocks"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	mocks_service "github.com/anglesson/simple-web-server/internal/service/mocks"
+	mocks_cookies "github.com/anglesson/simple-web-server/pkg/cookie/mocks"
 
 	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
@@ -175,4 +176,35 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 
 func TestClientHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(ClientHandlerTestSuite))
+}
+
+func TestClient_GetInitials(t *testing.T) {
+	tests := []struct {
+		name     string
+		client   models.Client
+		expected string
+	}{
+		{
+			name:     "Two names",
+			client:   models.Client{Name: "João Silva"},
+			expected: "JS",
+		},
+		{
+			name:     "Single name",
+			client:   models.Client{Name: "João"},
+			expected: "J",
+		},
+		{
+			name:     "Three names",
+			client:   models.Client{Name: "João Pedro Silva"},
+			expected: "JS",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.client.GetInitials()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }

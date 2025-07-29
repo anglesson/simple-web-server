@@ -14,11 +14,16 @@ The main server setup and entry point is defined in cmd/web/main.go
 ## Repositories
 - All repositories are defined in internal/repository/
 
-## UI
+## UI - DashUI Template
 - All html pages are defined in web/pages
 - All templates email are defined in web/mails
 - All layouts are defined in web/layouts
 - All assets are defined in web/assets
+- **Template**: DashUI - Bootstrap 5 Admin Dashboard Template
+- **CSS**: theme.min.css (DashUI custom styles)
+- **JS**: theme.min.js (DashUI custom scripts)
+- **Icons**: Feather Icons (data-feather attribute)
+- **Components**: Cards, Tables, Forms, Modals, Dropdowns
 
 ## External Services
 - Located in pkg/
@@ -27,7 +32,9 @@ The main server setup and entry point is defined in cmd/web/main.go
 - GORM: All models are localized in internal/models/
 - SQLite: When running local
 - Postgres: When running in production
-- Bootstrap 5
+- **Frontend**: DashUI (Bootstrap 5 + Custom Components)
+- **Icons**: Feather Icons
+- **JavaScript**: Vanilla JS + Bootstrap 5 JS
 
 ## Tests
 - The test are included in same path of implementation and you package has a sufix '_test' in package name. Exemple: If package is 'cookie', the test will be in 'cookie_test'

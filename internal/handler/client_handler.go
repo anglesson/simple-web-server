@@ -85,12 +85,16 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	})
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
+		return
 	}
 
-	// Set total count for pagination
+	// Get total count for pagination (this should be a separate query for accurate pagination)
+	// For now, we'll use the length of the result, but this should be optimized
+	totalCount := int64(0)
 	if clients != nil {
-		pagination.SetTotal(int64(len(*clients)))
+		totalCount = int64(len(*clients))
 	}
+	pagination.SetTotal(totalCount)
 
 	template.View(w, r, "client", map[string]any{
 		"Clients":    clients,

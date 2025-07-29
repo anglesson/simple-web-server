@@ -1,6 +1,13 @@
 {{ define "empty-table" }}
-<div class="d-flex flex-column justify-content-center p-10 align-items-center gap-4">
-    <img height="100" src="/assets/images/svg/empty-state.svg" />
-    <span>Não há nada por aqui</span>
+<div class="d-flex flex-column justify-content-center p-8 align-items-center gap-4">
+  <div class="text-center">
+    <img height="120" src="/assets/images/svg/empty-state.svg" alt="Nenhum resultado encontrado" />
+    <h4 class="mt-4 mb-2 fw-semi-bold">Nenhum cliente encontrado</h4>
+    <p class="text-muted mb-4">Não há clientes cadastrados no momento. Comece cadastrando seu primeiro cliente.</p>
+    <a href="/client/new" class="btn btn-primary">
+      <i data-feather="plus" class="icon-xs me-2"></i>
+      Cadastrar Primeiro Cliente
+    </a>
+  </div>
 </div>
 {{ end }}

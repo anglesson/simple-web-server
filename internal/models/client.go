@@ -64,3 +64,20 @@ func (c *Client) GetBirthdateBR() string {
 	partsDate := strings.Split(c.Birthdate, "-")
 	return fmt.Sprintf("%s/%s/%s", partsDate[2], partsDate[1], partsDate[0])
 }
+
+func (c *Client) GetInitials() string {
+	names := strings.Fields(c.Name)
+	if len(names) == 0 {
+		return "?"
+	}
+
+	initials := ""
+	if len(names) >= 1 {
+		initials += string(names[0][0])
+	}
+	if len(names) >= 2 {
+		initials += string(names[len(names)-1][0])
+	}
+
+	return strings.ToUpper(initials)
+}
