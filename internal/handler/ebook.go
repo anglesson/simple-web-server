@@ -55,7 +55,7 @@ func EbookIndexView(w http.ResponseWriter, r *http.Request) {
 		pagination.SetTotal(int64(len(*ebooks)))
 	}
 
-	template.View(w, r, "ebook", map[string]any{
+	template.View(w, r, "ebook/index", map[string]any{
 		"Ebooks":     ebooks,
 		"Pagination": pagination,
 	}, "admin")
@@ -101,7 +101,7 @@ func EbookCreateView(w http.ResponseWriter, r *http.Request) {
 		files = []*models.File{} // Lista vazia em caso de erro
 	}
 
-	template.View(w, r, "create_ebook", map[string]interface{}{
+	template.View(w, r, "ebook/create", map[string]interface{}{
 		"Files":   files,
 		"Creator": creator,
 	}, "admin")
@@ -286,7 +286,7 @@ func EbookUpdateView(w http.ResponseWriter, r *http.Request) {
 
 	ebook.FileURL = storage.GenerateDownloadLink(ebook.File)
 
-	template.View(w, r, "update_ebook", map[string]interface{}{
+	template.View(w, r, "ebook/update", map[string]interface{}{
 		"ebook": ebook,
 	}, "admin")
 }
@@ -448,7 +448,7 @@ func EbookShowView(w http.ResponseWriter, r *http.Request) {
 		pagination.SetTotal(int64(len(*clients)))
 	}
 
-	template.View(w, r, "view_ebook", map[string]any{
+	template.View(w, r, "ebook/view", map[string]any{
 		"Ebook":      ebook,
 		"Clients":    clients,
 		"Pagination": pagination,

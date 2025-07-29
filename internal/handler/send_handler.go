@@ -78,5 +78,5 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		pagination.SetTotal(int64(len(*clients)))
 	}
 
-	template.View(w, r, "send_ebook", viewData, "admin")
+	template.View(w, r, "ebook/send", viewData, "admin")
 }
