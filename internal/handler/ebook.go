@@ -8,7 +8,10 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
@@ -207,8 +210,58 @@ func EbookCreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Criando e-book para creator: %v", creator.ID)
 
+	// Processar upload da imagem
+	var imageURL string
+	imageFile, imageHeader, imageErr := r.FormFile("image")
+	if imageErr == nil && imageFile != nil && imageHeader != nil && imageHeader.Filename != "" {
+		// Validar se é uma imagem
+		contentType := imageHeader.Header.Get("Content-Type")
+		if !strings.HasPrefix(contentType, "image/") {
+			errors["image"] = "O arquivo deve ser uma imagem"
+		} else {
+			// Upload da imagem usando o S3
+			s3Storage := storage.NewS3Storage()
+
+			// Gerar nome único para a imagem
+			fileExt := filepath.Ext(imageHeader.Filename)
+			uniqueID := fmt.Sprintf("%d-%d", time.Now().Unix(), creator.ID)
+			imageName := fmt.Sprintf("ebook-covers/%s%s", uniqueID, fileExt)
+
+			// Upload para S3
+			imageURL, err = s3Storage.UploadFile(imageHeader, imageName)
+			if err != nil {
+				log.Printf("Erro ao fazer upload da imagem: %v", err)
+				errors["image"] = "Erro ao fazer upload da imagem"
+			}
+		}
+	}
+
+	// Se houve erro no upload da imagem, retornar
+	if len(errors) > 0 {
+		formJSON, _ := json.Marshal(form)
+		errorsJSON, _ := json.Marshal(errors)
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "form",
+			Value: url.QueryEscape(string(formJSON)),
+			Path:  "/",
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:  "errors",
+			Value: url.QueryEscape(string(errorsJSON)),
+			Path:  "/",
+		})
+		http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
+		return
+	}
+
 	// Criar ebook
 	ebook := models.NewEbook(form.Title, form.Description, form.SalesPage, form.Value, *creator)
+
+	// Definir a URL da imagem se foi enviada
+	if imageURL != "" {
+		ebook.Image = imageURL
+	}
 
 	// Adicionar arquivos selecionados ao ebook
 	fileRepository := repository.NewGormFileRepository(database.DB)
@@ -446,6 +499,57 @@ func EbookUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	ebook := GetEbookByID(w, r)
 	if ebook == nil {
 		http.Error(w, "E-book não encontrado", http.StatusNotFound)
+		return
+	}
+
+	// Processar upload da nova imagem
+	imageFile, imageHeader, imageErr := r.FormFile("image")
+	if imageErr == nil && imageFile != nil && imageHeader != nil && imageHeader.Filename != "" {
+		// Validar se é uma imagem
+		contentType := imageHeader.Header.Get("Content-Type")
+		if !strings.HasPrefix(contentType, "image/") {
+			errors["image"] = "O arquivo deve ser uma imagem"
+		} else {
+			// Upload da nova imagem usando o S3
+			s3Storage := storage.NewS3Storage()
+
+			// Gerar nome único para a imagem
+			fileExt := filepath.Ext(imageHeader.Filename)
+			uniqueID := fmt.Sprintf("%d-%d", time.Now().Unix(), ebook.CreatorID)
+			imageName := fmt.Sprintf("ebook-covers/%s%s", uniqueID, fileExt)
+
+			// Upload para S3
+			imageURL, err := s3Storage.UploadFile(imageHeader, imageName)
+			if err != nil {
+				log.Printf("Erro ao fazer upload da imagem: %v", err)
+				errors["image"] = "Erro ao fazer upload da imagem"
+			} else {
+				// Se o upload foi bem-sucedido, atualizar a URL da imagem
+				ebook.Image = imageURL
+			}
+		}
+	}
+
+	// Se houve erro no upload da imagem, retornar
+	if len(errors) > 0 {
+		formJSON, _ := json.Marshal(form)
+		errorsJSON, _ := json.Marshal(errors)
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "form",
+			Value: url.QueryEscape(string(formJSON)),
+			Path:  "/",
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:  "errors",
+			Value: url.QueryEscape(string(errorsJSON)),
+			Path:  "/",
+		})
+		referer := r.Header.Get("Referer")
+		if referer == "" {
+			referer = "/ebook/edit/" + chi.URLParam(r, "id")
+		}
+		http.Redirect(w, r, referer, http.StatusSeeOther)
 		return
 	}
 

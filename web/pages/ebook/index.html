@@ -14,11 +14,11 @@
           <div class="col-auto">
             <div class="d-flex gap-2">
               <a href="/ebook/create" class="btn btn-primary">
-                <i data-feather="plus" class="icon-xs me-2"></i>
+                <i class="fa-solid fa-plus icon-xs me-2"></i>
                 Cadastrar Ebook
               </a>
               <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importEbookModal">
-                <i data-feather="upload" class="icon-xs me-2"></i>
+                <i class="fa-solid fa-upload icon-xs me-2"></i>
                 Importar
               </button>
             </div>
@@ -41,7 +41,7 @@
                 <form action="" method="get" class="d-flex gap-2">
                   <div class="input-group">
                     <span class="input-group-text bg-light border-end-0">
-                      <i data-feather="search" class="icon-xs"></i>
+                      <i class="fa-solid fa-magnifying-glass icon-xs"></i>
                     </span>
                     <input id="searchForm" name="title" type="search" class="form-control border-start-0" placeholder="Buscar por título ou descrição..." />
                   </div>
@@ -82,10 +82,10 @@
                     <div class="d-flex align-items-center">
                       <div class="avatar avatar-sm me-3">
                         {{ if .Image }}
-                        <img src="{{ .Image }}" alt="{{ .Title }}" class="rounded" width="50" height="50" />
+                        <img src="{{ .Image }}" alt="{{ .Title }}" class="rounded shadow-sm" width="50" height="50" style="object-fit: cover;" />
                         {{ else }}
-                        <div class="avatar-content bg-primary">
-                          <i data-feather="book" class="icon-xs text-white"></i>
+                        <div class="avatar-content bg-white border d-flex align-items-center justify-content-center">
+                          <i class="fa-solid fa-book text-primary" style="font-size: 1.2rem;"></i>
                         </div>
                         {{ end }}
                       </div>
@@ -93,10 +93,10 @@
                         <h5 class="mb-1 fw-semi-bold">
                           <a href="/ebook/view/{{.ID}}" class="text-inherit">{{ .Title }}</a>
                         </h5>
-                        <p class="mb-0 fs-6 text-muted">
-                          <i data-feather="file-text" class="icon-xs me-1"></i>
-                          {{ .GetFileCount }} arquivo(s)
-                        </p>
+                                              <p class="mb-0 fs-6 text-muted">
+                        <i class="fa-regular fa-file-lines icon-xs me-1"></i>
+                        {{ .GetFileCount }} arquivo(s)
+                      </p>
                       </div>
                     </div>
                   </td>
@@ -105,7 +105,7 @@
                       <p class="mb-0 text-truncate" style="max-width: 200px;">{{ .Description }}</p>
                       {{ if .Keywords }}
                       <p class="mb-0 fs-6 text-muted">
-                        <i data-feather="tag" class="icon-xs me-1"></i>
+                        <i class="fa-solid fa-tag icon-xs me-1"></i>
                         {{ .Keywords }}
                       </p>
                       {{ end }}
@@ -117,12 +117,12 @@
                   <td class="align-middle">
                     {{ if .Status }}
                     <span class="badge bg-success-subtle text-success">
-                      <i data-feather="check-circle" class="icon-xs me-1"></i>
+                      <i class="fa-solid fa-circle-check icon-xs me-1"></i>
                       Ativo
                     </span>
                     {{ else }}
                     <span class="badge bg-danger-subtle text-danger">
-                      <i data-feather="x-circle" class="icon-xs me-1"></i>
+                      <i class="fa-solid fa-circle-xmark icon-xs me-1"></i>
                       Inativo
                     </span>
                     {{ end }}
@@ -130,11 +130,11 @@
                   <td class="align-middle">
                     <div class="lh-1">
                       <p class="mb-1 fw-semi-bold">
-                        <i data-feather="eye" class="icon-xs me-1"></i>
+                        <i class="fa-solid fa-eye icon-xs me-1"></i>
                         {{ .Views }} visualizações
                       </p>
                       <p class="mb-0 fs-6 text-muted">
-                        <i data-feather="shopping-cart" class="icon-xs me-1"></i>
+                        <i class="fa-solid fa-shopping-cart icon-xs me-1"></i>
                         {{ .Sales }} vendas
                       </p>
                     </div>
@@ -145,24 +145,24 @@
                   <td class="align-middle text-end">
                     <div class="dropdown dropstart">
                       <a class="btn btn-sm btn-icon btn-ghost-secondary rounded-circle" href="#" role="button" id="dropdownEbookActions" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i data-feather="more-vertical" class="icon-xs"></i>
+                        <i class="fa-solid fa-ellipsis-vertical icon-xs"></i>
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownEbookActions">
                         <a class="dropdown-item" href="/ebook/view/{{.ID}}">
-                          <i data-feather="eye" class="icon-xs me-2"></i>
+                          <i class="fa-solid fa-eye icon-xs me-2"></i>
                           Visualizar
                         </a>
                         <a class="dropdown-item" href="/ebook/edit/{{.ID}}">
-                          <i data-feather="edit-2" class="icon-xs me-2"></i>
+                          <i class="fa-solid fa-pen-to-square icon-xs me-2"></i>
                           Editar
                         </a>
                         <a class="dropdown-item" href="/ebook/sales-page/{{.ID}}">
-                          <i data-feather="external-link" class="icon-xs me-2"></i>
+                          <i class="fa-solid fa-external-link-alt icon-xs me-2"></i>
                           Página de Vendas
                         </a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{.ID}})">
-                          <i data-feather="trash-2" class="icon-xs me-2"></i>
+                          <i class="fa-solid fa-trash-can icon-xs me-2"></i>
                           Excluir
                         </a>
                       </div>
