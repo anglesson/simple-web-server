@@ -70,6 +70,7 @@ func main() {
 	forgetPasswordHandler := handler.NewForgetPasswordHandler(templateRenderer)
 	sendHandler := handler.NewSendHandler(templateRenderer)
 	purchaseHandler := handler.NewPurchaseHandler(templateRenderer)
+	versionHandler := handler.NewVersionHandler()
 
 	r := chi.NewRouter()
 
@@ -92,6 +93,10 @@ func main() {
 
 	// Completely public routes (no middleware)
 	r.Get("/purchase/download/{id}", purchaseHandler.PurchaseDownloadHandler)
+
+	// Version routes
+	r.Get("/version", versionHandler.VersionText)
+	r.Get("/api/version", versionHandler.VersionInfo)
 
 	// Stripe routes
 	r.Post("/api/create-checkout-session", handler.CreateCheckoutSession)
