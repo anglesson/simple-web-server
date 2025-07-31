@@ -79,7 +79,7 @@ git commit -m "build: add binary for release $NEW_VERSION"
 
 # Step 4: Push to origin (including tags)
 print_status "Step 4: Pushing to origin..."
-git push origin main
+git push origin master
 git push origin "$NEW_VERSION"
 
 # Step 5: Deploy to Heroku
