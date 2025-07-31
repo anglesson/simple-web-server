@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
@@ -59,6 +60,12 @@ func TemplateFunctions(r *http.Request) template.FuncMap {
 				return "", err // Or handle error appropriately
 			}
 			return template.JS(jsonData), nil
+		},
+		"split": func(s, sep string) []string {
+			return strings.Split(s, sep)
+		},
+		"trim": func(s string) string {
+			return strings.TrimSpace(s)
 		},
 	}
 }

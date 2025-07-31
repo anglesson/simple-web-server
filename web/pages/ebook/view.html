@@ -1,40 +1,28 @@
-{{ define "title" }} E-books {{ end }} {{ define "content" }}
+{{ define "title" }} Detalhes do Ebook {{ end }}
+{{ define "content" }}
 <!-- Container fluid -->
-<div class="container-fluid p-6 gap-2">
+<div class="container-fluid p-6">
   <div class="row">
     <div class="col-lg-12 col-md-12 col-12">
-      <div class="card">
-        <!-- card header  -->
-        <div class="card-header p-4 bg-white">
-          <h4 class="mb-0">Detalhes do E-book</h4>
-        </div>
-        <!-- card body  -->
-        <div class="card-body">
-          <!-- row  -->
-          <div class="row px-4">
-            <!-- col  -->
-            <div class="col-xl-1 col-lg-6 col-md-12 col-12 d-flex justify-content-center d-flex align-items-center">
-              <div class="m-2">
-                <!-- content  -->
-                <img src="/assets/images/svg/ebook.svg" width="100" />
-              </div>
-            </div>
-            <div class="col-xl-8 col-lg-6 col-md-12 col-12">
-              <div class="mb-2">
-                <!-- content  -->
-                <h3 class="mt-2 mb-3 fw-bold">{{.Data.Ebook.Title}}</h3>
-                <p>{{.Data.Ebook.Description}}</p>
-                <h3 class="fw-bold text-primary">{{.Data.Ebook.GetValue}}</h3>
-                <p><i>Última atualização: {{.Data.Ebook.GetLastUpdate}}</i></p>
-              </div>
-            </div>
+      <!-- Page header -->
+      <div class="border-bottom pb-4 mb-4">
+        <div class="row align-items-center">
+          <div class="col">
+            <h3 class="mb-0 fw-bold mt-2">{{.Data.Ebook.Title}}</h3>
+            <p class="mb-0 text-muted">Visualize os detalhes e estatísticas do ebook</p>
           </div>
-        </div>
-        <!-- card footer  -->
-        <div class="card-footer bg-white">
-          <div class="d-md-flex justify-content-md-end align-items-center">
-            <div class="text-center text-md-end">
+          <div class="col-auto">
+            <div class="d-flex gap-2">
+              <a href="/ebook/edit/{{.Data.Ebook.ID}}" class="btn btn-outline-primary">
+                <i class="fa-solid fa-pen-to-square icon-xs me-2"></i>
+                Editar
+              </a>
+              <a href="/ebook/sales-page/{{.Data.Ebook.ID}}" class="btn btn-outline-secondary" target="_blank">
+                <i class="fa-solid fa-external-link-alt icon-xs me-2"></i>
+                Página de Vendas
+              </a>
               <button id="buttonSend" type="button" disabled class="btn btn-primary">
+                <i class="fa-solid fa-paper-plane icon-xs me-2"></i>
                 Enviar
               </button>
             </div>
@@ -44,76 +32,306 @@
     </div>
   </div>
 
-  <div class="row mt-6">
-    <div class="col-md-12 col-12">
-
-      {{ if .Data.Clients }}
-      <!-- card  -->
+  <!-- Ebook Details Card -->
+  <div class="row mb-6">
+    <div class="col-xl-8 col-lg-12 col-md-12 col-12">
       <div class="card">
-        <!-- card header  -->
-        <div class="card-header bg-white  py-4">
-          <h4 class="mb-0">Envios</h4>
+        <!-- card header -->
+        <div class="card-header bg-white py-4">
+          <h4 class="mb-0">
+            <i class="fa-solid fa-book text-primary me-2"></i>
+            Informações do Ebook
+          </h4>
         </div>
-        <!-- table  -->
+        <!-- card body -->
+        <div class="card-body">
+          <div class="row">
+            <!-- Ebook Image -->
+            <div class="col-xl-3 col-lg-4 col-md-12 col-12 mb-4">
+              <div class="text-center">
+                {{ if .Data.Ebook.Image }}
+                <img src="/ebook/{{.Data.Ebook.ID}}/image" alt="{{.Data.Ebook.Title}}" class="img-fluid rounded shadow-sm" style="max-width: 200px; height: auto;" />
+                {{ else }}
+                <div class="bg-light rounded p-4 d-flex align-items-center justify-content-center" style="height: 200px;">
+                  <i class="fa-solid fa-book text-muted" style="font-size: 4rem;"></i>
+                </div>
+                {{ end }}
+              </div>
+            </div>
+            <!-- Ebook Details -->
+            <div class="col-xl-9 col-lg-8 col-md-12 col-12">
+              <div class="row g-3">
+                <div class="col-12">
+                  <h3 class="fw-bold text-dark mb-2">{{.Data.Ebook.Title}}</h3>
+                  <p class="text-muted mb-3">{{.Data.Ebook.Description}}</p>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-sm bg-light-primary text-primary rounded-2 me-3">
+                      <i class="fa-solid fa-tag"></i>
+                    </div>
+                    <div>
+                      <p class="mb-0 text-muted small">Valor</p>
+                      <h5 class="mb-0 fw-bold text-primary">{{.Data.Ebook.GetValue}}</h5>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-sm bg-light-success text-success rounded-2 me-3">
+                      <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                      <p class="mb-0 text-muted small">Status</p>
+                      {{ if .Data.Ebook.Status }}
+                      <span class="badge bg-success-subtle text-success">
+                        <i class="fa-solid fa-circle-check icon-xs me-1"></i>
+                        Ativo
+                      </span>
+                      {{ else }}
+                      <span class="badge bg-danger-subtle text-danger">
+                        <i class="fa-solid fa-circle-xmark icon-xs me-1"></i>
+                        Inativo
+                      </span>
+                      {{ end }}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-sm bg-light-info text-info rounded-2 me-3">
+                      <i class="fa-solid fa-calendar"></i>
+                    </div>
+                    <div>
+                      <p class="mb-0 text-muted small">Criado em</p>
+                      <h6 class="mb-0">{{.Data.Ebook.CreatedAt.Format "02/01/2006"}}</h6>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-sm bg-light-warning text-warning rounded-2 me-3">
+                      <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                      <p class="mb-0 text-muted small">Última atualização</p>
+                      <h6 class="mb-0">{{.Data.Ebook.GetLastUpdate}}</h6>
+                    </div>
+                  </div>
+                </div>
+                
+                {{ if .Data.Ebook.Keywords }}
+                <div class="col-12">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-sm bg-light-secondary text-secondary rounded-2 me-3">
+                      <i class="fa-solid fa-tags"></i>
+                    </div>
+                    <div>
+                      <p class="mb-0 text-muted small">Palavras-chave</p>
+                      <div class="d-flex flex-wrap gap-1">
+                        {{ range split .Data.Ebook.Keywords "," }}
+                        <span class="badge bg-light text-dark">{{ trim . }}</span>
+                        {{ end }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {{ end }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="col-xl-4 col-lg-12 col-md-12 col-12">
+      <div class="row g-3">
+        <!-- Views Card -->
+        <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h4 class="mb-0">Visualizações</h4>
+                </div>
+                <div class="icon-shape icon-md bg-light-primary text-primary rounded-2">
+                  <i class="fa-solid fa-eye fs-4"></i>
+                </div>
+              </div>
+              <div>
+                <h1 class="fw-bold">{{.Data.Ebook.Views}}</h1>
+                <p class="mb-0 text-muted">Total de visualizações</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sales Card -->
+        <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h4 class="mb-0">Vendas</h4>
+                </div>
+                <div class="icon-shape icon-md bg-light-success text-success rounded-2">
+                  <i class="fa-solid fa-shopping-cart fs-4"></i>
+                </div>
+              </div>
+              <div>
+                <h1 class="fw-bold">{{.Data.Ebook.Sales}}</h1>
+                <p class="mb-0 text-muted">Total de vendas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Files Card -->
+        <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h4 class="mb-0">Arquivos</h4>
+                </div>
+                <div class="icon-shape icon-md bg-light-info text-info rounded-2">
+                  <i class="fa-solid fa-file-lines fs-4"></i>
+                </div>
+              </div>
+              <div>
+                <h1 class="fw-bold">{{.Data.Ebook.GetFileCount}}</h1>
+                <p class="mb-0 text-muted">Arquivos anexados</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Envios Section -->
+  <div class="row">
+    <div class="col-12">
+      {{ if .Data.Clients }}
+      <div class="card">
+        <!-- card header -->
+        <div class="card-header bg-white py-4">
+          <div class="row align-items-center">
+            <div class="col">
+              <h4 class="mb-0">
+                <i class="fa-solid fa-paper-plane text-primary me-2"></i>
+                Histórico de Envios
+              </h4>
+              <p class="mb-0 text-muted">Clientes que receberam este ebook</p>
+            </div>
+            <div class="col-auto">
+              <a href="/send" class="btn btn-outline-primary">
+                <i class="fa-solid fa-external-link-alt icon-xs me-2"></i>
+                Ver Todos os Envios
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- table -->
         <div class="table-responsive">
-          <table class="table text-nowrap mb-0">
+          <table class="table table-hover text-nowrap mb-0">
             <thead class="table-light">
               <tr>
-                <th>Cliente</th>
-                <th>Envios</th>
-                <th>Downloads</th>
+                <th scope="col" class="border-0">Cliente</th>
+                <th scope="col" class="border-0">Envios</th>
+                <th scope="col" class="border-0">Downloads</th>
+                <th scope="col" class="border-0">Último Envio</th>
               </tr>
             </thead>
             <tbody>
               {{ range .Data.Clients }}
               <tr>
                 <td class="align-middle">
-                  <b>{{.Name}}</b> <br>
-                  {{.Email}}
+                  <div class="d-flex align-items-center">
+                    <div class="avatar avatar-sm avatar-indicators avatar-online me-3">
+                      <div class="avatar-content bg-primary">
+                        <span class="text-white fw-bold">{{ .GetInitials }}</span>
+                      </div>
+                    </div>
+                    <div class="lh-1">
+                      <h5 class="mb-1 fw-semi-bold">
+                        <a href="#" class="text-inherit">{{ .Name }}</a>
+                      </h5>
+                      <p class="mb-0 fs-6 text-muted">{{ .Email }}</p>
+                    </div>
+                  </div>
                 </td>
-                <td class="align-middle">{{.TotalPurchasesByEbook $.Data.Ebook.ID }}</td>
-                <td class="align-middle">{{.TotalDownladsByEbook $.Data.Ebook.ID }}</td>
+                <td class="align-middle">
+                  <span class="badge bg-primary-subtle text-primary">
+                    <i class="fa-solid fa-paper-plane icon-xs me-1"></i>
+                    {{.TotalPurchasesByEbook $.Data.Ebook.ID }}
+                  </span>
+                </td>
+                <td class="align-middle">
+                  <span class="badge bg-success-subtle text-success">
+                    <i class="fa-solid fa-download icon-xs me-1"></i>
+                    {{.TotalDownladsByEbook $.Data.Ebook.ID }}
+                  </span>
+                </td>
+                <td class="align-middle">
+                  <span class="text-muted fs-6">{{ .CreatedAt.Format "02/01/2006" }}</span>
+                </td>
               </tr>
-              {{  end }}
+              {{ end }}
             </tbody>
           </table>
         </div>
-        <!-- card footer  -->
-        <div class="card-footer bg-white text-center">
-          <a href="/send" class="link-primary">Envios</a>
-
+      </div>
+      {{ else }}
+      <div class="card">
+        <div class="card-body text-center py-6">
+          <div class="mb-4">
+            <i class="fa-solid fa-inbox text-muted" style="font-size: 4rem;"></i>
+          </div>
+          <h4 class="mb-2">Nenhum envio encontrado</h4>
+          <p class="text-muted mb-4">Este ebook ainda não foi enviado para nenhum cliente.</p>
+          <a href="/send" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane icon-xs me-2"></i>
+            Fazer Primeiro Envio
+          </a>
         </div>
       </div>
-
-      {{ else }}
-      Não há envios
       {{ end }}
     </div>
   </div>
+</div>
 
-  <!-- Modal Send Confirmation -->
-  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">
-            Confirmação de envio
-          </h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body"></div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            Cancelar
-          </button>
-          <button form="sendForm" type="submit" class="btn btn-primary">
-            Confirmar
-          </button>
-        </div>
+<!-- Modal Send Confirmation -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">
+          <i class="fa-solid fa-paper-plane text-primary me-2"></i>
+          Confirmação de envio
+        </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fa-solid fa-times icon-xs me-2"></i>
+          Cancelar
+        </button>
+        <button form="sendForm" type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-check icon-xs me-2"></i>
+          Confirmar
+        </button>
       </div>
     </div>
   </div>
+</div>
 
-  <script defer src="/assets/js/ebook.view.js"></script>
-  {{ end }}
+<script defer src="/assets/js/ebook.view.js"></script>
+{{ end }}
