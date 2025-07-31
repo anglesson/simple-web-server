@@ -1,1 +1,0 @@
-web: ./bin/simple-web-server 

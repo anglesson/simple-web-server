@@ -31,6 +31,11 @@ build-prod:
 	@echo "Building SimpleWebServer for production..."
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X github.com/anglesson/simple-web-server/internal/config.Version=$(VERSION) -X github.com/anglesson/simple-web-server/internal/config.CommitHash=$(COMMIT_HASH) -X github.com/anglesson/simple-web-server/internal/config.BuildTime=$(BUILD_TIME)" -o bin/simple-web-server-linux-amd64 cmd/web/main.go
 
+# Build for Heroku (with CGO enabled for PostgreSQL)
+build-heroku:
+	@echo "Building SimpleWebServer for Heroku..."
+	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags "-X github.com/anglesson/simple-web-server/internal/config.Version=$(VERSION) -X github.com/anglesson/simple-web-server/internal/config.CommitHash=$(COMMIT_HASH) -X github.com/anglesson/simple-web-server/internal/config.BuildTime=$(BUILD_TIME)" -o bin/simple-web-server cmd/web/main.go
+
 # Build for macOS
 build-mac:
 	@echo "Building SimpleWebServer for macOS..."
