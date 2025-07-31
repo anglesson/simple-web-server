@@ -4,11 +4,32 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
+
+// TopClientWithInitials extends TopClient with initials
+type TopClientWithInitials struct {
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	TotalPurchases int64  `json:"total_purchases"`
+	Initials       string `json:"initials"`
+}
+
+// getInitials generates initials from a name
+func getInitials(name string) string {
+	names := strings.Fields(name)
+	if len(names) == 0 {
+		return ""
+	}
+	if len(names) == 1 {
+		return strings.ToUpper(string(names[0][0]))
+	}
+	return strings.ToUpper(string(names[0][0]) + string(names[len(names)-1][0]))
+}
 
 type DashboardHandler struct {
 	templateRenderer template.TemplateRenderer
@@ -35,6 +56,17 @@ func (h *DashboardHandler) DashboardView(w http.ResponseWriter, r *http.Request)
 	topEbooks, _ := dashRepository.GetTopEbooks()
 	topClients, _ := dashRepository.GetTopClients()
 	topDownloadedEbooks, _ := dashRepository.GetTopDownloadedEbooks()
+
+	// Add initials to top clients
+	var topClientsWithInitials []TopClientWithInitials
+	for _, client := range topClients {
+		topClientsWithInitials = append(topClientsWithInitials, TopClientWithInitials{
+			Name:           client.Name,
+			Email:          client.Email,
+			TotalPurchases: client.TotalPurchases,
+			Initials:       getInitials(client.Name),
+		})
+	}
 
 	// Marshal data to JSON strings
 	dailyPurchasesJSON, err := json.Marshal(dailyPurchases)
@@ -73,7 +105,7 @@ func (h *DashboardHandler) DashboardView(w http.ResponseWriter, r *http.Request)
 		"DailyPurchasesJSON":      string(dailyPurchasesJSON),
 		"DailyDownloadsJSON":      string(dailyDownloadsJSON),
 		"TopEbooksJSON":           string(topEbooksJSON),
-		"TopClients":              topClients,
+		"TopClients":              topClientsWithInitials,
 		"TopDownloadedEbooksJSON": string(topDownloadedEbooksJSON),
 	}, "admin")
 }
