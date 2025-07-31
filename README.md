@@ -1,113 +1,148 @@
-# Simple Web Server
+# SimpleWebServer
 
-A web application for managing ebooks and clients built with Go and DashUI template.
+## 🚀 Configuração Rápida
 
-## Tech Stack
-
-- **Backend**: Go with Chi router
-- **Database**: SQLite (local) / PostgreSQL (production)
-- **ORM**: GORM
-- **Frontend**: DashUI (Bootstrap 5 Admin Template)
-- **Icons**: Feather Icons
-- **Testing**: Go testing + Cypress E2E
-
-## Features
-
-- 📚 Ebook management and distribution
-- 👥 Client management with CSV import
-- 🔐 User authentication and authorization
-- 📊 Dashboard with analytics
-- 📱 Responsive design with DashUI
-- 🎨 Modern UI with Bootstrap 5
-
-## Running the Application
+### 1. Configurar Variáveis de Ambiente
 
 ```bash
-make run
+# Criar arquivo .env com as configurações padrão
+make setup-env
+
+# Ou manualmente
+cp env.template .env
 ```
 
-## Running Tests
+### 2. Editar Configurações
 
-### Unit Tests
+Edite o arquivo `.env` com suas configurações:
+
 ```bash
+# Configurações obrigatórias para produção
+MAIL_USERNAME=seu_email@gmail.com
+MAIL_PASSWORD=sua_senha_de_app
+STRIPE_SECRET_KEY=sk_test_...
+S3_ACCESS_KEY=sua_access_key
+S3_SECRET_KEY=sua_secret_key
+HUB_DEVSENVOLVEDOR_TOKEN=seu_token
+```
+
+### 3. Executar Aplicação
+
+```bash
+# Instalar dependências
+go mod download
+
+# Executar em desenvolvimento
+make run
+
+# Ou executar diretamente
+go run cmd/web/main.go
+```
+
+## 📋 Configuração Completa
+
+### Variáveis de Ambiente
+
+| Variável | Descrição | Padrão | Obrigatória |
+|----------|-----------|--------|-------------|
+| `APPLICATION_MODE` | Modo da aplicação | `development` | Não |
+| `APPLICATION_NAME` | Nome da aplicação | `Docffy` | Não |
+| `APP_KEY` | Chave da aplicação | `Docffy` | Sim |
+| `HOST` | Host da aplicação | `http://localhost` | Não |
+| `PORT` | Porta da aplicação | `8080` | Não |
+| `DATABASE_URL` | URL do banco de dados | `./mydb.db` | Não |
+| `MAIL_HOST` | Servidor SMTP | `sandbox.smtp.mailtrap.io` | Não |
+| `MAIL_PORT` | Porta SMTP | `2525` | Não |
+| `MAIL_USERNAME` | Usuário SMTP | - | Sim (prod) |
+| `MAIL_PASSWORD` | Senha SMTP | - | Sim (prod) |
+| `MAIL_FROM_ADDRESS` | Email remetente | - | Sim (prod) |
+| `S3_ACCESS_KEY` | AWS Access Key | - | Não |
+| `S3_SECRET_KEY` | AWS Secret Key | - | Não |
+| `S3_REGION` | Região AWS | `sa-east-1` | Não |
+| `S3_BUCKET_NAME` | Nome do bucket S3 | - | Não |
+| `STRIPE_SECRET_KEY` | Chave secreta Stripe | - | Sim (prod) |
+| `STRIPE_PRICE_ID` | ID do preço Stripe | - | Não |
+| `STRIPE_WEBHOOK_SECRET` | Segredo do webhook | - | Não |
+| `HUB_DEVSENVOLVEDOR_TOKEN` | Token Receita Federal | - | Não |
+
+### Configurações por Ambiente
+
+#### Desenvolvimento
+```bash
+APPLICATION_MODE=development
+DATABASE_URL=./mydb.db
+MAIL_HOST=sandbox.smtp.mailtrap.io
+```
+
+#### Produção
+```bash
+APPLICATION_MODE=production
+DATABASE_URL=postgres://user:pass@localhost/dbname
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=seu_email@gmail.com
+MAIL_PASSWORD=sua_senha_de_app
+STRIPE_SECRET_KEY=sk_live_...
+S3_ACCESS_KEY=sua_access_key
+S3_SECRET_KEY=sua_secret_key
+```
+
+## 🔒 Segurança
+
+### Arquivo .env
+- ✅ **NUNCA** commite o arquivo `.env` no repositório
+- ✅ O arquivo `.env` está no `.gitignore` por segurança
+- ✅ Use o arquivo `env.template` como base
+- ✅ Configure credenciais reais apenas em produção
+
+### Verificações de Segurança
+```bash
+# Verificar configurações de segurança
+make security-check
+
+# Verificar headers de segurança
+make security-headers-test
+
+# Verificar rate limiting
+make rate-limit-test
+```
+
+## 📚 Documentação
+
+- [Regras de Segurança](docs/SECURITY_RULES.md)
+- [Guia DashUI](docs/DASHUI_GUIDE.md)
+- [Sobre o Projeto](docs/ABOUT_PROJETCT.md)
+
+## 🛠️ Comandos Úteis
+
+```bash
+# Configurar ambiente
+make setup-env
+
+# Executar aplicação
+make run
+
+# Executar testes
 make test
+
+# Verificar segurança
+make security-check
+
+# Build para produção
+make build
+
+# Executar com Docker
+make docker-build
+make docker-run
 ```
 
-### E2E Tests with Cypress
+## 🚨 Importante
 
-First, install dependencies:
-```bash
-make install-e2e
-make setup-e2e
-```
+1. **Configure sempre as credenciais reais em produção**
+2. **Nunca use credenciais de exemplo em produção**
+3. **Mantenha o arquivo .env seguro e nunca o commite**
+4. **Execute as verificações de segurança regularmente**
 
-Then run the application:
-```bash
-make run
-```
+---
 
-In another terminal, run E2E tests:
-```bash
-make test-e2e
-```
-
-Or run with browser visible:
-```bash
-make test-e2e-headed
-```
-
-## E2E Test Structure
-
-- `cypress/e2e/basic.cy.js` - Basic application tests (home, login, register, forget password)
-- `cypress/e2e/auth.cy.js` - Authentication flow tests
-- `cypress/e2e/dashboard.cy.js` - Dashboard and navigation tests
-- `cypress/e2e/ebook.cy.js` - Ebook management tests
-- `cypress/e2e/client.cy.js` - Client management tests
-
-## Test Coverage
-
-The E2E tests cover:
-- ✅ Application startup and basic page loading
-- ✅ Authentication pages (login, register, forget password)
-- ✅ Navigation between auth pages
-- ✅ Protected route redirections
-- ✅ Form validation and error handling
-- ✅ User interface elements visibility
-
-## Test Data
-
-The E2E tests use test data from:
-- `cypress/fixtures/sample.pdf` - Sample PDF for ebook uploads
-- `cypress/fixtures/clients.csv` - Sample CSV for client imports
-
-## DashUI Integration
-
-This project uses the **DashUI** template for the administrative interface. DashUI is a modern Bootstrap 5 admin template that provides:
-
-- 🎨 Pre-styled components and layouts
-- 📱 Responsive design out of the box
-- 🔧 Easy customization and theming
-- 📊 Dashboard components and charts
-- 🎯 Consistent user experience
-
-### Key Features
-- **Admin Layout**: Sidebar navigation with main content area
-- **Component Library**: Cards, tables, forms, modals, dropdowns
-- **Icon System**: Feather Icons integration
-- **Color System**: Consistent color palette and utilities
-- **Responsive Grid**: Bootstrap 5 grid system
-
-### Documentation
-- [DashUI Guide](./docs/DASHUI_GUIDE.md) - Complete integration guide
-- [UI Rules](./.cursor/rules/html-rule.mdc) - Development rules and patterns
-
-## Configuration
-
-E2E tests are configured in `cypress.config.js` to run against `http://localhost:8080`.
-
-## Current Status
-
-All E2E tests are passing! ✅
-- 23 tests total
-- 0 failures
-- Covers all major application flows
+Para mais informações, consulte a [documentação completa](docs/).
