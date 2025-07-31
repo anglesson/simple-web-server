@@ -9,8 +9,8 @@ import (
 
 // Create body message with template
 func NewEmail(templateName string, data any) string {
-	templatePath := filepath.Join("internal", "templates", "mails", templateName+".html")
-	baseTemplate := filepath.Join("internal", "templates", "mails", "template.html")
+	templatePath := filepath.Join("web", "mails", templateName+".html")
+	baseTemplate := filepath.Join("web", "mails", "template.html")
 
 	tmpl, err := template.ParseFiles(baseTemplate, templatePath)
 	if err != nil {

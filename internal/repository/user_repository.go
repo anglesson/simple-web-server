@@ -2,6 +2,7 @@ package repository
 
 import (
 	"log"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -15,6 +16,8 @@ type UserRepository interface {
 	FindByEmail(emailUser string) *models.User
 	FindBySessionToken(token string) *models.User
 	FindByStripeCustomerID(customerID string) *models.User
+	FindByPasswordResetToken(token string) *models.User
+	UpdatePasswordResetToken(user *models.User, token string) error
 }
 
 type GormUserRepositoryImpl struct {
@@ -86,4 +89,21 @@ func (r *GormUserRepositoryImpl) FindByUserEmail(emailUser string) *models.User 
 		return nil
 	}
 	return &user
+}
+
+func (r *GormUserRepositoryImpl) FindByPasswordResetToken(token string) *models.User {
+	var user models.User
+	err := r.db.Preload("Subscription").Where("password_reset_token = ?", token).First(&user).Error
+	if err != nil {
+		log.Printf("Error finding user by password reset token: %v", err)
+		return nil
+	}
+	return &user
+}
+
+func (r *GormUserRepositoryImpl) UpdatePasswordResetToken(user *models.User, token string) error {
+	now := time.Now()
+	user.PasswordResetToken = token
+	user.PasswordResetAt = &now
+	return r.Save(user)
 }

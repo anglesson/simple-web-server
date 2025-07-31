@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -62,14 +64,28 @@ func (rl *RateLimiter) RateLimitMiddleware(next http.Handler) http.Handler {
 		// Get client IP
 		clientIP := getClientIP(r)
 
+		// Debug log
+		log.Printf("Rate limit check for IP: %s, Path: %s", clientIP, r.URL.Path)
+
 		// Check rate limit
 		if !rl.isAllowed(clientIP) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusTooManyRequests)
-			w.Write([]byte(`{"error": "Rate limit exceeded"}`))
+			log.Printf("Rate limit exceeded for IP: %s, Path: %s", clientIP, r.URL.Path)
+
+			// Check if it's an API request or HTML request
+			acceptHeader := r.Header.Get("Accept")
+			if strings.Contains(acceptHeader, "application/json") || strings.Contains(r.URL.Path, "/api/") {
+				// API request - return JSON
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusTooManyRequests)
+				w.Write([]byte(`{"error": "Rate limit exceeded. Please try again later."}`))
+			} else {
+				// HTML request - redirect with error message
+				http.Redirect(w, r, "/login?error=rate_limit_exceeded", http.StatusSeeOther)
+			}
 			return
 		}
 
+		log.Printf("Rate limit passed for IP: %s, Path: %s", clientIP, r.URL.Path)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -96,8 +112,12 @@ func (rl *RateLimiter) isAllowed(clientIP string) bool {
 		}
 	}
 
+	// Debug log
+	log.Printf("Rate limit check - IP: %s, Current requests: %d, Limit: %d", clientIP, len(validRequests), rl.limit)
+
 	// Check if we're under the limit
 	if len(validRequests) >= rl.limit {
+		log.Printf("Rate limit exceeded - IP: %s, Requests: %d, Limit: %d", clientIP, len(validRequests), rl.limit)
 		return false
 	}
 
@@ -105,6 +125,7 @@ func (rl *RateLimiter) isAllowed(clientIP string) bool {
 	validRequests = append(validRequests, now)
 	rl.requests[clientIP] = validRequests
 
+	log.Printf("Rate limit allowed - IP: %s, Requests: %d, Limit: %d", clientIP, len(validRequests), rl.limit)
 	return true
 }
 
@@ -112,6 +133,10 @@ func (rl *RateLimiter) isAllowed(clientIP string) bool {
 func getClientIP(r *http.Request) string {
 	// Check for forwarded headers
 	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {
+		// X-Forwarded-For can contain multiple IPs, take the first one
+		if commaIndex := strings.Index(ip, ","); commaIndex != -1 {
+			ip = strings.TrimSpace(ip[:commaIndex])
+		}
 		return ip
 	}
 	if ip := r.Header.Get("X-Real-IP"); ip != "" {
@@ -119,6 +144,10 @@ func getClientIP(r *http.Request) string {
 	}
 
 	// Fallback to remote address
+	// Remove port if present
+	if colonIndex := strings.LastIndex(r.RemoteAddr, ":"); colonIndex != -1 {
+		return r.RemoteAddr[:colonIndex]
+	}
 	return r.RemoteAddr
 }
 

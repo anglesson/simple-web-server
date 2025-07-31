@@ -56,6 +56,7 @@ func main() {
 	s3Storage := storage.NewS3Storage()
 	fileService := service.NewFileService(fileRepository, s3Storage)
 	ebookService := service.NewEbookService(s3Storage)
+	emailService := service.NewEmailService()
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(userService, sessionService, templateRenderer)
@@ -68,18 +69,21 @@ func main() {
 	dashboardHandler := handler.NewDashboardHandler(templateRenderer)
 	errorHandler := handler.NewErrorHandler(templateRenderer)
 	homeHandler := handler.NewHomeHandler(templateRenderer, errorHandler)
-	forgetPasswordHandler := handler.NewForgetPasswordHandler(templateRenderer)
+	forgetPasswordHandler := handler.NewForgetPasswordHandler(templateRenderer, userService, emailService)
+	resetPasswordHandler := handler.NewResetPasswordHandler(templateRenderer, userService)
 	sendHandler := handler.NewSendHandler(templateRenderer)
 	purchaseHandler := handler.NewPurchaseHandler(templateRenderer)
 	versionHandler := handler.NewVersionHandler()
 
 	// Initialize rate limiters
-	authRateLimiter := middleware.NewRateLimiter(5, time.Minute)    // 5 requests per minute for auth
-	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)   // 100 requests per minute for API
-	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute) // 10 uploads per minute
+	authRateLimiter := middleware.NewRateLimiter(5, time.Minute)           // 5 requests per minute for auth
+	resetPasswordRateLimiter := middleware.NewRateLimiter(10, time.Minute) // 10 requests per minute for password reset (more generous)
+	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)          // 100 requests per minute for API
+	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute)        // 10 uploads per minute
 
 	// Start cleanup goroutines
 	authRateLimiter.CleanupRateLimiter()
+	resetPasswordRateLimiter.CleanupRateLimiter()
 	apiRateLimiter.CleanupRateLimiter()
 	uploadRateLimiter.CleanupRateLimiter()
 
@@ -93,7 +97,18 @@ func main() {
 		http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 	})
 
-	// Public routes
+	// Password reset routes with specific rate limiting (more generous)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.AuthGuard)
+		r.Use(resetPasswordRateLimiter.RateLimitMiddleware) // More generous rate limiting for password reset
+		r.Get("/reset-password", resetPasswordHandler.ResetPasswordView)
+		r.Post("/reset-password", resetPasswordHandler.ResetPasswordSubmit)
+		r.Get("/password-reset-success", func(w http.ResponseWriter, r *http.Request) {
+			templateRenderer.View(w, r, "password-reset-success", nil, "guest")
+		})
+	})
+
+	// Public routes with auth rate limiting
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthGuard)
 		r.Use(authRateLimiter.RateLimitMiddleware) // Rate limiting for auth endpoints

@@ -27,9 +27,17 @@ func NewAuthHandler(userService service.UserService, sessionService service.Sess
 func (h *AuthHandler) LoginView(w http.ResponseWriter, r *http.Request) {
 	csrfToken := h.sessionService.GenerateCSRFToken()
 	h.sessionService.SetCSRFToken(w)
-	h.templateRenderer.View(w, r, "login", map[string]interface{}{
+
+	data := map[string]interface{}{
 		"csrf_token": csrfToken,
-	}, "guest")
+	}
+
+	// Check for rate limit error
+	if r.URL.Query().Get("error") == "rate_limit_exceeded" {
+		data["rate_limit_error"] = "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente."
+	}
+
+	h.templateRenderer.View(w, r, "login", data, "guest")
 }
 
 // LoginSubmit handles user login authentication

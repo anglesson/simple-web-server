@@ -8,6 +8,16 @@
         <!-- Card body -->
         <div class="card-body p-6">
           <div class="mb-4" href="/">{{ template "logo" .}}</div>
+          
+          <!-- Rate Limit Error -->
+          {{with .Data.rate_limit_error}}
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{.}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {{end}}
+          
           <!-- Form -->
           <form method="post" action="/login">
             <input type="hidden" name="csrf_token" value="{{.csrf_token}}" />
