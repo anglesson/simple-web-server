@@ -10,32 +10,32 @@
         <form id="client-form" action="/client/update/{{.ID}}" method="post">
           <div class="mb-3">
             <label for="name" class="col-form-label">Nome</label>
-            <input type="text" class="form-control" id="name" name="name" value="{{ .Form.Name }}" />
-            {{with .Errors.Name}}
+            <input type="text" class="form-control" id="name" name="name" value="{{ .Data.Form.Name }}" />
+            {{with .Data.Errors.Name}}
             <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
             <label for="cpf" class="col-form-label">CPF</label>
-            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ .Form.CPF }}" />
-            {{with .Errors.CPF}}
+            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ .Data.Form.CPF }}" />
+            {{with .Data.Errors.CPF}}
             <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
             <label for="cpf" class="col-form-label">Data Nascimento</label>
-            <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ .Form.DataNascimento }}" />
-            {{with .Errors.CPF}}
+            <input type="text" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ .Data.Form.DataNascimento }}" />
+            {{with .Data.Errors.Birthdate}}
             <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
             <label for="Email" class="col-form-label">Email</label>
-            <input type="text" class="form-control" id="email" name="email" value="{{ .Form.Email }}" />
-            {{with .Errors.Email}}
+            <input type="text" class="form-control" id="email" name="email" value="{{ .Data.Form.Email }}" />
+            {{with .Data.Errors.Email}}
             <p class="text-danger">{{.}}</p>{{end}}
           </div>
           <div class="mb-3">
             <label for="phone" class="col-form-label">Telefone</label>
-            <input type="text" class="form-control" id="phone" name="phone" value="{{ .Form.Phone }}" />
-            {{with .Errors.Phone}}
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ .Data.Form.Phone }}" />
+            {{with .Data.Errors.Phone}}
             <p class="text-danger">{{.}}</p>{{end}}
           </div>
         </form>

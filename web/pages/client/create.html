@@ -61,13 +61,13 @@
                     <!-- CPF -->
                     <div class="mb-3">
                       <label for="cpf" class="form-label fw-semibold">CPF <span class="text-danger">*</span></label>
-                      <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Form.CPF }}" 
+                      <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Form.CPF }}" 
                              placeholder="000.000.000-00" required>
                       <div class="form-text">
                         <i class="fa-solid fa-id-card icon-xs me-1"></i>
                         Digite apenas os números do CPF
                       </div>
-                      {{with .Errors.CPF}}
+                      {{with .Data.Errors.CPF}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -77,12 +77,12 @@
                     <!-- Data de Nascimento -->
                     <div class="mb-3">
                       <label for="data_nascimento" class="form-label fw-semibold">Data de Nascimento <span class="text-danger">*</span></label>
-                      <input type="date" class="form-control" id="data_nascimento" name="birthdate" value="{{ .Form.Birthdate }}" required>
+                      <input type="date" class="form-control" id="data_nascimento" name="birthdate" value="{{ .Data.Form.Birthdate }}" required>
                       <div class="form-text">
                         <i class="fa-solid fa-calendar icon-xs me-1"></i>
                         Selecione a data de nascimento
                       </div>
-                      {{with .Errors.Birthdate}}
+                      {{with .Data.Errors.Birthdate}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -92,14 +92,14 @@
                     <!-- Email -->
                     <div class="mb-3">
                       <label for="email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
-                      <input type="email" class="form-control" id="email" name="email" value="{{ .Form.Email }}" 
+                      <input type="email" class="form-control" id="email" name="email" value="{{ .Data.Form.Email }}" 
                              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required 
                              placeholder="exemplo@email.com">
                       <div class="form-text">
                         <i class="fa-solid fa-envelope icon-xs me-1"></i>
                         Digite um email válido
                       </div>
-                      {{with .Errors.Email}}
+                      {{with .Data.Errors.Email}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -110,14 +110,14 @@
                     <div class="mb-3">
                       <label for="phone" class="form-label fw-semibold">Telefone <span class="text-danger">*</span></label>
                       <div class="input-group">
-                        <input type="tel" class="form-control phone_with_ddd" id="phone" name="phone" value="{{ .Form.Phone }}" 
+                        <input type="tel" class="form-control phone_with_ddd" id="phone" name="phone" value="{{ .Data.Form.Phone }}" 
                                placeholder="(XX) X XXXX-XXXX" required>
                       </div>
                       <div class="form-text">
                         <i class="fa-solid fa-phone icon-xs me-1"></i>
                         Digite o telefone com DDD
                       </div>
-                      {{with .Errors.Phone}}
+                      {{with .Data.Errors.Phone}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>

@@ -21,9 +21,9 @@
                 name="email"
                 placeholder="Digite seu e-mail"
                 required=""
-                value="{{.Form.Email}}"
+                value="{{.Data.Form.Email}}"
               />
-              {{with .Errors.email}}
+              {{with .Data.Errors.email}}
               <p class="text-danger">{{.}}</p>
               {{end}}
             </div>
@@ -38,7 +38,7 @@
                 placeholder="Digite sua senha"
                 required=""
               />
-              {{with .Errors.password}}
+              {{with .Data.Errors.password}}
               <p class="text-danger">{{.}}</p>
               {{end}}
             </div>

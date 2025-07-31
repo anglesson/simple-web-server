@@ -49,7 +49,7 @@
                         <i class="fa-solid fa-lightbulb icon-xs me-1"></i>
                         Crie um título atrativo que desperte interesse
                       </div>
-                      {{with .Errors.Title}}
+                      {{with .Data.Errors.Title}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -64,7 +64,7 @@
                         <i class="fa-solid fa-circle-info icon-xs me-1"></i>
                         Máximo 120 caracteres
                       </div>
-                      {{with .Errors.Description}}
+                      {{with .Data.Errors.Description}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -85,7 +85,7 @@
                             <i class="fa-solid fa-dollar-sign icon-xs me-1"></i>
                             Defina um preço competitivo
                           </div>
-                          {{with .Errors.Value}}
+                          {{with .Data.Errors.Value}}
                           <div class="text-danger small mt-1">
                             <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                           </div>
@@ -405,7 +405,7 @@
                         • Crie urgência e escassez<br>
                         • Termine com uma call-to-action clara
                       </div>
-                      {{with .Errors.SalesPage}}
+                      {{with .Data.Errors.SalesPage}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>

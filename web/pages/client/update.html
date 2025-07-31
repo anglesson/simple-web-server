@@ -56,7 +56,7 @@
                     </label>
                     <input type="text" class="form-control" id="cpf" name="cpf" value="{{ .Data.Client.CPF }}" placeholder="000.000.000-00" required disabled readonly />
                     <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
-                    {{with .Errors.CPF}}
+                    {{with .Data.Errors.CPF}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                   <div class="col-md-6">
@@ -64,7 +64,7 @@
                       Data de Nascimento <span class="text-danger">*</span>
                     </label>
                     <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ .Data.Client.Birthdate }}" required disabled readonly />
-                    {{with .Errors.Birthdate}}
+                    {{with .Data.Errors.Birthdate}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                 </div>
@@ -80,7 +80,7 @@
                     </label>
                     <input type="email" class="form-control" id="email" name="email" value="{{ .Data.Client.Email }}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
                     <div class="invalid-feedback">Por favor, insira um email válido.</div>
-                    {{with .Errors.Email}}
+                    {{with .Data.Errors.Email}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                   <div class="col-12">
@@ -89,7 +89,7 @@
                     </label>
                     <input type="tel" class="form-control" id="phone" name="phone" value="{{ .Data.Client.Phone }}" placeholder="(XX) XXXXX-XXXX" required />
                     <div class="invalid-feedback">Por favor, insira um telefone válido.</div>
-                    {{with .Errors.Phone}}
+                    {{with .Data.Errors.Phone}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                 </div>
