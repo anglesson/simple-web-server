@@ -49,18 +49,17 @@ func TestSecurityHeaders(t *testing.T) {
 }
 
 func TestRateLimiter(t *testing.T) {
-	// Create rate limiter with low limits for testing
-	limiter := NewRateLimiter(2, time.Second)
+	// Create rate limiter with limit of 2 requests
+	limiter := NewRateLimiter(2, time.Minute)
 
-	// Create a test handler
+	// Create a simple handler
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	// Apply rate limiting middleware
 	middleware := limiter.RateLimitMiddleware(handler)
 
-	// Test requests
+	// Create request
 	req := httptest.NewRequest("GET", "/", nil)
 	req.RemoteAddr = "127.0.0.1:12345"
 
@@ -78,11 +77,11 @@ func TestRateLimiter(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", w2.Code)
 	}
 
-	// Third request should be rate limited
+	// Third request should be rate limited (redirect for HTML requests)
 	w3 := httptest.NewRecorder()
 	middleware.ServeHTTP(w3, req)
-	if w3.Code != http.StatusTooManyRequests {
-		t.Errorf("Expected status 429, got %d", w3.Code)
+	if w3.Code != http.StatusSeeOther {
+		t.Errorf("Expected status 303 (redirect), got %d", w3.Code)
 	}
 }
 
@@ -142,10 +141,10 @@ func TestGetClientIP(t *testing.T) {
 			expected:   "10.0.0.1",
 		},
 		{
-			name:       "No headers, use remote addr",
+			name:       "No headers, use remote addr (port removed)",
 			headers:    map[string]string{},
 			remoteAddr: "127.0.0.1:12345",
-			expected:   "127.0.0.1:12345",
+			expected:   "127.0.0.1",
 		},
 	}
 

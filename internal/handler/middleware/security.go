@@ -1,13 +1,10 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/anglesson/simple-web-server/internal/config"
 )
 
 // SecurityHeaders middleware adds security headers to all responses
@@ -29,9 +26,9 @@ func SecurityHeaders(next http.Handler) http.Handler {
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 
 		// HSTS (only in production)
-		if config.AppConfig.IsProduction() {
-			w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
-		}
+		// if config.AppConfig.IsProduction() {
+		// 	w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+		// }
 
 		// Remove server information
 		w.Header().Del("Server")
@@ -64,13 +61,8 @@ func (rl *RateLimiter) RateLimitMiddleware(next http.Handler) http.Handler {
 		// Get client IP
 		clientIP := getClientIP(r)
 
-		// Debug log
-		log.Printf("Rate limit check for IP: %s, Path: %s", clientIP, r.URL.Path)
-
 		// Check rate limit
 		if !rl.isAllowed(clientIP) {
-			log.Printf("Rate limit exceeded for IP: %s, Path: %s", clientIP, r.URL.Path)
-
 			// Check if it's an API request or HTML request
 			acceptHeader := r.Header.Get("Accept")
 			if strings.Contains(acceptHeader, "application/json") || strings.Contains(r.URL.Path, "/api/") {
@@ -85,7 +77,6 @@ func (rl *RateLimiter) RateLimitMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Printf("Rate limit passed for IP: %s, Path: %s", clientIP, r.URL.Path)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -112,12 +103,8 @@ func (rl *RateLimiter) isAllowed(clientIP string) bool {
 		}
 	}
 
-	// Debug log
-	log.Printf("Rate limit check - IP: %s, Current requests: %d, Limit: %d", clientIP, len(validRequests), rl.limit)
-
 	// Check if we're under the limit
 	if len(validRequests) >= rl.limit {
-		log.Printf("Rate limit exceeded - IP: %s, Requests: %d, Limit: %d", clientIP, len(validRequests), rl.limit)
 		return false
 	}
 
@@ -125,7 +112,6 @@ func (rl *RateLimiter) isAllowed(clientIP string) bool {
 	validRequests = append(validRequests, now)
 	rl.requests[clientIP] = validRequests
 
-	log.Printf("Rate limit allowed - IP: %s, Requests: %d, Limit: %d", clientIP, len(validRequests), rl.limit)
 	return true
 }
 

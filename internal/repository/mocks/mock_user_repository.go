@@ -50,3 +50,16 @@ func (m *MockUserRepository) FindByStripeCustomerID(customerID string) *models.U
 	}
 	return args.Get(0).(*models.User)
 }
+
+func (m *MockUserRepository) FindByPasswordResetToken(token string) *models.User {
+	args := m.Called(token)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(*models.User)
+}
+
+func (m *MockUserRepository) UpdatePasswordResetToken(user *models.User, token string) error {
+	args := m.Called(user, token)
+	return args.Error(0)
+}
