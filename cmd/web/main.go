@@ -54,7 +54,7 @@ func main() {
 	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
 	s3Storage := storage.NewS3Storage()
 	fileService := service.NewFileService(fileRepository, s3Storage)
-	ebookService := service.NewEbookService()
+	ebookService := service.NewEbookService(s3Storage)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(userService, sessionService, templateRenderer)

@@ -13,6 +13,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 	"github.com/anglesson/simple-web-server/pkg/database"
+	"github.com/anglesson/simple-web-server/pkg/storage"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
@@ -54,7 +55,9 @@ func (h *SendHandler) SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		"ClientsCreator": len(creator.Clients),
 	}
 
-	ebookService := service.NewEbookService()
+	// TODO: This should be injected as dependency
+	s3Storage := storage.NewS3Storage()
+	ebookService := service.NewEbookService(s3Storage)
 	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
 		Pagination: pagination,
 	})

@@ -84,6 +84,23 @@ func (e *Ebook) IncrementSales() {
 	e.Sales++
 }
 
+// GetPresignedImageURL retorna a URL pré-assinada da imagem se disponível
+// Este método pode ser usado quando a URL pré-assinada não foi gerada automaticamente
+func (e *Ebook) GetPresignedImageURL() string {
+	// Se a imagem já parece ser uma URL pré-assinada (muito longa), retornar como está
+	if len(e.Image) > 100 {
+		return e.Image
+	}
+
+	// Se não há imagem, retornar string vazia
+	if e.Image == "" {
+		return ""
+	}
+
+	// Para URLs públicas do S3, retornar como está (será processada pelo service)
+	return e.Image
+}
+
 // generateSlug cria uma URL amigável baseada no título
 func generateSlug(title string) string {
 	// Implementação básica - pode ser melhorada com biblioteca de slug
