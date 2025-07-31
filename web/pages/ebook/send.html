@@ -144,8 +144,8 @@
                   </td>
                   <td class="align-middle">
                     <div class="d-flex align-items-center">
-                      <div class="avatar avatar-sm avatar-indicators avatar-online me-3">
-                        <div class="avatar-content bg-primary">
+                      <div class="me-3">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                           <span class="text-white fw-bold">{{ .GetInitials }}</span>
                         </div>
                       </div>
@@ -335,8 +335,8 @@
         modalHtml += `
           <div class="list-group-item px-0">
             <div class="d-flex align-items-center">
-              <div class="avatar avatar-sm me-3">
-                <div class="avatar-content bg-primary">
+              <div class="me-3">
+                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                   <span class="text-white fw-bold">${clientName.split(' ').map(n => n[0]).join('').toUpperCase()}</span>
                 </div>
               </div>
