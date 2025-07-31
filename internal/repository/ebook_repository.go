@@ -89,7 +89,7 @@ func (r *GormEbookRepository) ListEbooksForUser(userID uint, query EbookQuery) (
 
 	// Aplicar filtro de título se fornecido
 	if query.Title != "" {
-		db = db.Where("ebooks.title ILIKE ?", "%"+query.Title+"%")
+		db = db.Where("ebooks.title LIKE ?", "%"+query.Title+"%")
 	}
 
 	// Aplicar paginação se fornecida
