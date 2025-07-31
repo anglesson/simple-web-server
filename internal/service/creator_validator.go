@@ -150,9 +150,14 @@ func validateCPF(value string) error {
 
 // validateBirthDate validates the birth date
 func validateBirthDate(birthDateStr string) error {
-	parsedDate, err := time.Parse("2006-01-02", birthDateStr)
+	// First try to parse as DD/MM/YYYY format (from jmask)
+	parsedDate, err := time.Parse("02/01/2006", birthDateStr)
 	if err != nil {
-		return fmt.Errorf("formato de data de nascimento inválido: %w", err)
+		// If that fails, try YYYY-MM-DD format (from HTML date input)
+		parsedDate, err = time.Parse("2006-01-02", birthDateStr)
+		if err != nil {
+			return fmt.Errorf("formato de data de nascimento inválido: %w", err)
+		}
 	}
 
 	year := parsedDate.Year()

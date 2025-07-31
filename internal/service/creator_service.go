@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -58,10 +59,15 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.C
 		return nil, err
 	}
 
-	// Parse birth date
-	birthDate, err := time.Parse("2006-01-02", input.BirthDate)
+	// Parse birth date - try DD/MM/YYYY format first (from jmask), then YYYY-MM-DD
+	var birthDate time.Time
+	birthDate, err := time.Parse("02/01/2006", input.BirthDate)
 	if err != nil {
-		return nil, err
+		// If that fails, try YYYY-MM-DD format (from HTML date input)
+		birthDate, err = time.Parse("2006-01-02", input.BirthDate)
+		if err != nil {
+			return nil, fmt.Errorf("formato de data de nascimento inválido: %w", err)
+		}
 	}
 
 	// Clean CPF (remove non-digits)

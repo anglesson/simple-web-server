@@ -77,10 +77,10 @@
                     <!-- Data de Nascimento -->
                     <div class="mb-3">
                       <label for="data_nascimento" class="form-label fw-semibold">Data de Nascimento <span class="text-danger">*</span></label>
-                      <input type="date" class="form-control" id="data_nascimento" name="birthdate" value="{{ .Data.Form.Birthdate }}" required>
+                      <input type="text" class="form-control date" id="data_nascimento" name="birthdate" value="{{ .Data.Form.Birthdate }}" placeholder="DD/MM/AAAA" required>
                       <div class="form-text">
                         <i class="fa-solid fa-calendar icon-xs me-1"></i>
-                        Selecione a data de nascimento
+                        Digite a data no formato DD/MM/AAAA
                       </div>
                       {{with .Data.Errors.Birthdate}}
                       <div class="text-danger small mt-1">
