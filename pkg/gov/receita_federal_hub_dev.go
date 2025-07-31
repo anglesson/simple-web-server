@@ -94,7 +94,7 @@ func (rf *HubDevService) ConsultaCPF(cpf, dataNascimento string) (*ReceitaFedera
 
 	log.Printf("Objeto populado: %+v", response)
 
-	if response.Result.NomeDaPF == "" {
+	if response.Result.NomeDaPF == "" || response.Result.DataNascimento != dataNascimento {
 		return nil, errors.New("nome não encontrado na receita federal")
 	}
 

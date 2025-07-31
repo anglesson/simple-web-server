@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/gov"
@@ -84,9 +86,20 @@ func (cs *clientServiceImpl) CreateClient(input CreateClientInput) (*CreateClien
 	cleanCPF := cleanCPF(input.CPF)
 	cleanPhone := cleanPhone(input.Phone)
 
+	// Parse birth date - try DD/MM/YYYY format first (from jmask), then YYYY-MM-DD
+	var birthDate time.Time
+	birthDate, err = time.Parse("02/01/2006", input.BirthDate)
+	if err != nil {
+		// If that fails, try YYYY-MM-DD format (from HTML date input)
+		birthDate, err = time.Parse("2006-01-02", input.BirthDate)
+		if err != nil {
+			return nil, fmt.Errorf("formato de data de nascimento inválido: %w", err)
+		}
+	}
+
 	client := models.NewClient(input.Name, cleanCPF, input.BirthDate, input.Email, cleanPhone, creator)
 
-	if err := cs.validateReceita(client); err != nil {
+	if err := cs.validateReceita(client, birthDate); err != nil {
 		return nil, err
 	}
 
@@ -151,12 +164,12 @@ func (cs *clientServiceImpl) CreateBatchClient(clients []*models.Client) error {
 	return nil
 }
 
-func (cs *clientServiceImpl) validateReceita(client *models.Client) error {
+func (cs *clientServiceImpl) validateReceita(client *models.Client, birthDate time.Time) error {
 	if cs.receitaFederalService == nil {
 		return errors.New("serviço da receita federal não está disponível")
 	}
 
-	response, err := cs.receitaFederalService.ConsultaCPF(client.CPF, client.GetBirthdateBR())
+	response, err := cs.receitaFederalService.ConsultaCPF(client.CPF, birthDate.Format("02/01/2006"))
 	if err != nil {
 		return err
 	}
