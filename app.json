@@ -1,0 +1,45 @@
+{
+  "name": "SimpleWebServer",
+  "description": "A simple web server for document management",
+  "repository": "https://github.com/anglesson/simple-web-server",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["go", "web", "server", "documents"],
+  "buildpacks": [
+    {
+      "url": "heroku/go"
+    }
+  ],
+  "env": {
+    "APPLICATION_MODE": {
+      "description": "Application mode (development/production)",
+      "value": "production"
+    },
+    "APPLICATION_NAME": {
+      "description": "Application name",
+      "value": "Docffy"
+    },
+    "APP_KEY": {
+      "description": "Application secret key",
+      "generator": "secret"
+    },
+    "HOST": {
+      "description": "Application host",
+      "value": "https://your-app-name.herokuapp.com"
+    },
+    "PORT": {
+      "description": "Application port (Heroku will set this automatically)",
+      "value": "8080"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini"
+    }
+  ]
+} 

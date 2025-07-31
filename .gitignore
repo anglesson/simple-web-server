@@ -22,5 +22,6 @@ cypress/videos/
 cypress/screenshots/
 node_modules/
 
-# Build output directory
-bin/
+# Build output directory (but allow bin/simple-web-server for Heroku)
+bin/*
+!bin/simple-web-server
