@@ -21,3 +21,6 @@ temp/
 cypress/videos/
 cypress/screenshots/
 node_modules/
+
+# Build output directory
+bin/
