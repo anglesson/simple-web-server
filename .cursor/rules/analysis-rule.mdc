@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 # Analysis Before Modification Rule
 
 ## Objetivo
@@ -126,7 +130,3 @@ A única exceção para não fazer análise completa é quando:
 - **NUNCA** fazer modificações sem análise prévia
 - **NUNCA** ignorar regras estabelecidas do projeto
 - **NUNCA** implementar soluções sem entender o contexto completo
-description:
-globs:
-alwaysApply: false
----

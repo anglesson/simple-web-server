@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -104,6 +106,26 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	}, "admin")
 }
 
+// redirectWithFormData is a helper function to redirect with form data and errors
+func (ch *ClientHandler) redirectWithFormData(w http.ResponseWriter, r *http.Request, formData map[string]interface{}, errors map[string]string) {
+	formJSON, _ := json.Marshal(formData)
+	errorsJSON, _ := json.Marshal(errors)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:  "form",
+		Value: url.QueryEscape(string(formJSON)),
+		Path:  "/",
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:  "errors",
+		Value: url.QueryEscape(string(errorsJSON)),
+		Path:  "/",
+	})
+
+	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+}
+
 func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	flashMessage := ch.flashMessageFactory(w, r)
 
@@ -127,8 +149,20 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 	// TODO: Validar se o cliente existe
 	_, err := ch.clientService.CreateClient(input)
 	if err != nil {
-		flashMessage.Error(err.Error())
-		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+		// Salvar dados do formulário em cookies para persistir após erro
+		formData := map[string]interface{}{
+			"Name":      input.Name,
+			"CPF":       input.CPF,
+			"Birthdate": input.BirthDate,
+			"Email":     input.Email,
+			"Phone":     input.Phone,
+		}
+
+		errors := map[string]string{
+			"general": err.Error(),
+		}
+
+		ch.redirectWithFormData(w, r, formData, errors)
 		return
 	}
 	flashMessage.Success("Cliente foi cadastrado!")
@@ -156,8 +190,17 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 
 	_, err := ch.clientService.Update(input)
 	if err != nil {
-		flashMessage.Error(err.Error())
-		http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+		// Salvar dados do formulário em cookies para persistir após erro
+		formData := map[string]interface{}{
+			"Email": input.Email,
+			"Phone": input.Phone,
+		}
+
+		errors := map[string]string{
+			"general": err.Error(),
+		}
+
+		ch.redirectWithFormData(w, r, formData, errors)
 		return
 	}
 	flashMessage.Success("Cliente foi atualizado!")

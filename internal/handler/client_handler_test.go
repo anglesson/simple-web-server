@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -108,14 +109,30 @@ func (suite *ClientHandlerTestSuite) TestShouldRedirectBackIfErrorsOnService() {
 
 	suite.mockClientService.On("CreateClient", expectedInput).Return(
 		(*service.CreateClientOutput)(nil), errors.New("failed to create client due to service error")).Once()
-	suite.mockFlashMessage.On("Error", "failed to create client due to service error").Return().Once()
 
 	suite.sut.ClientCreateSubmit(rr, req)
 
 	assert.Equal(suite.T(), http.StatusSeeOther, rr.Code)
 
+	// Verificar se os cookies de form e errors foram definidos
+	cookies := rr.Result().Cookies()
+	var formCookie, errorsCookie *http.Cookie
+
+	for _, cookie := range cookies {
+		if cookie.Name == "form" {
+			formCookie = cookie
+		}
+		if cookie.Name == "errors" {
+			errorsCookie = cookie
+		}
+	}
+
+	assert.NotNil(suite.T(), formCookie, "Cookie 'form' deve ser definido")
+	assert.NotNil(suite.T(), errorsCookie, "Cookie 'errors' deve ser definido")
+	assert.Equal(suite.T(), "/", formCookie.Path)
+	assert.Equal(suite.T(), "/", errorsCookie.Path)
+
 	suite.mockClientService.AssertExpectations(suite.T())
-	suite.mockFlashMessage.AssertExpectations(suite.T())
 }
 
 func (suite *ClientHandlerTestSuite) TestShouldCreateClient() {
@@ -189,6 +206,67 @@ func (suite *ClientHandlerTestSuite) TestShouldUpdateClientSuccessfully() {
 
 	suite.mockClientService.AssertExpectations(suite.T())
 	suite.mockFlashMessage.AssertExpectations(suite.T())
+}
+
+func (suite *ClientHandlerTestSuite) TestShouldSaveFormDataInCookiesWhenError() {
+	creatorEmail := "creator@mail"
+
+	expectedInput := service.CreateClientInput{
+		Email:        "client@mail",
+		Name:         "Any Name",
+		Phone:        "Any Phone",
+		BirthDate:    "2004-01-01",
+		EmailCreator: creatorEmail,
+	}
+
+	formData := strings.NewReader("email=client@mail&name=Any Name&phone=Any Phone&birthdate=2004-01-01")
+	req := httptest.NewRequest(http.MethodPost, "/client", formData)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, creatorEmail)
+	req = req.WithContext(ctx)
+
+	rr := httptest.NewRecorder()
+
+	suite.mockClientService.On("CreateClient", expectedInput).Return(
+		(*service.CreateClientOutput)(nil), errors.New("validation error")).Once()
+
+	suite.sut.ClientCreateSubmit(rr, req)
+
+	assert.Equal(suite.T(), http.StatusSeeOther, rr.Code)
+
+	// Verificar se os cookies foram definidos com os dados corretos
+	cookies := rr.Result().Cookies()
+	var formCookie, errorsCookie *http.Cookie
+
+	for _, cookie := range cookies {
+		if cookie.Name == "form" {
+			formCookie = cookie
+		}
+		if cookie.Name == "errors" {
+			errorsCookie = cookie
+		}
+	}
+
+	assert.NotNil(suite.T(), formCookie, "Cookie 'form' deve ser definido")
+	assert.NotNil(suite.T(), errorsCookie, "Cookie 'errors' deve ser definido")
+
+	// Verificar se o cookie de form contém os dados corretos
+	formValue, err := url.QueryUnescape(formCookie.Value)
+	assert.NoError(suite.T(), err)
+
+	// O valor deve conter os dados do formulário
+	assert.Contains(suite.T(), formValue, "Any Name")
+	assert.Contains(suite.T(), formValue, "client@mail")
+	assert.Contains(suite.T(), formValue, "Any Phone")
+	assert.Contains(suite.T(), formValue, "2004-01-01")
+
+	// Verificar se o cookie de errors contém a mensagem de erro
+	errorsValue, err := url.QueryUnescape(errorsCookie.Value)
+	assert.NoError(suite.T(), err)
+	assert.Contains(suite.T(), errorsValue, "validation error")
+
+	suite.mockClientService.AssertExpectations(suite.T())
 }
 
 func TestClientHandlerTestSuite(t *testing.T) {
