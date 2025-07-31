@@ -19,6 +19,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type PurchaseHandler struct {
+	templateRenderer template.TemplateRenderer
+}
+
+func NewPurchaseHandler(templateRenderer template.TemplateRenderer) *PurchaseHandler {
+	return &PurchaseHandler{
+		templateRenderer: templateRenderer,
+	}
+}
+
 func purchaseServiceFactory() *service.PurchaseService {
 	mailPort, _ := strconv.Atoi(config.AppConfig.MailPort)
 	ms := mail.NewEmailService(mail.NewGoMailer(
@@ -30,7 +40,7 @@ func purchaseServiceFactory() *service.PurchaseService {
 	return service.NewPurchaseService(pr, ms)
 }
 
-func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
+func (h *PurchaseHandler) PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Erro to parse form", http.StatusBadRequest)
 		return
@@ -69,7 +79,7 @@ func PurchaseCreateHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/ebook/view/"+ebookIdStr, http.StatusSeeOther)
 }
 
-func PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
+func (h *PurchaseHandler) PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("🔍 PurchaseDownloadHandler chamado: %s", r.URL.Path)
 
 	// Get ID Purchase and File ID
@@ -88,7 +98,7 @@ func PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	// Se não especificou arquivo, mostrar lista de arquivos disponíveis
 	if fileIDStr == "" {
 		log.Printf("📄 Mostrando lista de arquivos para purchase ID: %d", purchaseID)
-		showEbookFiles(w, r, purchaseID)
+		h.showEbookFiles(w, r, purchaseID)
 		return
 	}
 
@@ -117,7 +127,7 @@ func PurchaseDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, outputPath)
 }
 
-func showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
+func (h *PurchaseHandler) showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
 	log.Printf("🔍 showEbookFiles chamado para purchase ID: %d", purchaseID)
 
 	// Buscar informações da compra para o template
@@ -133,14 +143,14 @@ func showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
 	// Verificar se o download está expirado
 	if purchase.IsExpired() {
 		log.Printf("❌ Download expirado para purchase ID: %d", purchaseID)
-		showExpiredDownloadPage(w, r, purchase)
+		h.showExpiredDownloadPage(w, r, purchase)
 		return
 	}
 
 	// Verificar se o limite de downloads foi atingido
 	if !purchase.AvailableDownloads() {
 		log.Printf("❌ Limite de downloads atingido para purchase ID: %d", purchaseID)
-		showLimitExceededPage(w, r, purchase)
+		h.showLimitExceededPage(w, r, purchase)
 		return
 	}
 
@@ -161,10 +171,10 @@ func showEbookFiles(w http.ResponseWriter, r *http.Request, purchaseID int) {
 		"Title": "Download do Ebook",
 	}
 
-	template.ViewWithoutLayout(w, r, "ebook/download", data)
+	h.templateRenderer.ViewWithoutLayout(w, r, "ebook/download", data)
 }
 
-func showLimitExceededPage(w http.ResponseWriter, r *http.Request, purchase *models.Purchase) {
+func (h *PurchaseHandler) showLimitExceededPage(w http.ResponseWriter, r *http.Request, purchase *models.Purchase) {
 	log.Printf("🔍 Mostrando página de limite excedido para purchase ID: %d", purchase.ID)
 
 	data := map[string]interface{}{
@@ -174,10 +184,10 @@ func showLimitExceededPage(w http.ResponseWriter, r *http.Request, purchase *mod
 		"Title": "Limite de Downloads Atingido",
 	}
 
-	template.ViewWithoutLayout(w, r, "ebook/download-limit-exceeded", data)
+	h.templateRenderer.ViewWithoutLayout(w, r, "ebook/download-limit-exceeded", data)
 }
 
-func showExpiredDownloadPage(w http.ResponseWriter, r *http.Request, purchase *models.Purchase) {
+func (h *PurchaseHandler) showExpiredDownloadPage(w http.ResponseWriter, r *http.Request, purchase *models.Purchase) {
 	log.Printf("🔍 Mostrando página de download expirado para purchase ID: %d", purchase.ID)
 
 	// Calcular quantos dias se passaram desde a expiração
@@ -191,5 +201,5 @@ func showExpiredDownloadPage(w http.ResponseWriter, r *http.Request, purchase *m
 		"Title": "Download Expirado",
 	}
 
-	template.ViewWithoutLayout(w, r, "ebook/download-expired", data)
+	h.templateRenderer.ViewWithoutLayout(w, r, "ebook/download-expired", data)
 }

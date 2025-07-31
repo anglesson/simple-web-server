@@ -13,6 +13,33 @@ import (
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 )
 
+// TemplateRenderer interface for template rendering operations
+type TemplateRenderer interface {
+	View(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}, layout string)
+	ViewWithoutLayout(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{})
+}
+
+// TemplateRendererImpl implements TemplateRenderer
+type TemplateRendererImpl struct {
+	templatePath string
+	layoutPath   string
+	partialPath  string
+}
+
+// NewTemplateRenderer creates a new template renderer instance
+func NewTemplateRenderer(templatePath, layoutPath, partialPath string) TemplateRenderer {
+	return &TemplateRendererImpl{
+		templatePath: templatePath,
+		layoutPath:   layoutPath,
+		partialPath:  partialPath,
+	}
+}
+
+// DefaultTemplateRenderer creates a template renderer with default paths
+func DefaultTemplateRenderer() TemplateRenderer {
+	return NewTemplateRenderer("web/pages/", "web/layouts/", "web/partials/")
+}
+
 type PageData struct {
 	ErrorMessage string
 }
@@ -36,7 +63,7 @@ func TemplateFunctions(r *http.Request) template.FuncMap {
 	}
 }
 
-func View(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}, layout string) {
+func (tr *TemplateRendererImpl) View(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}, layout string) {
 	if data == nil {
 		data = make(map[string]interface{})
 	}
@@ -99,7 +126,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Parse the template
-	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseGlob("web/layouts/*.html")
+	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseGlob(tr.layoutPath + "*.html")
 	if err != nil {
 		log.Printf("Erro ao carregar layouts: %v", err)
 		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
@@ -107,7 +134,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Parse partial templates
-	_, err = tmpl.ParseGlob("web/partials/*.html")
+	_, err = tmpl.ParseGlob(tr.partialPath + "*.html")
 	if err != nil {
 		log.Printf("Erro ao carregar parciais: %v", err)
 		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
@@ -115,7 +142,7 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 
 	// Parse the page template
-	_, err = tmpl.ParseFiles("web/pages/" + page + ".html")
+	_, err = tmpl.ParseFiles(tr.templatePath + page + ".html")
 	if err != nil {
 		log.Printf("Erro ao carregar página: %v", err)
 		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
@@ -134,13 +161,13 @@ func View(w http.ResponseWriter, r *http.Request, page string, data map[string]i
 	}
 }
 
-func ViewWithoutLayout(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}) {
+func (tr *TemplateRendererImpl) ViewWithoutLayout(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}) {
 	if data == nil {
 		data = make(map[string]interface{})
 	}
 
 	// Parse the page template directly
-	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseFiles("web/pages/" + page + ".html")
+	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseFiles(tr.templatePath + page + ".html")
 	if err != nil {
 		log.Printf("Erro ao carregar página: %v", err)
 		http.Error(w, "Erro ao carregar página", http.StatusInternalServerError)
@@ -154,4 +181,15 @@ func ViewWithoutLayout(w http.ResponseWriter, r *http.Request, page string, data
 		http.Error(w, "Erro ao renderizar página", http.StatusInternalServerError)
 		return
 	}
+}
+
+// Legacy functions for backward compatibility
+func View(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}, layout string) {
+	renderer := DefaultTemplateRenderer()
+	renderer.View(w, r, page, data, layout)
+}
+
+func ViewWithoutLayout(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}) {
+	renderer := DefaultTemplateRenderer()
+	renderer.ViewWithoutLayout(w, r, page, data)
 }

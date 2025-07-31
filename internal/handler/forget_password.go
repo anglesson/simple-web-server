@@ -6,11 +6,21 @@ import (
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
-func ForgetPasswordView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "forget-password", nil, "guest")
+type ForgetPasswordHandler struct {
+	templateRenderer template.TemplateRenderer
 }
 
-func ForgetPasswordSubmit(w http.ResponseWriter, r *http.Request) {
+func NewForgetPasswordHandler(templateRenderer template.TemplateRenderer) *ForgetPasswordHandler {
+	return &ForgetPasswordHandler{
+		templateRenderer: templateRenderer,
+	}
+}
+
+func (h *ForgetPasswordHandler) ForgetPasswordView(w http.ResponseWriter, r *http.Request) {
+	h.templateRenderer.View(w, r, "forget-password", nil, "guest")
+}
+
+func (h *ForgetPasswordHandler) ForgetPasswordSubmit(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return

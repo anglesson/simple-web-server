@@ -14,14 +14,16 @@ import (
 )
 
 type FileHandler struct {
-	fileService    service.FileService
-	sessionService service.SessionService
+	fileService      service.FileService
+	sessionService   service.SessionService
+	templateRenderer template.TemplateRenderer
 }
 
-func NewFileHandler(fileService service.FileService, sessionService service.SessionService) *FileHandler {
+func NewFileHandler(fileService service.FileService, sessionService service.SessionService, templateRenderer template.TemplateRenderer) *FileHandler {
 	return &FileHandler{
-		fileService:    fileService,
-		sessionService: sessionService,
+		fileService:      fileService,
+		sessionService:   sessionService,
+		templateRenderer: templateRenderer,
 	}
 }
 
@@ -52,7 +54,7 @@ func (h *FileHandler) FileIndexView(w http.ResponseWriter, r *http.Request) {
 		"Title": "Minha Biblioteca de Arquivos",
 	}
 
-	template.View(w, r, "file/index", data, "admin")
+	h.templateRenderer.View(w, r, "file/index", data, "admin")
 }
 
 // FileUploadView exibe o formulário de upload
@@ -67,7 +69,7 @@ func (h *FileHandler) FileUploadView(w http.ResponseWriter, r *http.Request) {
 		"Title": "Upload de Arquivo",
 	}
 
-	template.View(w, r, "file/upload", data, "admin")
+	h.templateRenderer.View(w, r, "file/upload", data, "admin")
 }
 
 // FileUploadSubmit processa o upload de arquivo

@@ -17,6 +17,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/pkg/database"
+	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -28,6 +29,9 @@ func main() {
 	flashServiceFactory := func(w http.ResponseWriter, r *http.Request) web.FlashMessagePort {
 		return web.NewCookieFlashMessage(w, r)
 	}
+
+	// Template renderer
+	templateRenderer := template.DefaultTemplateRenderer()
 
 	// Utils
 	encrypter := utils.NewEncrypter()
@@ -53,12 +57,19 @@ func main() {
 	ebookService := service.NewEbookService()
 
 	// Handlers
-	authHandler := handler.NewAuthHandler(userService, sessionService)
-	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory)
-	creatorHandler := handler.NewCreatorHandler(creatorService, sessionService)
-	settingsHandler := handler.NewSettingsHandler(sessionService)
-	fileHandler := handler.NewFileHandler(fileService, sessionService)
-	salesPageHandler := handler.NewSalesPageHandler(ebookService, creatorService)
+	authHandler := handler.NewAuthHandler(userService, sessionService, templateRenderer)
+	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory, templateRenderer)
+	creatorHandler := handler.NewCreatorHandler(creatorService, sessionService, templateRenderer)
+	settingsHandler := handler.NewSettingsHandler(sessionService, templateRenderer)
+	fileHandler := handler.NewFileHandler(fileService, sessionService, templateRenderer)
+	ebookHandler := handler.NewEbookHandler(ebookService, creatorService, fileService, s3Storage, flashServiceFactory, templateRenderer)
+	salesPageHandler := handler.NewSalesPageHandler(ebookService, creatorService, templateRenderer)
+	dashboardHandler := handler.NewDashboardHandler(templateRenderer)
+	errorHandler := handler.NewErrorHandler(templateRenderer)
+	homeHandler := handler.NewHomeHandler(templateRenderer, errorHandler)
+	forgetPasswordHandler := handler.NewForgetPasswordHandler(templateRenderer)
+	sendHandler := handler.NewSendHandler(templateRenderer)
+	purchaseHandler := handler.NewPurchaseHandler(templateRenderer)
 
 	r := chi.NewRouter()
 
@@ -74,13 +85,13 @@ func main() {
 		r.Post("/login", authHandler.LoginSubmit)
 		r.Get("/register", creatorHandler.RegisterView)
 		r.Post("/register", creatorHandler.RegisterCreatorSSR)
-		r.Get("/forget-password", handler.ForgetPasswordView)
-		r.Post("/forget-password", handler.ForgetPasswordSubmit)
+		r.Get("/forget-password", forgetPasswordHandler.ForgetPasswordView)
+		r.Post("/forget-password", forgetPasswordHandler.ForgetPasswordSubmit)
 		r.Get("/sales/{slug}", salesPageHandler.SalesPageView) // Página de vendas pública
 	})
 
 	// Completely public routes (no middleware)
-	r.Get("/purchase/download/{id}", handler.PurchaseDownloadHandler)
+	r.Get("/purchase/download/{id}", purchaseHandler.PurchaseDownloadHandler)
 
 	// Stripe routes
 	r.Post("/api/create-checkout-session", handler.CreateCheckoutSession)
@@ -93,16 +104,16 @@ func main() {
 		r.Use(middleware.TrialMiddleware)
 
 		r.Post("/logout", authHandler.LogoutSubmit)
-		r.Get("/dashboard", handler.DashboardView)
+		r.Get("/dashboard", dashboardHandler.DashboardView)
 		r.Get("/settings", settingsHandler.SettingsView)
 
 		// Ebook routes
-		r.Get("/ebook", handler.EbookIndexView)
-		r.Get("/ebook/create", handler.EbookCreateView)
-		r.Post("/ebook/create", handler.EbookCreateSubmit)
-		r.Get("/ebook/edit/{id}", handler.EbookUpdateView)
-		r.Get("/ebook/view/{id}", handler.EbookShowView)
-		r.Post("/ebook/update/{id}", handler.EbookUpdateSubmit)
+		r.Get("/ebook", ebookHandler.IndexView)
+		r.Get("/ebook/create", ebookHandler.CreateView)
+		r.Post("/ebook/create", ebookHandler.CreateSubmit)
+		r.Get("/ebook/edit/{id}", ebookHandler.UpdateView)
+		r.Get("/ebook/view/{id}", ebookHandler.ShowView)
+		r.Post("/ebook/update/{id}", ebookHandler.UpdateSubmit)
 		r.Get("/ebook/preview/{id}", salesPageHandler.SalesPagePreviewView) // Preview da página de vendas
 
 		// File routes
@@ -121,11 +132,11 @@ func main() {
 		r.Post("/client/import", clientHandler.ClientImportSubmit)
 
 		// Purchase routes
-		r.Post("/purchase/ebook/{id}", handler.PurchaseCreateHandler)
-		r.Get("/send", handler.SendViewHandler)
+		r.Post("/purchase/ebook/{id}", purchaseHandler.PurchaseCreateHandler)
+		r.Get("/send", sendHandler.SendViewHandler)
 	})
 
-	r.Get("/", handler.HomeView) // Home page deve ser a ultima rota
+	r.Get("/", homeHandler.HomeView) // Home page deve ser a ultima rota
 
 	port := config.AppConfig.Port
 
@@ -136,6 +147,6 @@ func main() {
 
 	log.Println("Starting server on :" + port)
 	if err := server.ListenAndServe(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }

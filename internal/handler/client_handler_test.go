@@ -17,6 +17,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/service"
 
 	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -24,27 +25,43 @@ import (
 	"gorm.io/gorm"
 )
 
+// MockTemplateRenderer implements template.TemplateRenderer for testing
+type MockTemplateRenderer struct {
+	mock.Mock
+}
+
+func (m *MockTemplateRenderer) View(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}, layout string) {
+	m.Called(w, r, page, data, layout)
+}
+
+func (m *MockTemplateRenderer) ViewWithoutLayout(w http.ResponseWriter, r *http.Request, page string, data map[string]interface{}) {
+	m.Called(w, r, page, data)
+}
+
 var _ service.ClientService = (*mocks_service.MockClientService)(nil)
+var _ template.TemplateRenderer = (*MockTemplateRenderer)(nil)
 
 type ClientHandlerTestSuite struct {
 	suite.Suite
-	sut                *handler.ClientHandler
-	mockClientService  *mocks_service.MockClientService
-	mockCreatorService *mocks_service.MockCreatorService
-	mockFlashMessage   *mocks_cookies.MockFlashMessage
-	flashFactory       web.FlashMessageFactory
+	sut                  *handler.ClientHandler
+	mockClientService    *mocks_service.MockClientService
+	mockCreatorService   *mocks_service.MockCreatorService
+	mockFlashMessage     *mocks_cookies.MockFlashMessage
+	mockTemplateRenderer *MockTemplateRenderer
+	flashFactory         web.FlashMessageFactory
 }
 
 func (suite *ClientHandlerTestSuite) SetupTest() {
 	suite.mockClientService = mocks_service.NewMockClientService()
 	suite.mockFlashMessage = new(mocks_cookies.MockFlashMessage)
 	suite.mockCreatorService = new(mocks_service.MockCreatorService)
+	suite.mockTemplateRenderer = new(MockTemplateRenderer)
 
 	suite.flashFactory = func(w http.ResponseWriter, r *http.Request) web.FlashMessagePort {
 		return suite.mockFlashMessage
 	}
 
-	suite.sut = handler.NewClientHandler(suite.mockClientService, suite.mockCreatorService, suite.flashFactory)
+	suite.sut = handler.NewClientHandler(suite.mockClientService, suite.mockCreatorService, suite.flashFactory, suite.mockTemplateRenderer)
 }
 
 func (suite *ClientHandlerTestSuite) TestUserNotFoundInContext() {

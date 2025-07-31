@@ -10,14 +10,16 @@ import (
 )
 
 type AuthHandler struct {
-	userService    service.UserService
-	sessionService service.SessionService
+	userService      service.UserService
+	sessionService   service.SessionService
+	templateRenderer template.TemplateRenderer
 }
 
-func NewAuthHandler(userService service.UserService, sessionService service.SessionService) *AuthHandler {
+func NewAuthHandler(userService service.UserService, sessionService service.SessionService, templateRenderer template.TemplateRenderer) *AuthHandler {
 	return &AuthHandler{
-		userService:    userService,
-		sessionService: sessionService,
+		userService:      userService,
+		sessionService:   sessionService,
+		templateRenderer: templateRenderer,
 	}
 }
 
@@ -25,7 +27,7 @@ func NewAuthHandler(userService service.UserService, sessionService service.Sess
 func (h *AuthHandler) LoginView(w http.ResponseWriter, r *http.Request) {
 	csrfToken := h.sessionService.GenerateCSRFToken()
 	h.sessionService.SetCSRFToken(w)
-	template.View(w, r, "login", map[string]interface{}{
+	h.templateRenderer.View(w, r, "login", map[string]interface{}{
 		"csrf_token": csrfToken,
 	}, "guest")
 }

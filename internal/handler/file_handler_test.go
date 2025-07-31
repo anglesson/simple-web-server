@@ -6,10 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/anglesson/simple-web-server/internal/handler"
+	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/service/mocks"
+	service_mocks "github.com/anglesson/simple-web-server/internal/service/mocks"
+	template_mocks "github.com/anglesson/simple-web-server/pkg/template/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -90,10 +91,11 @@ func (m *MockFileService) GetFilesByCreatorPaginated(creatorID uint, query repos
 func TestNewFileHandler(t *testing.T) {
 	// Arrange
 	mockFileService := &MockFileService{}
-	mockSessionService := &mocks.MockSessionService{}
+	mockSessionService := &service_mocks.MockSessionService{}
+	mockTemplateRenderer := &template_mocks.MockTemplateRenderer{}
 
 	// Act
-	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService)
+	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService, mockTemplateRenderer)
 
 	// Assert
 	assert.NotNil(t, fileHandler)
@@ -102,8 +104,9 @@ func TestNewFileHandler(t *testing.T) {
 func TestFileHandler_FileIndexView(t *testing.T) {
 	// Arrange
 	mockFileService := &MockFileService{}
-	mockSessionService := &mocks.MockSessionService{}
-	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService)
+	mockSessionService := &service_mocks.MockSessionService{}
+	mockTemplateRenderer := &template_mocks.MockTemplateRenderer{}
+	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService, mockTemplateRenderer)
 
 	req, err := http.NewRequest("GET", "/file", nil)
 	assert.NoError(t, err)
@@ -120,8 +123,9 @@ func TestFileHandler_FileIndexView(t *testing.T) {
 func TestFileHandler_FileUploadView(t *testing.T) {
 	// Arrange
 	mockFileService := &MockFileService{}
-	mockSessionService := &mocks.MockSessionService{}
-	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService)
+	mockSessionService := &service_mocks.MockSessionService{}
+	mockTemplateRenderer := &template_mocks.MockTemplateRenderer{}
+	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService, mockTemplateRenderer)
 
 	req, err := http.NewRequest("GET", "/file/upload", nil)
 	assert.NoError(t, err)
@@ -138,8 +142,9 @@ func TestFileHandler_FileUploadView(t *testing.T) {
 func TestFileHandler_FileDeleteSubmit(t *testing.T) {
 	// Arrange
 	mockFileService := &MockFileService{}
-	mockSessionService := &mocks.MockSessionService{}
-	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService)
+	mockSessionService := &service_mocks.MockSessionService{}
+	mockTemplateRenderer := &template_mocks.MockTemplateRenderer{}
+	fileHandler := handler.NewFileHandler(mockFileService, mockSessionService, mockTemplateRenderer)
 
 	req, err := http.NewRequest("POST", "/file/1/delete", nil)
 	assert.NoError(t, err)
@@ -170,8 +175,9 @@ func TestFileHandler_Security_Basic(t *testing.T) {
 	t.Run("should redirect to login when not authenticated", func(t *testing.T) {
 		// Arrange
 		mockFileService := &MockFileService{}
-		mockSessionService := &mocks.MockSessionService{}
-		fileHandler := handler.NewFileHandler(mockFileService, mockSessionService)
+		mockSessionService := &service_mocks.MockSessionService{}
+		mockTemplateRenderer := &template_mocks.MockTemplateRenderer{}
+		fileHandler := handler.NewFileHandler(mockFileService, mockSessionService, mockTemplateRenderer)
 
 		req, _ := http.NewRequest("GET", "/file", nil)
 		rr := httptest.NewRecorder()
@@ -187,8 +193,9 @@ func TestFileHandler_Security_Basic(t *testing.T) {
 	t.Run("should redirect to login when accessing upload without auth", func(t *testing.T) {
 		// Arrange
 		mockFileService := &MockFileService{}
-		mockSessionService := &mocks.MockSessionService{}
-		fileHandler := handler.NewFileHandler(mockFileService, mockSessionService)
+		mockSessionService := &service_mocks.MockSessionService{}
+		mockTemplateRenderer := &template_mocks.MockTemplateRenderer{}
+		fileHandler := handler.NewFileHandler(mockFileService, mockSessionService, mockTemplateRenderer)
 
 		req, _ := http.NewRequest("GET", "/file/upload", nil)
 		rr := httptest.NewRecorder()

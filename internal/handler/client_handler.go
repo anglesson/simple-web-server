@@ -22,13 +22,15 @@ type ClientHandler struct {
 	clientService       service.ClientService
 	creatorService      service.CreatorService
 	flashMessageFactory web.FlashMessageFactory
+	templateRenderer    template.TemplateRenderer
 }
 
-func NewClientHandler(clientService service.ClientService, creatorService service.CreatorService, flashMessageFactory web.FlashMessageFactory) *ClientHandler {
+func NewClientHandler(clientService service.ClientService, creatorService service.CreatorService, flashMessageFactory web.FlashMessageFactory, templateRenderer template.TemplateRenderer) *ClientHandler {
 	return &ClientHandler{
 		clientService:       clientService,
 		creatorService:      creatorService,
 		flashMessageFactory: flashMessageFactory,
+		templateRenderer:    templateRenderer,
 	}
 }
 
@@ -39,7 +41,7 @@ func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template.View(w, r, "client/create", nil, "admin")
+	ch.templateRenderer.View(w, r, "client/create", nil, "admin")
 }
 
 func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +58,7 @@ func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, r.Referer(), http.StatusNotFound)
 	}
 
-	template.View(w, r, "client/update", map[string]interface{}{"Client": client}, "admin")
+	ch.templateRenderer.View(w, r, "client/update", map[string]interface{}{"Client": client}, "admin")
 }
 
 func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +98,7 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	}
 	pagination.SetTotal(totalCount)
 
-	template.View(w, r, "client", map[string]any{
+	ch.templateRenderer.View(w, r, "client", map[string]any{
 		"Clients":    clients,
 		"Pagination": pagination,
 	}, "admin")

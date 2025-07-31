@@ -10,12 +10,14 @@ import (
 )
 
 type SettingsHandler struct {
-	sessionService service.SessionService
+	sessionService   service.SessionService
+	templateRenderer template.TemplateRenderer
 }
 
-func NewSettingsHandler(sessionService service.SessionService) *SettingsHandler {
+func NewSettingsHandler(sessionService service.SessionService, templateRenderer template.TemplateRenderer) *SettingsHandler {
 	return &SettingsHandler{
-		sessionService: sessionService,
+		sessionService:   sessionService,
+		templateRenderer: templateRenderer,
 	}
 }
 
@@ -37,7 +39,7 @@ func (h *SettingsHandler) SettingsView(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Token CSRF: %s", user.CSRFToken)
 
 	// Passar apenas o objeto user para o template
-	template.View(w, r, "settings", map[string]interface{}{
+	h.templateRenderer.View(w, r, "settings", map[string]interface{}{
 		"user": user,
 	}, "admin")
 }

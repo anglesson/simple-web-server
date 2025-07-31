@@ -16,7 +16,17 @@ import (
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
-func SendViewHandler(w http.ResponseWriter, r *http.Request) {
+type SendHandler struct {
+	templateRenderer template.TemplateRenderer
+}
+
+func NewSendHandler(templateRenderer template.TemplateRenderer) *SendHandler {
+	return &SendHandler{
+		templateRenderer: templateRenderer,
+	}
+}
+
+func (h *SendHandler) SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return
@@ -78,5 +88,5 @@ func SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		pagination.SetTotal(int64(len(*clients)))
 	}
 
-	template.View(w, r, "ebook/send", viewData, "admin")
+	h.templateRenderer.View(w, r, "ebook/send", viewData, "admin")
 }

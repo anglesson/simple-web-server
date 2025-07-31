@@ -9,19 +9,21 @@ import (
 )
 
 type CreatorHandler struct {
-	creatorService service.CreatorService
-	sessionService service.SessionService
+	creatorService   service.CreatorService
+	sessionService   service.SessionService
+	templateRenderer template.TemplateRenderer
 }
 
-func NewCreatorHandler(creatorService service.CreatorService, sessionService service.SessionService) *CreatorHandler {
+func NewCreatorHandler(creatorService service.CreatorService, sessionService service.SessionService, templateRenderer template.TemplateRenderer) *CreatorHandler {
 	return &CreatorHandler{
-		creatorService: creatorService,
-		sessionService: sessionService,
+		creatorService:   creatorService,
+		sessionService:   sessionService,
+		templateRenderer: templateRenderer,
 	}
 }
 
 func (ch *CreatorHandler) RegisterView(w http.ResponseWriter, r *http.Request) {
-	template.View(w, r, "creator/register", nil, "guest")
+	ch.templateRenderer.View(w, r, "creator/register", nil, "guest")
 }
 
 func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +46,7 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 	creator, err := ch.creatorService.CreateCreator(input)
 	if err != nil {
 		fmt.Printf("[ERROR]: %s\n", err.Error())
-		template.View(w, r, "creator/register", map[string]interface{}{
+		ch.templateRenderer.View(w, r, "creator/register", map[string]interface{}{
 			"Error": err.Error(),
 			"Form":  input,
 		}, "guest")

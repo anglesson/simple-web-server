@@ -6,6 +6,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
+	"github.com/anglesson/simple-web-server/pkg/template/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
@@ -88,7 +89,8 @@ func TestSalesPageView_EmptySlug(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Testar a lógica de validação
 	slug := ""
@@ -98,6 +100,7 @@ func TestSalesPageView_EmptySlug(t *testing.T) {
 	assert.NotNil(t, handler, "Handler deve ser criado")
 	assert.NotNil(t, handler.ebookService, "EbookService deve ser injetado")
 	assert.NotNil(t, handler.creatorService, "CreatorService deve ser injetado")
+	assert.NotNil(t, handler.templateRenderer, "TemplateRenderer deve ser injetado")
 }
 
 // Teste da lógica de validação de ID vazio
@@ -105,7 +108,8 @@ func TestSalesPagePreviewView_EmptyID(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Testar a lógica de validação
 	ebookID := ""
@@ -120,7 +124,8 @@ func TestSalesPagePreviewView_InvalidID(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Testar a lógica de validação
 	ebookIDStr := "invalid"
@@ -135,7 +140,8 @@ func TestSalesPagePreviewView_NotCreator(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Criar dados de teste
 	user := &models.User{
@@ -176,7 +182,8 @@ func TestSalesPageView_UniqueToCreator(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Criar dados de teste para dois criadores diferentes
 	creator1 := &models.Creator{
@@ -235,7 +242,8 @@ func TestSalesPageView_EbookInactive(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Criar ebook inativo
 	ebook := &models.Ebook{
@@ -268,7 +276,8 @@ func TestSalesPageView_EbookNotFound(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Configurar mock para retornar erro
 	mockEbookService.On("FindBySlug", "ebook-inexistente").Return(nil, gorm.ErrRecordNotFound)
@@ -291,14 +300,16 @@ func TestSalesPageHandler_DependencyInjection(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
 
 	// Criar handler com injeção de dependências
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Verificar se as dependências foram injetadas corretamente
 	assert.NotNil(t, handler, "Handler não deve ser nil")
 	assert.Equal(t, mockEbookService, handler.ebookService, "EbookService deve ser injetado corretamente")
 	assert.Equal(t, mockCreatorService, handler.creatorService, "CreatorService deve ser injetado corretamente")
+	assert.Equal(t, mockTemplateRenderer, handler.templateRenderer, "TemplateRenderer deve ser injetado corretamente")
 }
 
 // Teste de isolamento entre criadores
@@ -306,7 +317,8 @@ func TestSalesPageView_CreatorIsolation(t *testing.T) {
 	// Setup
 	mockEbookService := new(MockEbookService)
 	mockCreatorService := new(MockCreatorService)
-	handler := NewSalesPageHandler(mockEbookService, mockCreatorService)
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	handler := NewSalesPageHandler(mockEbookService, mockCreatorService, mockTemplateRenderer)
 
 	// Criar dois criadores diferentes
 	creator1 := &models.Creator{

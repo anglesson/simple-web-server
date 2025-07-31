@@ -6,11 +6,23 @@ import (
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
-func HomeView(w http.ResponseWriter, r *http.Request) {
+type HomeHandler struct {
+	templateRenderer template.TemplateRenderer
+	errorHandler     *ErrorHandler
+}
+
+func NewHomeHandler(templateRenderer template.TemplateRenderer, errorHandler *ErrorHandler) *HomeHandler {
+	return &HomeHandler{
+		templateRenderer: templateRenderer,
+		errorHandler:     errorHandler,
+	}
+}
+
+func (h *HomeHandler) HomeView(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		ErrorView(w, r, 404)
+		h.errorHandler.ErrorView(w, r, 404)
 		return
 	}
 
-	template.View(w, r, "home", nil, "guest")
+	h.templateRenderer.View(w, r, "home", nil, "guest")
 }

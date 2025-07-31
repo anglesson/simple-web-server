@@ -5,12 +5,23 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
-func DashboardView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := GetSessionUser(r)
+type DashboardHandler struct {
+	templateRenderer template.TemplateRenderer
+}
+
+func NewDashboardHandler(templateRenderer template.TemplateRenderer) *DashboardHandler {
+	return &DashboardHandler{
+		templateRenderer: templateRenderer,
+	}
+}
+
+func (h *DashboardHandler) DashboardView(w http.ResponseWriter, r *http.Request) {
+	loggedUser := middleware.Auth(r)
 	dashRepository := repository.NewDashboardRepository(loggedUser.ID)
 
 	totalEbooks := dashRepository.GetTotalEbooks()
@@ -54,7 +65,7 @@ func DashboardView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template.View(w, r, "dashboard", map[string]any{
+	h.templateRenderer.View(w, r, "dashboard", map[string]any{
 		"TotalEbooks":             totalEbooks,
 		"GetTotalSendEbooks":      totalSendEbooks,
 		"GetTotalClients":         totalClients,

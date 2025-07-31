@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/pkg/template/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
@@ -60,19 +60,18 @@ func TestShowLimitExceededPage(t *testing.T) {
 	req := httptest.NewRequest("GET", "/purchase/download/1", nil)
 	w := httptest.NewRecorder()
 
+	// Criar mock do template renderer
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	mockTemplateRenderer.On("ViewWithoutLayout", w, req, "ebook/download-limit-exceeded", mock.AnythingOfType("map[string]interface {}")).Return()
+
+	// Criar handler
+	handler := NewPurchaseHandler(mockTemplateRenderer)
+
 	// Chamar a função
-	showLimitExceededPage(w, req, purchase)
+	handler.showLimitExceededPage(w, req, purchase)
 
-	// Verificar se a resposta foi bem-sucedida
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Verificar se o conteúdo contém informações sobre limite excedido
-	body := w.Body.String()
-	assert.Contains(t, body, "Limite de Downloads Atingido")
-	assert.Contains(t, body, "Test Ebook")
-	assert.Contains(t, body, "Test Creator")
-	assert.Contains(t, body, "5") // Downloads realizados
-	assert.Contains(t, body, "0") // Downloads disponíveis
+	// Verificar se o template foi chamado
+	mockTemplateRenderer.AssertExpectations(t)
 }
 
 func TestShowExpiredDownloadPage(t *testing.T) {
@@ -103,18 +102,18 @@ func TestShowExpiredDownloadPage(t *testing.T) {
 	req := httptest.NewRequest("GET", "/purchase/download/1", nil)
 	w := httptest.NewRecorder()
 
+	// Criar mock do template renderer
+	mockTemplateRenderer := new(mocks.MockTemplateRenderer)
+	mockTemplateRenderer.On("ViewWithoutLayout", w, req, "ebook/download-expired", mock.AnythingOfType("map[string]interface {}")).Return()
+
+	// Criar handler
+	handler := NewPurchaseHandler(mockTemplateRenderer)
+
 	// Chamar a função
-	showExpiredDownloadPage(w, req, purchase)
+	handler.showExpiredDownloadPage(w, req, purchase)
 
-	// Verificar se a resposta foi bem-sucedida
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Verificar se o conteúdo contém informações sobre expiração
-	body := w.Body.String()
-	assert.Contains(t, body, "Download Expirado")
-	assert.Contains(t, body, "Test Ebook")
-	assert.Contains(t, body, "Test Creator")
-	assert.Contains(t, body, "Expirado há")
+	// Verificar se o template foi chamado
+	mockTemplateRenderer.AssertExpectations(t)
 }
 
 func TestShowEbookFilesWithLimitExceeded(t *testing.T) {

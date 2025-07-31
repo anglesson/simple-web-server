@@ -13,15 +13,17 @@ import (
 
 // SalesPageHandler gerencia as páginas de vendas
 type SalesPageHandler struct {
-	ebookService   service.EbookService
-	creatorService service.CreatorService
+	ebookService     service.EbookService
+	creatorService   service.CreatorService
+	templateRenderer template.TemplateRenderer
 }
 
 // NewSalesPageHandler cria uma nova instância do SalesPageHandler
-func NewSalesPageHandler(ebookService service.EbookService, creatorService service.CreatorService) *SalesPageHandler {
+func NewSalesPageHandler(ebookService service.EbookService, creatorService service.CreatorService, templateRenderer template.TemplateRenderer) *SalesPageHandler {
 	return &SalesPageHandler{
-		ebookService:   ebookService,
-		creatorService: creatorService,
+		ebookService:     ebookService,
+		creatorService:   creatorService,
+		templateRenderer: templateRenderer,
 	}
 }
 
@@ -81,7 +83,7 @@ func (h *SalesPageHandler) SalesPageView(w http.ResponseWriter, r *http.Request)
 		"Creator":       creator,
 	}
 
-	template.View(w, r, "sales_page", data, "guest")
+	h.templateRenderer.View(w, r, "sales_page", data, "guest")
 }
 
 // SalesPagePreviewView exibe a página de vendas em modo preview para o criador
@@ -136,5 +138,5 @@ func (h *SalesPageHandler) SalesPagePreviewView(w http.ResponseWriter, r *http.R
 		"IsPreview":     true,
 	}
 
-	template.View(w, r, "sales_page", data, "guest")
+	h.templateRenderer.View(w, r, "sales_page", data, "guest")
 }
