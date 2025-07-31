@@ -65,32 +65,20 @@ fi
 NEW_VERSION=$(git describe --tags --abbrev=0)
 print_success "Release $NEW_VERSION created successfully"
 
-# Step 2: Build for Heroku
-print_status "Step 2: Building for Heroku..."
-if ! ./scripts/build.sh; then
-    print_error "Build failed. Aborting deploy."
-    exit 1
-fi
-
-# Step 3: Commit build artifacts
-print_status "Step 3: Committing build artifacts..."
-git add bin/simple-web-server
-git commit -m "build: add binary for release $NEW_VERSION"
-
-# Step 4: Push to origin (including tags)
-print_status "Step 4: Pushing to origin..."
+# Step 2: Push to origin (including tags)
+print_status "Step 2: Pushing to origin..."
 git push origin master
 git push origin "$NEW_VERSION"
 
-# Step 5: Deploy to Heroku
-print_status "Step 5: Deploying to Heroku..."
-if ! git push heroku main; then
+# Step 3: Deploy to Heroku (Heroku will build the binary)
+print_status "Step 3: Deploying to Heroku..."
+if ! git push heroku master; then
     print_error "Heroku deploy failed."
     exit 1
 fi
 
-# Step 6: Verify deployment
-print_status "Step 6: Verifying deployment..."
+# Step 4: Verify deployment
+print_status "Step 4: Verifying deployment..."
 sleep 5  # Wait for deployment to complete
 
 # Check if app is running
@@ -100,8 +88,8 @@ else
     print_warning "Deployment verification failed. Check logs with: heroku logs --tail --app $HEROKU_APP"
 fi
 
-# Step 7: Show deployment info
-print_status "Step 7: Deployment information:"
+# Step 5: Show deployment info
+print_status "Step 5: Deployment information:"
 echo "Version: $NEW_VERSION"
 echo "App URL: https://$HEROKU_APP.herokuapp.com"
 echo "Logs: heroku logs --tail --app $HEROKU_APP"

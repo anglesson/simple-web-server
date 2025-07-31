@@ -35,16 +35,9 @@ Se preferir fazer o processo manualmente:
 # 1. Criar release
 ./scripts/release.sh patch  # ou minor/major
 
-# 2. Build para Heroku
-./scripts/build.sh
-
-# 3. Commit do binário
-git add bin/simple-web-server
-git commit -m "build: add binary for release"
-
-# 4. Push para origin e Heroku
-git push origin main
-git push heroku main
+# 2. Push para origin e Heroku
+git push origin master
+git push heroku master
 ```
 
 ## Tipos de Release
@@ -125,20 +118,15 @@ heroku addons:create heroku-postgresql:mini
 
 ## Deploy
 
-### 1. Build local (opcional)
-```bash
-./scripts/build.sh
-```
-
-### 2. Commit das alterações
+### 1. Commit das alterações
 ```bash
 git add .
 git commit -m "feat: prepare for heroku deployment"
 ```
 
-### 3. Deploy
+### 2. Deploy
 ```bash
-git push heroku main
+git push heroku master
 ```
 
 ### 4. Verificar logs
