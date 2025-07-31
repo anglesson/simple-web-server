@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,6 +37,7 @@ type S3Storage interface {
 	UploadFile(file *multipart.FileHeader, key string) (string, error)
 	DeleteFile(key string) error
 	GenerateDownloadLink(key string) string
+	GenerateDownloadLinkWithExpiration(key string, expirationSeconds int) string
 }
 
 type s3Storage struct {
@@ -100,6 +102,23 @@ func (s *s3Storage) GenerateDownloadLink(key string) string {
 		return ""
 	}
 
+	return presignedURL.URL
+}
+
+// GenerateDownloadLinkWithExpiration gera uma URL pré-assinada com expiração customizada (em segundos)
+func (s *s3Storage) GenerateDownloadLinkWithExpiration(key string, expirationSeconds int) string {
+	presigner := s3.NewPresignClient(s.client)
+	params := &s3.GetObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	}
+	presignedURL, err := presigner.PresignGetObject(context.TODO(), params, func(opts *s3.PresignOptions) {
+		opts.Expires = time.Duration(expirationSeconds) * time.Second
+	})
+	if err != nil {
+		log.Printf("Erro ao gerar URL pré-assinada: %v", err)
+		return ""
+	}
 	return presignedURL.URL
 }
 

@@ -30,6 +30,10 @@ func (m *MockS3Storage) GenerateDownloadLink(key string) string {
 	return "presigned-url"
 }
 
+func (m *MockS3Storage) GenerateDownloadLinkWithExpiration(key string, expirationSeconds int) string {
+	return "presigned-url"
+}
+
 // MockEbookRepository para testes
 type MockEbookRepository struct {
 	findByIDFunc          func(id uint) (*models.Ebook, error)

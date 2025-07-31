@@ -115,6 +115,7 @@ func main() {
 		r.Get("/ebook/view/{id}", ebookHandler.ShowView)
 		r.Post("/ebook/update/{id}", ebookHandler.UpdateSubmit)
 		r.Get("/ebook/preview/{id}", salesPageHandler.SalesPagePreviewView) // Preview da página de vendas
+		r.Get("/ebook/{id}/image", ebookHandler.ServeEbookImage)
 
 		// File routes
 		r.Get("/file", fileHandler.FileIndexView)

@@ -87,6 +87,11 @@ func (m *MockS3Storage) GenerateDownloadLink(key string) string {
 	return args.String(0)
 }
 
+func (m *MockS3Storage) GenerateDownloadLinkWithExpiration(key string, expirationSeconds int) string {
+	args := m.Called(key, expirationSeconds)
+	return args.String(0)
+}
+
 // Mock FlashMessage for testing
 type MockFlashMessage struct {
 	mock.Mock

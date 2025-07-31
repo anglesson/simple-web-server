@@ -475,6 +475,83 @@ func (h *EbookHandler) ShowView(w http.ResponseWriter, r *http.Request) {
 	}, "admin")
 }
 
+// ServeEbookImage serve a imagem de capa do ebook de forma segura
+func (h *EbookHandler) ServeEbookImage(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+	if user == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	ebookID := chi.URLParam(r, "id")
+	if ebookID == "" {
+		http.Error(w, "ID do ebook não fornecido", http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.ParseUint(ebookID, 10, 32)
+	if err != nil {
+		http.Error(w, "ID do ebook inválido", http.StatusBadRequest)
+		return
+	}
+
+	ebook, err := h.ebookService.FindByID(uint(id))
+	if err != nil || ebook == nil {
+		http.Error(w, "Ebook não encontrado", http.StatusNotFound)
+		return
+	}
+
+	// Permitir apenas o criador acessar a imagem
+	creator, err := h.creatorService.FindCreatorByUserID(user.ID)
+	if err != nil || creator.ID != ebook.CreatorID {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
+	if ebook.Image == "" {
+		http.Error(w, "Imagem não encontrada", http.StatusNotFound)
+		return
+	}
+
+	// Gerar URL pré-assinada temporária (15 minutos)
+	key := h.extractS3Key(ebook.Image)
+	log.Printf("DEBUG: URL original: %s", ebook.Image)
+	log.Printf("DEBUG: Chave extraída: %s", key)
+	presignedURL := h.s3Storage.GenerateDownloadLinkWithExpiration(key, 15*60) // 15 minutos
+	if presignedURL == "" {
+		http.Error(w, "Erro ao gerar URL da imagem", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, presignedURL, http.StatusTemporaryRedirect)
+}
+
+// extractS3Key extrai a chave S3 de uma URL pública
+func (h *EbookHandler) extractS3Key(url string) string {
+	if url == "" {
+		return ""
+	}
+
+	// Remover parâmetros de query se existirem
+	if queryIndex := strings.Index(url, "?"); queryIndex != -1 {
+		url = url[:queryIndex]
+	}
+
+	// Remover o protocolo
+	if len(url) > 8 && url[0:8] == "https://" {
+		url = url[8:]
+	} else if len(url) > 7 && url[0:7] == "http://" {
+		url = url[7:]
+	}
+
+	// Procurar por "amazonaws.com/"
+	amazonawsIndex := strings.Index(url, "amazonaws.com/")
+	if amazonawsIndex != -1 {
+		return url[amazonawsIndex+14:]
+	}
+
+	return ""
+}
+
 // Helper methods
 
 func (h *EbookHandler) processImageUpload(r *http.Request, creatorID uint) (string, error) {

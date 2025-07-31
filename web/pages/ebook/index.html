@@ -82,7 +82,7 @@
                     <div class="d-flex align-items-center">
                       <div class="avatar avatar-sm me-3">
                         {{ if .Image }}
-                        <img src="{{ .Image }}" alt="{{ .Title }}" class="rounded shadow-sm" width="50" height="50" style="object-fit: cover;" />
+                        <img src="/ebook/{{ .ID }}/image" alt="{{ .Title }}" class="rounded shadow-sm" width="50" height="50" style="object-fit: cover;" />
                         {{ else }}
                         <div class="avatar-content bg-white border d-flex align-items-center justify-content-center">
                           <i class="fa-solid fa-book text-primary" style="font-size: 1.2rem;"></i>

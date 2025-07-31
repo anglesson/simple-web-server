@@ -127,13 +127,9 @@
                               <label class="form-label fw-semibold text-muted">Capa Atual:</label>
                               <div class="d-flex align-items-center">
                                 <div class="me-3">
-                                  <img src="{{.Data.ebook.Image}}" alt="Capa atual do ebook" 
+                                  <img src="/ebook/{{.Data.ebook.ID}}/image" alt="Capa atual do ebook" 
                                        class="rounded shadow-sm" style="width: 80px; height: 80px; object-fit: cover;"
                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                  <div class="bg-light border rounded d-flex align-items-center justify-content-center" 
-                                       style="width: 80px; height: 80px; display: none;">
-                                    <i class="fa-solid fa-file-lines text-muted" style="font-size: 1.5rem;"></i>
-                                  </div>
                                 </div>
                                 <div class="flex-grow-1">
                                   <small class="text-muted d-block">
@@ -142,7 +138,10 @@
                                   </small>
                                   <small class="text-muted d-block">
                                     <i class="fa-solid fa-link-slash icon-xs me-1"></i>
-                                    URL: {{.Data.ebook.Image}}
+                                    URL: 
+                                    <a href="/ebook/{{.Data.ebook.ID}}/image" target="_blank" class="text-truncate d-inline-block" style="max-width: 220px; vertical-align: middle;" title="/ebook/{{.Data.ebook.ID}}/image">
+                                      /ebook/{{.Data.ebook.ID}}/image
+                                    </a>
                                   </small>
                                 </div>
                               </div>
