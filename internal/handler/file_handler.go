@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/models"
+	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/database"
@@ -35,23 +37,48 @@ func (h *FileHandler) FileIndexView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log para debug
-	log.Printf("Buscando arquivos para creator ID: %d", creatorID)
+	// Obter parâmetros de paginação e busca
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	perPage, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	searchTerm := r.URL.Query().Get("search")
+	fileType := r.URL.Query().Get("type")
 
-	// Usar GetFilesByCreator em vez de GetActiveByCreator para mostrar todos os arquivos
-	files, err := h.fileService.GetFilesByCreator(creatorID)
+	// Criar paginação
+	pagination := models.NewPagination(page, perPage)
+
+	// Log para debug
+	log.Printf("Buscando arquivos para creator ID: %d, página: %d, por página: %d", creatorID, page, perPage)
+
+	// Criar query para busca paginada
+	query := repository.FileQuery{
+		CreatorID:  creatorID,
+		FileType:   fileType,
+		SearchTerm: searchTerm,
+		Pagination: pagination,
+	}
+
+	// Buscar arquivos com paginação
+	files, total, err := h.fileService.GetFilesByCreatorPaginated(creatorID, query)
 	if err != nil {
 		log.Printf("Erro ao buscar arquivos: %v", err)
 		http.Error(w, "Erro ao carregar arquivos", http.StatusInternalServerError)
 		return
 	}
 
+	// Configurar paginação com total
+	pagination.SetTotal(total)
+
+	// Adicionar parâmetros de busca à paginação
+	pagination.SearchTerm = searchTerm
+	pagination.FileType = fileType
+
 	// Log para debug
-	log.Printf("Arquivos encontrados: %d", len(files))
+	log.Printf("Arquivos encontrados: %d de %d total", len(files), total)
 
 	data := map[string]interface{}{
-		"Files": files,
-		"Title": "Minha Biblioteca de Arquivos",
+		"Files":      files,
+		"Pagination": pagination,
+		"Title":      "Minha Biblioteca de Arquivos",
 	}
 
 	h.templateRenderer.View(w, r, "file/index", data, "admin")

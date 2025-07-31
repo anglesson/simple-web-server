@@ -19,6 +19,8 @@ type Pagination struct {
 	HasPrev    bool
 	HasNext    bool
 	Pages      []int
+	SearchTerm string
+	FileType   string
 }
 
 // NewPagination creates a new pagination with calculated fields
