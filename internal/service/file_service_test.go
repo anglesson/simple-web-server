@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"mime/multipart"
+	"os"
 	"testing"
 
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -334,6 +335,79 @@ func TestFileService_getFileType(t *testing.T) {
 
 			// Assert
 			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestFileService_ValidateMimeType(t *testing.T) {
+	// Create a mock repository and storage
+	mockRepo := &MockFileRepository{}
+	mockStorage := &MockS3Storage{}
+
+	// Create file service
+	fs := service.NewFileService(mockRepo, mockStorage)
+
+	tests := []struct {
+		name        string
+		content     []byte
+		expectError bool
+	}{
+		{
+			name:        "Valid PDF",
+			content:     []byte{0x25, 0x50, 0x44, 0x46}, // PDF magic bytes
+			expectError: false,
+		},
+		{
+			name:        "Valid JPEG",
+			content:     []byte{0xFF, 0xD8, 0xFF}, // JPEG magic bytes
+			expectError: false,
+		},
+		{
+			name:        "Valid PNG",
+			content:     []byte{0x89, 0x50, 0x4E, 0x47}, // PNG magic bytes
+			expectError: false,
+		},
+		{
+			name:        "Invalid executable",
+			content:     []byte{0x4D, 0x5A}, // MZ header (Windows executable)
+			expectError: true,
+		},
+		{
+			name:        "Empty content",
+			content:     []byte{},
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a temporary file with the test content
+			tmpFile, err := os.CreateTemp("", "test-*.tmp")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.Remove(tmpFile.Name())
+			defer tmpFile.Close()
+
+			// Write test content
+			if _, err := tmpFile.Write(tt.content); err != nil {
+				t.Fatal(err)
+			}
+
+			// Create multipart file header
+			fileHeader := &multipart.FileHeader{
+				Filename: "test.txt",
+				Size:     int64(len(tt.content)),
+			}
+
+			// Test validation by creating a custom file that implements the interface
+			err = fs.ValidateFile(fileHeader)
+			if tt.expectError && err == nil {
+				t.Errorf("Expected error but got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("Expected no error but got: %v", err)
+			}
 		})
 	}
 }

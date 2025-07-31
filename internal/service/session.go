@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/database"
 	"github.com/anglesson/simple-web-server/pkg/utils"
@@ -55,7 +56,7 @@ func (s *SessionServiceImpl) SetSessionToken(w http.ResponseWriter) {
 		Value:    s.SessionToken,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   config.AppConfig.IsProduction(),
 		SameSite: http.SameSiteStrictMode,
 	})
 }
@@ -65,13 +66,13 @@ func (s *SessionServiceImpl) SetCSRFToken(w http.ResponseWriter) {
 		Name:     "csrf_token",
 		Value:    s.CSRFToken,
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false,
-		Secure:   false,
+		HttpOnly: true,
+		Secure:   config.AppConfig.IsProduction(),
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 	}
 	http.SetCookie(w, cookie)
-	log.Printf("CSRF token definido no cookie: %s", s.CSRFToken)
+	log.Printf("CSRF token definido no cookie")
 }
 
 func (s *SessionServiceImpl) ClearSessionToken(w http.ResponseWriter) {
@@ -134,8 +135,8 @@ func (s *SessionServiceImpl) InitSession(w http.ResponseWriter, email string) {
 	}
 
 	log.Printf("Atualizando tokens para o usuário: %s", email)
-	log.Printf("Session Token: %s", s.SessionToken)
-	log.Printf("CSRF Token: %s", s.CSRFToken)
+	log.Printf("Session token generated")
+	log.Printf("CSRF token generated")
 
 	user.SessionToken = s.SessionToken
 	user.CSRFToken = s.CSRFToken

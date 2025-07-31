@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/storage"
@@ -72,7 +73,20 @@ func main() {
 	purchaseHandler := handler.NewPurchaseHandler(templateRenderer)
 	versionHandler := handler.NewVersionHandler()
 
+	// Initialize rate limiters
+	authRateLimiter := middleware.NewRateLimiter(5, time.Minute)    // 5 requests per minute for auth
+	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)   // 100 requests per minute for API
+	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute) // 10 uploads per minute
+
+	// Start cleanup goroutines
+	authRateLimiter.CleanupRateLimiter()
+	apiRateLimiter.CleanupRateLimiter()
+	uploadRateLimiter.CleanupRateLimiter()
+
 	r := chi.NewRouter()
+
+	// Apply security headers to all routes
+	r.Use(middleware.SecurityHeaders)
 
 	fs := http.FileServer(http.Dir("web/assets"))
 	r.Get("/assets/*", func(w http.ResponseWriter, r *http.Request) {
@@ -82,6 +96,7 @@ func main() {
 	// Public routes
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthGuard)
+		r.Use(authRateLimiter.RateLimitMiddleware) // Rate limiting for auth endpoints
 		r.Get("/login", authHandler.LoginView)
 		r.Post("/login", authHandler.LoginSubmit)
 		r.Get("/register", creatorHandler.RegisterView)
@@ -98,10 +113,13 @@ func main() {
 	r.Get("/version", versionHandler.VersionText)
 	r.Get("/api/version", versionHandler.VersionInfo)
 
-	// Stripe routes
-	r.Post("/api/create-checkout-session", handler.CreateCheckoutSession)
-	r.Post("/api/webhook", handler.HandleStripeWebhook)
-	r.Post("/api/watermark", handler.WatermarkHandler)
+	// Stripe routes with rate limiting
+	r.Group(func(r chi.Router) {
+		r.Use(apiRateLimiter.RateLimitMiddleware)
+		r.Post("/api/create-checkout-session", handler.CreateCheckoutSession)
+		r.Post("/api/webhook", handler.HandleStripeWebhook)
+		r.Post("/api/watermark", handler.WatermarkHandler)
+	})
 
 	// Private routes
 	r.Group(func(r chi.Router) {
@@ -122,12 +140,15 @@ func main() {
 		r.Get("/ebook/preview/{id}", salesPageHandler.SalesPagePreviewView) // Preview da página de vendas
 		r.Get("/ebook/{id}/image", ebookHandler.ServeEbookImage)
 
-		// File routes
-		r.Get("/file", fileHandler.FileIndexView)
-		r.Get("/file/upload", fileHandler.FileUploadView)
-		r.Post("/file/upload", fileHandler.FileUploadSubmit)
-		r.Post("/file/{id}/update", fileHandler.FileUpdateSubmit)
-		r.Post("/file/{id}/delete", fileHandler.FileDeleteSubmit)
+		// File routes with upload rate limiting
+		r.Group(func(r chi.Router) {
+			r.Use(uploadRateLimiter.RateLimitMiddleware)
+			r.Get("/file", fileHandler.FileIndexView)
+			r.Get("/file/upload", fileHandler.FileUploadView)
+			r.Post("/file/upload", fileHandler.FileUploadSubmit)
+			r.Post("/file/{id}/update", fileHandler.FileUpdateSubmit)
+			r.Post("/file/{id}/delete", fileHandler.FileDeleteSubmit)
+		})
 
 		// Client routes
 		r.Get("/client", clientHandler.ClientIndexView)
@@ -144,15 +165,7 @@ func main() {
 
 	r.Get("/", homeHandler.HomeView) // Home page deve ser a ultima rota
 
-	port := config.AppConfig.Port
-
-	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: r,
-	}
-
-	log.Println("Starting server on :" + port)
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+	// Start server
+	log.Printf("Server starting on %s:%s", config.AppConfig.Host, config.AppConfig.Port)
+	log.Fatal(http.ListenAndServe(":"+config.AppConfig.Port, r))
 }

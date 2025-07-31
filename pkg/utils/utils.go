@@ -26,7 +26,8 @@ func (e *encrypterImpl) HashPassword(password string) string {
 	// In a real application, use a secure hashing algorithm
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		panic(err) // Handle error appropriately in production code
+		log.Printf("Failed to hash password: %v", err)
+		return "" // Return empty string on error
 	}
 
 	// Convert the hashed password to a string
@@ -44,7 +45,8 @@ func (e *encrypterImpl) CheckPasswordHash(hashedPassword, password string) bool 
 func (e *encrypterImpl) GenerateToken(length int) string {
 	bytes := make([]byte, length)
 	if _, err := rand.Read(bytes); err != nil {
-		log.Fatalf("Failed to generate random token: %v", err)
+		log.Printf("Failed to generate random token: %v", err)
+		return "" // Return empty string on error
 	}
 	return base64.URLEncoding.EncodeToString(bytes)
 }

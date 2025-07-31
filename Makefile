@@ -77,3 +77,31 @@ docker-build:
 # Docker run
 docker-run:
 	docker run -p 8080:8080 simple-web-server:$(VERSION)
+
+# Security checks
+security-check:
+	@echo "🔒 Running security checks..."
+	@echo "Checking for hardcoded credentials..."
+	@grep -r "password.*=" internal/config/ || echo "✅ No hardcoded passwords found"
+	@echo "Checking for insecure cookies..."
+	@grep -r "Secure.*false" internal/ || echo "✅ No insecure cookies found"
+	@grep -r "HttpOnly.*false" internal/ || echo "✅ No HttpOnly false cookies found"
+	@echo "Checking for sensitive logs..."
+	@grep -r "log.*token" internal/ || echo "✅ No token logging found"
+	@echo "Checking for security headers..."
+	@grep -r "X-Content-Type-Options" internal/ || echo "⚠️  Security headers not found"
+	@echo "Checking for rate limiting..."
+	@grep -r "RateLimit" internal/ || echo "⚠️  Rate limiting not found"
+	@echo "✅ Security checks completed"
+
+security-headers-test:
+	@echo "🔒 Testing security headers..."
+	@curl -s -I http://localhost:8080 | grep -E "(X-Content-Type-Options|X-Frame-Options|X-XSS-Protection)" || echo "⚠️  Security headers not found in response"
+
+rate-limit-test:
+	@echo "🔒 Testing rate limiting..."
+	@echo "Making multiple requests to test rate limiting..."
+	@for i in {1..10}; do \
+		curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login; \
+		echo " - Request $$i"; \
+	done

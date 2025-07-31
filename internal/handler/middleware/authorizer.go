@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/database"
@@ -35,7 +36,7 @@ func authorizer(r *http.Request) (string, error) {
 	userRepository := repository.NewGormUserRepository(database.DB)
 	user := userRepository.FindBySessionToken(cookie.Value)
 	if user == nil {
-		log.Printf("User not found for session token: %s", cookie.Value)
+		log.Printf("User not found for session token")
 		return "", ErrUnauthorized
 	}
 
@@ -55,8 +56,7 @@ func authorizer(r *http.Request) (string, error) {
 	}
 
 	if csrfToken != user.CSRFToken {
-		log.Printf("CSRF token mismatch for user: %s. Received: %s, Expected: %s",
-			user.Email, csrfToken, user.CSRFToken)
+		log.Printf("CSRF token mismatch for user: %s", user.Email)
 		return "", ErrUnauthorized
 	}
 
@@ -100,8 +100,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				Name:     "csrf_token",
 				Value:    csrfToken,
 				Path:     "/",
-				HttpOnly: false,
-				Secure:   false,
+				HttpOnly: true,
+				Secure:   config.AppConfig.IsProduction(),
 				SameSite: http.SameSiteStrictMode,
 			})
 		}

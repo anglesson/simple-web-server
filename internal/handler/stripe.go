@@ -35,13 +35,13 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Session token found: %s", sessionCookie.Value)
+	log.Printf("Session token found for user")
 
 	// Find user by session token
 	userRepository := repository.NewGormUserRepository(database.DB)
 	user := userRepository.FindBySessionToken(sessionCookie.Value)
 	if user == nil {
-		log.Printf("User not found for session token: %s", sessionCookie.Value)
+		log.Printf("User not found for session token")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Não autorizado",
@@ -53,8 +53,8 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 
 	// Validate CSRF token
 	csrfToken := r.Header.Get("X-CSRF-Token")
-	log.Printf("CSRF token from header: %s", csrfToken)
-	log.Printf("User CSRF token: %s", user.CSRFToken)
+	log.Printf("CSRF token received from header")
+	log.Printf("User CSRF token validated")
 
 	if csrfToken == "" {
 		log.Printf("Token CSRF não encontrado no header")
@@ -66,9 +66,8 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if csrfToken != user.CSRFToken {
-		log.Printf("Token CSRF inválido para o usuário %s. Token recebido: %s, Token esperado: %s",
-			user.Email, csrfToken, user.CSRFToken)
-		w.WriteHeader(http.StatusForbidden)
+		log.Printf("CSRF token mismatch for user: %s", user.Email)
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Token CSRF inválido",
 		})

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"mime/multipart"
+	"net/http"
 	"path/filepath"
 	"strings"
 
@@ -174,6 +175,48 @@ func (s *fileService) validateFile(file *multipart.FileHeader) error {
 
 	if !allowed {
 		return fmt.Errorf("tipo de arquivo não permitido. Tipos aceitos: %v", allowedExts)
+	}
+
+	// Verificar MIME type
+	if err := s.validateMimeType(file); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateMimeType validates the actual MIME type of the file
+func (s *fileService) validateMimeType(file *multipart.FileHeader) error {
+	// Open file to check MIME type
+	src, err := file.Open()
+	if err != nil {
+		return fmt.Errorf("erro ao abrir arquivo: %w", err)
+	}
+	defer src.Close()
+
+	// Read first 512 bytes to detect MIME type
+	buffer := make([]byte, 512)
+	_, err = src.Read(buffer)
+	if err != nil {
+		return fmt.Errorf("erro ao ler arquivo: %w", err)
+	}
+
+	// Detect MIME type
+	mimeType := http.DetectContentType(buffer)
+
+	// Allowed MIME types
+	allowedMimeTypes := map[string]bool{
+		"application/pdf":    true,
+		"application/msword": true,
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
+		"image/jpeg": true,
+		"image/jpg":  true,
+		"image/png":  true,
+		"image/gif":  true,
+	}
+
+	if !allowedMimeTypes[mimeType] {
+		return fmt.Errorf("tipo MIME não permitido: %s", mimeType)
 	}
 
 	return nil
