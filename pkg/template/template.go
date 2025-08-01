@@ -132,6 +132,12 @@ func (tr *TemplateRendererImpl) View(w http.ResponseWriter, r *http.Request, pag
 		log.Printf("Usuário não encontrado no contexto")
 	}
 
+	// Get subscription data from context
+	if subscriptionData := middleware.GetSubscriptionData(r); subscriptionData != nil {
+		data["SubscriptionStatus"] = subscriptionData.Status
+		data["SubscriptionDaysLeft"] = subscriptionData.DaysLeft
+	}
+
 	// Parse the template
 	tmpl, err := template.New("").Funcs(TemplateFunctions(r)).ParseGlob(tr.layoutPath + "*.html")
 	if err != nil {

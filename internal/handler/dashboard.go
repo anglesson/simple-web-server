@@ -8,7 +8,6 @@ import (
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
@@ -33,28 +32,18 @@ func getInitials(name string) string {
 }
 
 type DashboardHandler struct {
-	templateRenderer    template.TemplateRenderer
-	subscriptionService service.SubscriptionService
+	templateRenderer template.TemplateRenderer
 }
 
-func NewDashboardHandler(templateRenderer template.TemplateRenderer, subscriptionService service.SubscriptionService) *DashboardHandler {
+func NewDashboardHandler(templateRenderer template.TemplateRenderer) *DashboardHandler {
 	return &DashboardHandler{
-		templateRenderer:    templateRenderer,
-		subscriptionService: subscriptionService,
+		templateRenderer: templateRenderer,
 	}
 }
 
 func (h *DashboardHandler) DashboardView(w http.ResponseWriter, r *http.Request) {
 	loggedUser := middleware.Auth(r)
 	dashRepository := repository.NewDashboardRepository(loggedUser.ID)
-
-	// Get subscription status
-	subscriptionStatus, daysLeft, err := h.subscriptionService.GetUserSubscriptionStatus(loggedUser.ID)
-	if err != nil {
-		log.Printf("Error getting subscription status: %v", err)
-		subscriptionStatus = "inactive"
-		daysLeft = 0
-	}
 
 	totalEbooks := dashRepository.GetTotalEbooks()
 	totalSendEbooks := dashRepository.GetTotalSendEbooks()
@@ -118,7 +107,5 @@ func (h *DashboardHandler) DashboardView(w http.ResponseWriter, r *http.Request)
 		"TopEbooksJSON":           string(topEbooksJSON),
 		"TopClients":              topClientsWithInitials,
 		"TopDownloadedEbooksJSON": string(topDownloadedEbooksJSON),
-		"SubscriptionStatus":      subscriptionStatus,
-		"SubscriptionDaysLeft":    daysLeft,
 	}, "admin")
 }

@@ -66,7 +66,7 @@ func main() {
 	fileHandler := handler.NewFileHandler(fileService, sessionService, templateRenderer, flashServiceFactory)
 	ebookHandler := handler.NewEbookHandler(ebookService, creatorService, fileService, s3Storage, flashServiceFactory, templateRenderer)
 	salesPageHandler := handler.NewSalesPageHandler(ebookService, creatorService, templateRenderer)
-	dashboardHandler := handler.NewDashboardHandler(templateRenderer, subscriptionService)
+	dashboardHandler := handler.NewDashboardHandler(templateRenderer)
 	errorHandler := handler.NewErrorHandler(templateRenderer)
 	homeHandler := handler.NewHomeHandler(templateRenderer, errorHandler)
 	forgetPasswordHandler := handler.NewForgetPasswordHandler(templateRenderer, userService, emailService)
@@ -140,6 +140,7 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)
 		r.Use(middleware.TrialMiddleware)
+		r.Use(middleware.SubscriptionMiddleware(subscriptionService))
 
 		r.Post("/logout", authHandler.LogoutSubmit)
 		r.Get("/dashboard", dashboardHandler.DashboardView)
