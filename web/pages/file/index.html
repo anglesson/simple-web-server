@@ -102,9 +102,9 @@
                       </div>
                       <div class="lh-1">
                         <h5 class="mb-1 fw-semi-bold">
-                          <a href="{{.S3URL}}" target="_blank" class="text-inherit">{{ .OriginalName }}</a>
+                          <a href="{{.S3URL}}" target="_blank" class="text-inherit">{{ .Name }}</a>
                         </h5>
-                        <p class="mb-0 fs-6 text-muted">{{ .Name }}</p>
+                        <p class="mb-0 fs-6 text-muted">{{ .OriginalName }}</p>
                       </div>
                     </div>
                   </td>
@@ -155,7 +155,7 @@
                           <i class="fa-solid fa-download icon-xs me-2"></i>
                           Download
                         </a>
-                        <a class="dropdown-item" href="#" onclick="editFile({{.ID}}, '{{.Description}}')">
+                        <a class="dropdown-item" href="#" onclick="editFile({{.ID}}, '{{.Name | html}}', '{{.Description | html}}')">
                           <i class="fa-solid fa-pen-to-square icon-xs me-2"></i>
                           Editar
                         </a>
@@ -194,6 +194,10 @@
       </div>
       <form id="editFileForm" method="POST">
         <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label">Nome do Arquivo</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Digite o nome do arquivo..." required>
+          </div>
           <div class="mb-3">
             <label for="description" class="form-label">Descrição</label>
             <textarea class="form-control" id="description" name="description" rows="3" placeholder="Descreva o conteúdo deste arquivo..."></textarea>
@@ -263,7 +267,8 @@
     });
   };
 
-  function editFile(fileId, description) {
+  function editFile(fileId, name, description) {
+    document.getElementById('name').value = name;
     document.getElementById('description').value = description;
     document.getElementById('editFileForm').action = `/file/${fileId}/update`;
     

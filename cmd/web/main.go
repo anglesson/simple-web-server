@@ -63,7 +63,7 @@ func main() {
 	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory, templateRenderer)
 	creatorHandler := handler.NewCreatorHandler(creatorService, sessionService, templateRenderer)
 	settingsHandler := handler.NewSettingsHandler(sessionService, templateRenderer)
-	fileHandler := handler.NewFileHandler(fileService, sessionService, templateRenderer)
+	fileHandler := handler.NewFileHandler(fileService, sessionService, templateRenderer, flashServiceFactory)
 	ebookHandler := handler.NewEbookHandler(ebookService, creatorService, fileService, s3Storage, flashServiceFactory, templateRenderer)
 	salesPageHandler := handler.NewSalesPageHandler(ebookService, creatorService, templateRenderer)
 	dashboardHandler := handler.NewDashboardHandler(templateRenderer)

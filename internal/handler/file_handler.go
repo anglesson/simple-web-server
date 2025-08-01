@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
@@ -16,16 +17,18 @@ import (
 )
 
 type FileHandler struct {
-	fileService      service.FileService
-	sessionService   service.SessionService
-	templateRenderer template.TemplateRenderer
+	fileService         service.FileService
+	sessionService      service.SessionService
+	templateRenderer    template.TemplateRenderer
+	flashMessageFactory web.FlashMessageFactory
 }
 
-func NewFileHandler(fileService service.FileService, sessionService service.SessionService, templateRenderer template.TemplateRenderer) *FileHandler {
+func NewFileHandler(fileService service.FileService, sessionService service.SessionService, templateRenderer template.TemplateRenderer, flashMessageFactory web.FlashMessageFactory) *FileHandler {
 	return &FileHandler{
-		fileService:      fileService,
-		sessionService:   sessionService,
-		templateRenderer: templateRenderer,
+		fileService:         fileService,
+		sessionService:      sessionService,
+		templateRenderer:    templateRenderer,
+		flashMessageFactory: flashMessageFactory,
 	}
 }
 
@@ -169,7 +172,7 @@ func (h *FileHandler) FileDeleteSubmit(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/file?success=delete", http.StatusSeeOther)
 }
 
-// FileUpdateSubmit atualiza descrição do arquivo
+// FileUpdateSubmit atualiza nome e descrição do arquivo
 func (h *FileHandler) FileUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 	creatorID := h.getCreatorIDFromSession(r)
 	if creatorID == 0 {
@@ -196,15 +199,26 @@ func (h *FileHandler) FileUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	name := r.FormValue("name")
 	description := r.FormValue("description")
 
-	err = h.fileService.UpdateFile(uint(fileID), description)
-	if err != nil {
-		http.Error(w, "Erro ao atualizar arquivo", http.StatusInternalServerError)
+	// Validar se o nome não está vazio
+	if name == "" {
+		http.Error(w, "Nome do arquivo é obrigatório", http.StatusBadRequest)
 		return
 	}
 
-	http.Redirect(w, r, "/file?success=update", http.StatusSeeOther)
+	err = h.fileService.UpdateFile(uint(fileID), name, description)
+	if err != nil {
+		flashMessage := h.flashMessageFactory(w, r)
+		flashMessage.Error("Erro ao atualizar arquivo")
+		http.Redirect(w, r, "/file", http.StatusSeeOther)
+		return
+	}
+
+	flashMessage := h.flashMessageFactory(w, r)
+	flashMessage.Success("Arquivo atualizado com sucesso!")
+	http.Redirect(w, r, "/file", http.StatusSeeOther)
 }
 
 // getCreatorIDFromSession extrai o ID do criador da sessão usando o SessionService injetado

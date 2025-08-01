@@ -20,7 +20,7 @@ type FileService interface {
 	GetFilesByCreatorPaginated(creatorID uint, query repository.FileQuery) ([]*models.File, int64, error)
 	GetActiveByCreator(creatorID uint) ([]*models.File, error)
 	GetFileByID(id uint) (*models.File, error)
-	UpdateFile(id uint, description string) error
+	UpdateFile(id uint, name, description string) error
 	DeleteFile(id uint) error
 	GetFilesByType(creatorID uint, fileType string) ([]*models.File, error)
 	ValidateFile(file *multipart.FileHeader) error
@@ -117,12 +117,13 @@ func (s *fileService) GetFileByID(id uint) (*models.File, error) {
 	return s.fileRepository.FindByID(id)
 }
 
-func (s *fileService) UpdateFile(id uint, description string) error {
+func (s *fileService) UpdateFile(id uint, name, description string) error {
 	file, err := s.fileRepository.FindByID(id)
 	if err != nil {
 		return err
 	}
 
+	file.Name = name
 	file.Description = description
 	return s.fileRepository.Update(file)
 }
