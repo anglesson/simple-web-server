@@ -43,7 +43,14 @@
                     <div class="mb-3">
                       <label for="title" class="form-label fw-semibold">Título do Ebook <span class="text-danger">*</span></label>
                       <input type="text" class="form-control" id="title" name="title" required 
-                             placeholder="Ex: Guia Completo de Marketing Digital">
+                             placeholder="Ex: Guia Completo de Marketing Digital"
+                             value="{{.Data.Form.title}}">
+                      {{with .Data.Errors.title}}
+                      <div class="text-danger mt-1">
+                        <i class="fa-solid fa-exclamation-triangle icon-xs me-1"></i>
+                        {{.}}
+                      </div>
+                      {{end}}
                       <div class="form-text">
                         <i class="fa-solid fa-lightbulb icon-xs me-1"></i>
                         Crie um título atrativo que desperte interesse
@@ -53,7 +60,13 @@
                     <div class="mb-3">
                       <label for="description" class="form-label fw-semibold">Descrição Curta <span class="text-danger">*</span></label>
                       <textarea class="form-control" id="description" name="description" rows="3" required
-                                placeholder="Descreva brevemente o que o leitor encontrará neste ebook..."></textarea>
+                                placeholder="Descreva brevemente o que o leitor encontrará neste ebook...">{{.Data.Form.description}}</textarea>
+                      {{with .Data.Errors.description}}
+                      <div class="text-danger mt-1">
+                        <i class="fa-solid fa-exclamation-triangle icon-xs me-1"></i>
+                        {{.}}
+                      </div>
+                      {{end}}
                       <div class="form-text">
                         <i class="fa-solid fa-circle-info icon-xs me-1"></i>
                         Máximo 120 caracteres
@@ -67,8 +80,15 @@
                           <div class="input-group">
                             <span class="input-group-text">R$</span>
                             <input type="number" class="form-control" id="value" name="value" step="0.01" min="0" required
-                                   placeholder="29.90">
+                                   placeholder="29.90"
+                                   value="{{.Data.Form.value}}">
                           </div>
+                          {{with .Data.Errors.value}}
+                          <div class="text-danger mt-1">
+                            <i class="fa-solid fa-exclamation-triangle icon-xs me-1"></i>
+                            {{.}}
+                          </div>
+                          {{end}}
                           <div class="form-text">
                             <i class="fa-solid fa-dollar-sign icon-xs me-1"></i>
                             Defina um preço competitivo
@@ -79,6 +99,12 @@
                         <div class="mb-3">
                           <label for="image" class="form-label fw-semibold">Imagem de Capa</label>
                           <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                          {{with .Data.Errors.image}}
+                          <div class="text-danger mt-1">
+                            <i class="fa-solid fa-exclamation-triangle icon-xs me-1"></i>
+                            {{.}}
+                          </div>
+                          {{end}}
                           <div class="form-text">
                             <i class="fa-solid fa-image icon-xs me-1"></i>
                             Recomendado: 800x600px
@@ -93,6 +119,14 @@
                       <i class="fa-solid fa-folder icon-sm me-2"></i>
                       Selecionar Arquivos da Biblioteca
                     </h5>
+                    {{with .Data.Errors.files}}
+                    <div class="alert alert-danger border-0 mb-3">
+                      <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-exclamation-triangle icon-sm me-2"></i>
+                        <div>{{.}}</div>
+                      </div>
+                    </div>
+                    {{end}}
                     {{if .Data.Files}}
                     <div class="alert alert-info border-0">
                       <div class="d-flex align-items-center">
@@ -252,7 +286,13 @@
                     <div class="mb-3">
                       <label for="sales_page" class="form-label fw-semibold">Conteúdo da Página de Vendas <span class="text-danger">*</span></label>
                       <textarea class="form-control" id="sales_page" name="sales_page" rows="15" required
-                                placeholder="Escreva aqui o conteúdo da sua página de vendas..."></textarea>
+                                placeholder="Escreva aqui o conteúdo da sua página de vendas...">{{.Data.Form.sales_page}}</textarea>
+                      {{with .Data.Errors.sales_page}}
+                      <div class="text-danger mt-1">
+                        <i class="fa-solid fa-exclamation-triangle icon-xs me-1"></i>
+                        {{.}}
+                      </div>
+                      {{end}}
                       <div class="form-text">
                         <strong>Dicas para uma página de vendas eficaz:</strong><br>
                         • Comece com um título impactante<br>

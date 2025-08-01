@@ -3,11 +3,15 @@ package handler_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"encoding/json"
 	"mime/multipart"
+	"net/url"
+	"strings"
 
 	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
@@ -281,6 +285,208 @@ func (suite *EbookHandlerTestSuite) TestShowView_EbookNotFound() {
 	// Assert
 	assert.Equal(suite.T(), http.StatusInternalServerError, w.Code)
 	suite.mockEbookService.AssertExpectations(suite.T())
+}
+
+func (suite *EbookHandlerTestSuite) TestCreateSubmit_Success() {
+	// Arrange
+	formData := url.Values{}
+	formData.Set("title", "Test Ebook")
+	formData.Set("description", "Test Description")
+	formData.Set("sales_page", "Test Sales Page")
+	formData.Set("value", "29,90") // Use comma for Brazilian format
+	formData.Set("selected_files", "1")
+	formData.Set("selected_files", "2")
+
+	req := httptest.NewRequest("POST", "/ebook/create", strings.NewReader(formData.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Add user context directly
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, "test@example.com")
+	req = req.WithContext(ctx)
+
+	w := httptest.NewRecorder()
+
+	// Mock creator service
+	creator := &models.Creator{}
+	creator.ID = 1
+	suite.mockCreatorService.On("FindCreatorByUserID", uint(1)).Return(creator, nil)
+
+	// Mock file service for selected files
+	file1 := &models.File{}
+	file1.ID = 1
+	file2 := &models.File{}
+	file2.ID = 2
+	suite.mockFileService.On("GetFileByID", uint(1)).Return(file1, nil)
+	suite.mockFileService.On("GetFileByID", uint(2)).Return(file2, nil)
+
+	// Mock ebook service
+	suite.mockEbookService.On("Create", mock.AnythingOfType("*models.Ebook")).Return(nil)
+
+	// Act
+	suite.sut.CreateSubmit(w, req)
+
+	// Assert
+	resp := w.Result()
+
+	assert.Equal(suite.T(), http.StatusSeeOther, resp.StatusCode)
+
+	suite.mockCreatorService.AssertExpectations(suite.T())
+	suite.mockFileService.AssertExpectations(suite.T())
+	suite.mockEbookService.AssertExpectations(suite.T())
+}
+
+func (suite *EbookHandlerTestSuite) TestCreateSubmit_ValidationErrors() {
+	// Arrange
+	formData := url.Values{}
+	formData.Set("title", "")                                                                                                                              // Empty title
+	formData.Set("description", "A very long description that exceeds the maximum allowed length of 120 characters and should trigger a validation error") // Too long
+	formData.Set("sales_page", "")                                                                                                                         // Empty sales page
+	formData.Set("value", "invalid")                                                                                                                       // Invalid value
+	// No files selected
+
+	req := httptest.NewRequest("POST", "/ebook/create", strings.NewReader(formData.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = suite.createRequestWithUser("test@example.com")
+
+	w := httptest.NewRecorder()
+
+	// Act
+	suite.sut.CreateSubmit(w, req)
+
+	// Assert
+	resp := w.Result()
+	assert.Equal(suite.T(), http.StatusSeeOther, resp.StatusCode)
+
+	// Check if cookies were set with errors
+	cookies := resp.Cookies()
+	formCookie := findCookie(cookies, "form")
+	errorsCookie := findCookie(cookies, "errors")
+
+	assert.NotNil(suite.T(), formCookie, "Form cookie should be set")
+	assert.NotNil(suite.T(), errorsCookie, "Errors cookie should be set")
+
+	// Verify errors in cookie
+	errorsValue, _ := url.QueryUnescape(errorsCookie.Value)
+	var savedErrors map[string]string
+	err := json.Unmarshal([]byte(errorsValue), &savedErrors)
+	assert.NoError(suite.T(), err)
+
+	// Should have errors for empty title, long description, empty sales page, invalid value, and no files
+	assert.Contains(suite.T(), savedErrors, "title", "Should have title error")
+	assert.Contains(suite.T(), savedErrors, "description", "Should have description error")
+	assert.Contains(suite.T(), savedErrors, "sales_page", "Should have sales_page error")
+	assert.Contains(suite.T(), savedErrors, "value", "Should have value error")
+	assert.Contains(suite.T(), savedErrors, "files", "Should have files error")
+}
+
+func (suite *EbookHandlerTestSuite) TestCreateSubmit_DescriptionTooLong() {
+	// Arrange
+	formData := url.Values{}
+	formData.Set("title", "Valid Title")
+	formData.Set("description", "This is a very long description that definitely exceeds the maximum allowed length of 120 characters and should trigger a validation error because it's way too long for the database field and contains more than 120 characters which is the limit")
+	formData.Set("sales_page", "Valid Sales Page")
+	formData.Set("value", "29,90")
+	formData.Set("selected_files", "1")
+
+	req := httptest.NewRequest("POST", "/ebook/create", strings.NewReader(formData.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Add user context directly
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, "test@example.com")
+	req = req.WithContext(ctx)
+
+	w := httptest.NewRecorder()
+
+	// Act
+	suite.sut.CreateSubmit(w, req)
+
+	// Assert
+	resp := w.Result()
+	assert.Equal(suite.T(), http.StatusSeeOther, resp.StatusCode)
+
+	// Check if cookies were set with errors
+	cookies := resp.Cookies()
+	errorsCookie := findCookie(cookies, "errors")
+	formCookie := findCookie(cookies, "form")
+
+	assert.NotNil(suite.T(), errorsCookie, "Errors cookie should be set")
+	assert.NotNil(suite.T(), formCookie, "Form cookie should be set")
+
+	// Verify description error in cookie
+	errorsValue, _ := url.QueryUnescape(errorsCookie.Value)
+	var savedErrors map[string]string
+	err := json.Unmarshal([]byte(errorsValue), &savedErrors)
+	assert.NoError(suite.T(), err)
+
+	// Verify form data in cookie
+	formValue, _ := url.QueryUnescape(formCookie.Value)
+	var savedForm map[string]interface{}
+	err = json.Unmarshal([]byte(formValue), &savedForm)
+	assert.NoError(suite.T(), err)
+
+	assert.Contains(suite.T(), savedErrors, "description", "Should have description error")
+	assert.Contains(suite.T(), savedErrors["description"], "120", "Error should mention 120 character limit")
+
+	// Verify form data is preserved
+	assert.Equal(suite.T(), "Valid Title", savedForm["title"])
+	assert.Equal(suite.T(), "Valid Sales Page", savedForm["sales_page"])
+	assert.Equal(suite.T(), 29.9, savedForm["value"])
+}
+
+func (suite *EbookHandlerTestSuite) TestCreateSubmit_SimpleValidation() {
+	// Arrange - simple test with just description too long
+	formData := url.Values{}
+	formData.Set("title", "Valid Title")
+	formData.Set("description", "This is a very long description that definitely exceeds the maximum allowed length of 120 characters and should trigger a validation error because it's way too long for the database field and contains more than 120 characters which is the limit")
+	formData.Set("sales_page", "Valid Sales Page")
+	formData.Set("value", "29,90")
+	formData.Set("selected_files", "1")
+
+	req := httptest.NewRequest("POST", "/ebook/create", strings.NewReader(formData.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Add user context directly
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, "test@example.com")
+	req = req.WithContext(ctx)
+
+	// Debug: check if form data is being read correctly
+	fmt.Printf("Form data encoded: %s\n", formData.Encode())
+
+	w := httptest.NewRecorder()
+
+	// Act
+	suite.sut.CreateSubmit(w, req)
+
+	// Assert
+	resp := w.Result()
+	assert.Equal(suite.T(), http.StatusSeeOther, resp.StatusCode)
+
+	// Check if cookies were set with errors
+	cookies := resp.Cookies()
+	errorsCookie := findCookie(cookies, "errors")
+
+	assert.NotNil(suite.T(), errorsCookie, "Errors cookie should be set")
+
+	// Verify description error in cookie
+	errorsValue, _ := url.QueryUnescape(errorsCookie.Value)
+	var savedErrors map[string]string
+	err := json.Unmarshal([]byte(errorsValue), &savedErrors)
+	assert.NoError(suite.T(), err)
+
+	// Debug: print all errors
+	fmt.Printf("All errors: %+v\n", savedErrors)
+
+	// Should have description error for being too long
+	assert.Contains(suite.T(), savedErrors, "description", "Should have description error")
+}
+
+func findCookie(cookies []*http.Cookie, name string) *http.Cookie {
+	for _, cookie := range cookies {
+		if cookie.Name == name {
+			return cookie
+		}
+	}
+	return nil
 }
 
 func TestEbookHandlerTestSuite(t *testing.T) {

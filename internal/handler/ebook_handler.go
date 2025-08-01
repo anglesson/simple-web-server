@@ -161,19 +161,35 @@ func (h *EbookHandler) CreateSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Criando e-book")
-	errors := make(map[string]string)
 
-	value, err := utils.BRLToFloat(r.FormValue("value"))
-	if err != nil {
-		log.Println("Falha na conversão do e-book")
-		http.Error(w, "erro na conversão", http.StatusInternalServerError)
-		return
+	// Parse multipart form data for file uploads
+	if err := r.ParseMultipartForm(32 << 20); err != nil { // 32 MB max
+		// If multipart parsing fails, try regular form parsing
+		if err := r.ParseForm(); err != nil {
+			log.Printf("Erro ao fazer parse do formulário: %v", err)
+			http.Error(w, "Erro ao processar formulário", http.StatusBadRequest)
+			return
+		}
 	}
+
+	errors := make(map[string]string)
 
 	// Validar arquivos selecionados
 	selectedFiles := r.Form["selected_files"]
 	if len(selectedFiles) == 0 {
 		errors["files"] = "Selecione pelo menos um arquivo para o ebook"
+	}
+
+	// Processar valor apenas se não houver erro de conversão
+	var value float64
+	valueStr := r.FormValue("value")
+	if valueStr != "" {
+		var err error
+		value, err = utils.BRLToFloat(valueStr)
+		if err != nil {
+			log.Println("Falha na conversão do valor do e-book")
+			errors["value"] = "Valor inválido. Use apenas números e vírgula (ex: 29,90)"
+		}
 	}
 
 	form := models.EbookRequest{
