@@ -294,8 +294,8 @@ func (suite *EbookHandlerTestSuite) TestCreateSubmit_Success() {
 	formData.Set("description", "Test Description")
 	formData.Set("sales_page", "Test Sales Page")
 	formData.Set("value", "29,90") // Use comma for Brazilian format
-	formData.Set("selected_files", "1")
-	formData.Set("selected_files", "2")
+	formData.Add("selected_files", "1")
+	formData.Add("selected_files", "2")
 
 	req := httptest.NewRequest("POST", "/ebook/create", strings.NewReader(formData.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -314,8 +314,10 @@ func (suite *EbookHandlerTestSuite) TestCreateSubmit_Success() {
 	// Mock file service for selected files
 	file1 := &models.File{}
 	file1.ID = 1
+	file1.CreatorID = 1 // Set CreatorID to match the creator
 	file2 := &models.File{}
 	file2.ID = 2
+	file2.CreatorID = 1 // Set CreatorID to match the creator
 	suite.mockFileService.On("GetFileByID", uint(1)).Return(file1, nil)
 	suite.mockFileService.On("GetFileByID", uint(2)).Return(file2, nil)
 
