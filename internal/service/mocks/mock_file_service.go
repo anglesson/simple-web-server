@@ -52,8 +52,8 @@ func (m *MockFileService) GetFileByID(id uint) (*models.File, error) {
 	return args.Get(0).(*models.File), args.Error(1)
 }
 
-func (m *MockFileService) UpdateFile(id uint, description string) error {
-	args := m.Called(id, description)
+func (m *MockFileService) UpdateFile(id uint, name, description string) error {
+	args := m.Called(id, name, description)
 	return args.Error(0)
 }
 

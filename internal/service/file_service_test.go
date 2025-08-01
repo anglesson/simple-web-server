@@ -172,7 +172,7 @@ func TestFileService_UpdateFile(t *testing.T) {
 	mockRepo.On("Update", existingFile).Return(nil)
 
 	// Act
-	err := fileService.UpdateFile(fileID, description)
+	err := fileService.UpdateFile(fileID, "test-name", description)
 
 	// Assert
 	assert.NoError(t, err)
