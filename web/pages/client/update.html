@@ -62,7 +62,7 @@
                     <label for="cpf" class="form-label fw-semibold">
                       CPF <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Client.CPF }}" placeholder="000.000.000-00" required disabled readonly />
+                    <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Client.CPF }}" placeholder="Digite o CPF" required disabled readonly />
                     <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
                     {{with .Data.Errors.CPF}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
@@ -191,65 +191,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Máscara para CPF
-        const cpfInput = document.getElementById('cpf');
-        cpfInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) {
-                value = value.slice(0, 11);
-            }
-            if (value.length <= 11) {
-                value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-                value = value.replace(/(\d{3})(\d{3})(\d{3})/, "$1.$2.$3");
-                value = value.replace(/(\d{3})(\d{3})/, "$1.$2");
-            }
-            e.target.value = value;
-        });
-
-        // Máscara para telefone
-        const phoneInput = document.getElementById('phone');
-        phoneInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-
-            // Limita o tamanho do número
-            if (value.length > 11) {
-                value = value.slice(0, 11);
-            }
-
-            // Formata o número
-            let formattedValue = '';
-            if (value.length > 0) {
-                // Adiciona o DDD
-                if (value.length > 0) {
-                    formattedValue += '(' + value.slice(0, 2) + ')';
-                    value = value.slice(2);
-                }
-
-                // Adiciona o resto do número
-                if (value.length > 0) {
-                    formattedValue += ' ' + value.slice(0, 5);
-                    value = value.slice(5);
-                }
-
-                if (value.length > 0) {
-                    formattedValue += '-' + value.slice(0, 4);
-                }
-            }
-
-            e.target.value = formattedValue;
-        });
-
-        // Validação de email
-        const emailInput = document.getElementById('email');
-        emailInput.addEventListener('input', function (e) {
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (!emailRegex.test(e.target.value)) {
-                e.target.setCustomValidity('Por favor, insira um email válido');
-            } else {
-                e.target.setCustomValidity('');
-            }
-        });
-
         // Validação do formulário
         const form = document.getElementById('client-form');
         form.addEventListener('submit', function (e) {

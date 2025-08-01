@@ -16,7 +16,7 @@
           </div>
           <div class="mb-3">
             <label for="cpf" class="col-form-label">CPF</label>
-            <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Form.CPF }}" placeholder="000.000.000-00" />
+            <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Form.CPF }}" placeholder="Digite o CPF" />
             {{with .Data.Errors.CPF}}
             <p class="text-danger">{{.}}</p>{{end}}
           </div>

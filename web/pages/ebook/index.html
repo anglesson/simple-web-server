@@ -61,7 +61,7 @@
             </div>
           </div>
           <!-- table  -->
-          {{ if .Data.Ebooks }}
+          {{ if and .Data.Ebooks (gt (len .Data.Ebooks) 0) }}
           <div class="table-responsive">
             <table class="table table-hover text-nowrap">
               <thead class="table-light">
@@ -161,7 +161,7 @@
                           Página de Vendas
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{.ID}})">
+                        <a class="dropdown-item text-danger" href="#" onclick="confirmDelete('{{.ID}}')">
                           <i class="fa-solid fa-trash-can icon-xs me-2"></i>
                           Excluir
                         </a>
@@ -218,4 +218,4 @@
     }
   }
 </script>
-{{end}}
+{{end}} 

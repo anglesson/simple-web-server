@@ -100,9 +100,19 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 	}
 	pagination.SetTotal(totalCount)
 
+	// Ensure clients is never nil
+	if clients == nil {
+		clients = &[]models.Client{}
+	}
+
+	// Check if there are any clients
+	hasClients := clients != nil && len(*clients) > 0
+
 	ch.templateRenderer.View(w, r, "client", map[string]any{
 		"Clients":    clients,
 		"Pagination": pagination,
+		"SearchTerm": term,
+		"HasClients": hasClients,
 	}, "admin")
 }
 

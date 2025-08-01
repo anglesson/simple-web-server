@@ -70,7 +70,7 @@
                     <div class="mb-3">
                       <label for="cpf" class="form-label fw-semibold">CPF <span class="text-danger">*</span></label>
                       <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Form.CPF }}" 
-                             placeholder="000.000.000-00" required>
+                             placeholder="Digite o CPF" required>
                       <div class="form-text">
                         <i class="fa-solid fa-id-card icon-xs me-1"></i>
                         Digite apenas os números do CPF
@@ -182,45 +182,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Máscara para CPF
-    const cpfInput = document.getElementById('cpf');
-    cpfInput.addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 11) {
-            value = value.slice(0, 11);
-        }
-        if (value.length <= 11) {
-            value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-            value = value.replace(/(\d{3})(\d{3})(\d{3})/, "$1.$2.$3");
-            value = value.replace(/(\d{3})(\d{3})/, "$1.$2");
-        }
-        e.target.value = value;
-    });
-
-    // Máscara para telefone
-    const phoneInput = document.getElementById('phone');
-    phoneInput.addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 11) {
-            value = value.slice(0, 11);
-        }
-        let formattedValue = '';
-        if (value.length > 0) {
-            if (value.length > 0) {
-                formattedValue += '(' + value.slice(0, 2) + ')';
-                value = value.slice(2);
-            }
-            if (value.length > 0) {
-                formattedValue += ' ' + value.slice(0, 5);
-                value = value.slice(5);
-            }
-            if (value.length > 0) {
-                formattedValue += '-' + value.slice(0, 4);
-            }
-        }
-        e.target.value = formattedValue;
-    });
-
     // Validação do formulário
     const form = document.getElementById('client-form');
     const submitBtn = document.getElementById('submitBtn');

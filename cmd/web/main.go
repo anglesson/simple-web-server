@@ -76,10 +76,10 @@ func main() {
 	versionHandler := handler.NewVersionHandler()
 
 	// Initialize rate limiters
-	authRateLimiter := middleware.NewRateLimiter(5, time.Minute)           // 5 requests per minute for auth
-	resetPasswordRateLimiter := middleware.NewRateLimiter(10, time.Minute) // 10 requests per minute for password reset (more generous)
-	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)          // 100 requests per minute for API
-	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute)        // 10 uploads per minute
+	authRateLimiter := middleware.NewRateLimiter(10, time.Minute)         // 10 requests per minute for auth (increased from 5)
+	resetPasswordRateLimiter := middleware.NewRateLimiter(5, time.Minute) // 5 requests per minute for password reset (more restrictive for security)
+	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)         // 100 requests per minute for API
+	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute)       // 10 uploads per minute
 
 	// Start cleanup goroutines
 	authRateLimiter.CleanupRateLimiter()
@@ -97,10 +97,12 @@ func main() {
 		http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 	})
 
-	// Password reset routes with specific rate limiting (more generous)
+	// Password reset routes with specific rate limiting (separate from auth)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthGuard)
-		r.Use(resetPasswordRateLimiter.RateLimitMiddleware) // More generous rate limiting for password reset
+		r.Use(resetPasswordRateLimiter.RateLimitMiddleware) // Separate rate limiting for password reset
+		r.Get("/forget-password", forgetPasswordHandler.ForgetPasswordView)
+		r.Post("/forget-password", forgetPasswordHandler.ForgetPasswordSubmit)
 		r.Get("/reset-password", resetPasswordHandler.ResetPasswordView)
 		r.Post("/reset-password", resetPasswordHandler.ResetPasswordSubmit)
 		r.Get("/password-reset-success", func(w http.ResponseWriter, r *http.Request) {
@@ -108,16 +110,14 @@ func main() {
 		})
 	})
 
-	// Public routes with auth rate limiting
+	// Public routes with auth rate limiting (separate from password reset)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.AuthGuard)
-		r.Use(authRateLimiter.RateLimitMiddleware) // Rate limiting for auth endpoints
+		r.Use(authRateLimiter.RateLimitMiddleware) // Rate limiting for auth endpoints only
 		r.Get("/login", authHandler.LoginView)
 		r.Post("/login", authHandler.LoginSubmit)
 		r.Get("/register", creatorHandler.RegisterView)
 		r.Post("/register", creatorHandler.RegisterCreatorSSR)
-		r.Get("/forget-password", forgetPasswordHandler.ForgetPasswordView)
-		r.Post("/forget-password", forgetPasswordHandler.ForgetPasswordSubmit)
 		r.Get("/sales/{slug}", salesPageHandler.SalesPageView) // Página de vendas pública
 	})
 

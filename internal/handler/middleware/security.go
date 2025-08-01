@@ -71,8 +71,14 @@ func (rl *RateLimiter) RateLimitMiddleware(next http.Handler) http.Handler {
 				w.WriteHeader(http.StatusTooManyRequests)
 				w.Write([]byte(`{"error": "Rate limit exceeded. Please try again later."}`))
 			} else {
-				// HTML request - redirect with error message
-				http.Redirect(w, r, "/login?error=rate_limit_exceeded", http.StatusSeeOther)
+				// HTML request - redirect with error message based on the route
+				var redirectPath string
+				if strings.Contains(r.URL.Path, "/forget-password") || strings.Contains(r.URL.Path, "/reset-password") {
+					redirectPath = "/forget-password?error=rate_limit_exceeded"
+				} else {
+					redirectPath = "/login?error=rate_limit_exceeded"
+				}
+				http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 			}
 			return
 		}

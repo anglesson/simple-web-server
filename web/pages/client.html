@@ -61,7 +61,7 @@
             </div>
           </div>
           <!-- table  -->
-          {{ if .Data.Clients }}
+          {{ if .Data.HasClients }}
           <div class="table-responsive">
             <table class="table table-hover text-nowrap">
               <thead class="table-light">
@@ -144,7 +144,11 @@
           {{ template "table-footer" . }}
           {{ end }}
           {{ else }} 
-            {{ template "empty-table" . }}
+            {{ if .Data.SearchTerm }}
+              {{ template "empty-search-results" . }}
+            {{ else }}
+              {{ template "empty-table" . }}
+            {{ end }}
           {{ end }} 
         </div>
       </div>

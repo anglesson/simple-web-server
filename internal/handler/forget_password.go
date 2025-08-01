@@ -23,7 +23,14 @@ func NewForgetPasswordHandler(templateRenderer template.TemplateRenderer, userSe
 }
 
 func (h *ForgetPasswordHandler) ForgetPasswordView(w http.ResponseWriter, r *http.Request) {
-	h.templateRenderer.View(w, r, "forget-password", nil, "guest")
+	data := map[string]interface{}{}
+
+	// Check for rate limit error
+	if r.URL.Query().Get("error") == "rate_limit_exceeded" {
+		data["rate_limit_error"] = "Muitas tentativas de recuperação de senha. Aguarde alguns minutos antes de tentar novamente."
+	}
+
+	h.templateRenderer.View(w, r, "forget-password", data, "guest")
 }
 
 func (h *ForgetPasswordHandler) ForgetPasswordSubmit(w http.ResponseWriter, r *http.Request) {
