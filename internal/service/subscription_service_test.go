@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/anglesson/simple-web-server/internal/models"
 	repoMocks "github.com/anglesson/simple-web-server/internal/repository/mocks"
@@ -312,6 +313,131 @@ func TestSubscriptionService_EndTrial(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.False(t, tt.subscription.IsTrialActive)
+			}
+
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestSubscriptionService_GetUserSubscriptionStatus(t *testing.T) {
+	tests := []struct {
+		name           string
+		userID         uint
+		setupMocks     func(*repoMocks.MockSubscriptionRepository)
+		expectedStatus string
+		expectedDays   int
+		expectedError  bool
+	}{
+		{
+			name:   "should return trial status when user is in trial period",
+			userID: 1,
+			setupMocks: func(mockRepo *repoMocks.MockSubscriptionRepository) {
+				subscription := &models.Subscription{
+					UserID:        1,
+					PlanID:        "test_plan",
+					IsTrialActive: true,
+					TrialEndDate:  time.Now().AddDate(0, 0, 5), // 5 days from now
+				}
+				mockRepo.On("FindByUserID", uint(1)).Return(subscription, nil)
+			},
+			expectedStatus: "trial",
+			expectedDays:   5,
+			expectedError:  false,
+		},
+		{
+			name:   "should return active status when user has active subscription",
+			userID: 1,
+			setupMocks: func(mockRepo *repoMocks.MockSubscriptionRepository) {
+				subscription := &models.Subscription{
+					UserID:              1,
+					PlanID:              "test_plan",
+					IsTrialActive:       false,
+					SubscriptionStatus:  "active",
+					SubscriptionEndDate: &time.Time{}, // Will be set in test
+				}
+				endDate := time.Now().AddDate(0, 1, 0) // 1 month from now
+				subscription.SubscriptionEndDate = &endDate
+				mockRepo.On("FindByUserID", uint(1)).Return(subscription, nil)
+			},
+			expectedStatus: "active",
+			expectedDays:   30,
+			expectedError:  false,
+		},
+		{
+			name:   "should return expiring status when subscription expires in 10 days",
+			userID: 1,
+			setupMocks: func(mockRepo *repoMocks.MockSubscriptionRepository) {
+				subscription := &models.Subscription{
+					UserID:              1,
+					PlanID:              "test_plan",
+					IsTrialActive:       false,
+					SubscriptionStatus:  "active",
+					SubscriptionEndDate: &time.Time{}, // Will be set in test
+				}
+				endDate := time.Now().AddDate(0, 0, 8) // 8 days from now
+				subscription.SubscriptionEndDate = &endDate
+				mockRepo.On("FindByUserID", uint(1)).Return(subscription, nil)
+			},
+			expectedStatus: "expiring",
+			expectedDays:   8,
+			expectedError:  false,
+		},
+		{
+			name:   "should return inactive status when no subscription found",
+			userID: 1,
+			setupMocks: func(mockRepo *repoMocks.MockSubscriptionRepository) {
+				mockRepo.On("FindByUserID", uint(1)).Return(nil, nil)
+			},
+			expectedStatus: "inactive",
+			expectedDays:   0,
+			expectedError:  false,
+		},
+		{
+			name:           "should return error when user ID is zero",
+			userID:         0,
+			setupMocks:     func(mockRepo *repoMocks.MockSubscriptionRepository) {},
+			expectedStatus: "inactive",
+			expectedDays:   0,
+			expectedError:  true,
+		},
+		{
+			name:   "should return error when repository fails",
+			userID: 1,
+			setupMocks: func(mockRepo *repoMocks.MockSubscriptionRepository) {
+				mockRepo.On("FindByUserID", uint(1)).Return(nil, errors.New("database error"))
+			},
+			expectedStatus: "inactive",
+			expectedDays:   0,
+			expectedError:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(repoMocks.MockSubscriptionRepository)
+			mockRF := new(govMocks.MockRFService)
+			tt.setupMocks(mockRepo)
+
+			service := NewSubscriptionService(mockRepo, mockRF)
+
+			status, days, err := service.GetUserSubscriptionStatus(tt.userID)
+
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tt.expectedStatus, status)
+
+			// For days calculation, allow some flexibility due to time-based calculations
+			if tt.expectedDays > 0 {
+				// Allow ±1 day tolerance for time-based calculations
+				assert.GreaterOrEqual(t, days, tt.expectedDays-1)
+				assert.LessOrEqual(t, days, tt.expectedDays+1)
+			} else {
+				assert.Equal(t, tt.expectedDays, days)
 			}
 
 			mockRepo.AssertExpectations(t)

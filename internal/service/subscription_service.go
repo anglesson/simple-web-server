@@ -18,6 +18,7 @@ type SubscriptionService interface {
 	UpdateSubscriptionStatus(subscription *models.Subscription, status string, endDate *time.Time) error
 	CancelSubscription(subscription *models.Subscription) error
 	EndTrial(subscription *models.Subscription) error
+	GetUserSubscriptionStatus(userID uint) (string, int, error)
 }
 
 type subscriptionServiceImpl struct {
@@ -124,4 +125,30 @@ func (ss *subscriptionServiceImpl) EndTrial(subscription *models.Subscription) e
 	subscription.EndTrial()
 
 	return ss.subscriptionRepository.Save(subscription)
+}
+
+func (ss *subscriptionServiceImpl) GetUserSubscriptionStatus(userID uint) (string, int, error) {
+	if userID == 0 {
+		return "inactive", 0, errors.New("ID do usuário é obrigatório")
+	}
+
+	subscription, err := ss.subscriptionRepository.FindByUserID(userID)
+	if err != nil {
+		return "inactive", 0, err
+	}
+
+	if subscription == nil {
+		return "inactive", 0, nil
+	}
+
+	status := subscription.GetSubscriptionStatus()
+	daysLeft := 0
+
+	if subscription.IsInTrialPeriod() {
+		daysLeft = subscription.DaysLeftInTrial()
+	} else if subscription.IsSubscribed() {
+		daysLeft = subscription.DaysLeftInSubscription()
+	}
+
+	return status, daysLeft, nil
 }

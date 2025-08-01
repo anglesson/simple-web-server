@@ -62,3 +62,8 @@ func (m *MockSubscriptionService) EndTrial(subscription *models.Subscription) er
 	args := m.Called(subscription)
 	return args.Error(0)
 }
+
+func (m *MockSubscriptionService) GetUserSubscriptionStatus(userID uint) (string, int, error) {
+	args := m.Called(userID)
+	return args.String(0), args.Int(1), args.Error(2)
+}

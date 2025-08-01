@@ -14,7 +14,9 @@
                         <div>
                             <p class="text-muted mb-0">Status atual: <span class="fw-medium">{{if .Data.user.IsSubscribed}}Ativo{{else}}Inativo{{end}}</span></p>
                             {{if .Data.user.IsSubscribed}}
-                                <p class="small text-muted mt-1">Válido até: {{.Data.user.SubscriptionEndDate.Format "02/01/2006"}}</p>
+                                {{if .Data.user.Subscription.SubscriptionEndDate}}
+                                    <p class="small text-muted mt-1">Válido até: {{.Data.user.Subscription.SubscriptionEndDate.Format "02/01/2006"}}</p>
+                                {{end}}
                             {{end}}
                         </div>
                         {{if not .Data.user.IsSubscribed}}

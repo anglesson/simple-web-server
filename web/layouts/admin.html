@@ -94,12 +94,41 @@
                 <!-- navbar -->
                 <nav class="navbar-classic navbar navbar-expand-lg">
                     <a id="nav-toggle" href="#"><i class="fa-solid fa-bars nav-icon me-2 icon-xs"></i></a>
+                    
+                    <!-- Subscription Status Banner -->
+                    {{ if .Data.SubscriptionStatus }}
+                        {{ if eq .Data.SubscriptionStatus "trial" }}
+                            <div class="alert alert-warning alert-dismissible fade show m-2" role="alert">
+                                <i class="fa-solid fa-clock me-2"></i>
+                                <strong>Período de Teste:</strong> Você tem {{ .Data.SubscriptionDaysLeft }} dias restantes no período de teste.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {{ else if eq .Data.SubscriptionStatus "expiring" }}
+                            <div class="alert alert-danger alert-dismissible fade show m-2" role="alert">
+                                <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                                <strong>Atenção:</strong> Sua assinatura expira em {{ .Data.SubscriptionDaysLeft }} dias.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {{ else if eq .Data.SubscriptionStatus "inactive" }}
+                            <div class="alert alert-secondary alert-dismissible fade show m-2" role="alert">
+                                <i class="fa-solid fa-info-circle me-2"></i>
+                                <strong>Assinatura Inativa:</strong> Ative sua assinatura para acessar todas as funcionalidades.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {{ end }}
+                    {{ end }}
+                    
                     <!--Navbar nav -->
                     <ul class="navbar-nav navbar-right-wrap ms-auto d-flex nav-top-wrap">
                         <!-- List -->
                         <li class="dropdown ms-2">
                             <a class="rounded-circle" href="#" role="button" id="dropdownUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <div class="rounded-circle bg-light p-2">{{user.GetInitials}}</div>
+                                <div class="rounded-circle bg-light p-2 position-relative">
+                                    {{user.GetInitials}}
+                                    {{ if eq .Data.SubscriptionStatus "active" }}
+                                        <i class="fa-solid fa-crown text-warning position-absolute" style="top: -5px; right: -5px; font-size: 12px;"></i>
+                                    {{ end }}
+                                </div>
                                 <!-- <div class="avatar avatar-md avatar-indicators avatar-online">
                                     <img alt="avatar" src="/assets/images/avatar/avatar.jpg" class="rounded-circle" />
                                 </div> -->

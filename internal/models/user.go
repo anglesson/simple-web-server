@@ -69,3 +69,27 @@ func (u *User) IsSubscribed() bool {
 func (u *User) HasAcceptedTerms() bool {
 	return u.TermsAcceptedAt != nil
 }
+
+// GetSubscriptionStatus returns the subscription status for the user
+func (u *User) GetSubscriptionStatus() string {
+	if u.Subscription == nil {
+		return "inactive"
+	}
+	return u.Subscription.GetSubscriptionStatus()
+}
+
+// DaysLeftInSubscription returns days left in subscription
+func (u *User) DaysLeftInSubscription() int {
+	if u.Subscription == nil {
+		return 0
+	}
+	return u.Subscription.DaysLeftInSubscription()
+}
+
+// IsExpiringSoon returns true if subscription expires in 10 days or less
+func (u *User) IsExpiringSoon() bool {
+	if u.Subscription == nil {
+		return false
+	}
+	return u.Subscription.IsExpiringSoon()
+}

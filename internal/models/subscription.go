@@ -86,3 +86,35 @@ func (s *Subscription) UpdateSubscriptionStatus(status string, endDate *time.Tim
 	s.SubscriptionEndDate = endDate
 	s.UpdatedAt = time.Now()
 }
+
+// DaysLeftInSubscription returns the number of days left in the subscription
+func (s *Subscription) DaysLeftInSubscription() int {
+	if s.SubscriptionEndDate == nil {
+		return 0
+	}
+	days := time.Until(*s.SubscriptionEndDate).Hours() / 24
+	if math.Ceil(days) < 0 {
+		return 0
+	}
+	return int(math.Ceil(days))
+}
+
+// IsExpiringSoon returns true if subscription expires in 10 days or less
+func (s *Subscription) IsExpiringSoon() bool {
+	daysLeft := s.DaysLeftInSubscription()
+	return daysLeft > 0 && daysLeft <= 10
+}
+
+// GetSubscriptionStatus returns a string describing the current subscription status
+func (s *Subscription) GetSubscriptionStatus() string {
+	if s.IsInTrialPeriod() {
+		return "trial"
+	}
+	if s.IsSubscribed() {
+		if s.IsExpiringSoon() {
+			return "expiring"
+		}
+		return "active"
+	}
+	return "inactive"
+}
