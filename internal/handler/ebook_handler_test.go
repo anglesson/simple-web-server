@@ -482,6 +482,77 @@ func (suite *EbookHandlerTestSuite) TestCreateSubmit_SimpleValidation() {
 	assert.Contains(suite.T(), savedErrors, "description", "Should have description error")
 }
 
+func (suite *EbookHandlerTestSuite) TestUpdateSubmit_DeactivateEbook() {
+	// Arrange - test deactivating an ebook (status = false)
+	formData := url.Values{}
+	formData.Set("title", "Valid Title")
+	formData.Set("description", "Valid Description")
+	formData.Set("sales_page", "Valid Sales Page")
+	formData.Set("value", "29,90")
+	// Note: status field is NOT set, which should result in status = false
+
+	req := httptest.NewRequest("POST", "/ebook/update/1", strings.NewReader(formData.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Add user context
+	ctx := context.WithValue(req.Context(), middleware.UserEmailKey, "test@example.com")
+	req = req.WithContext(ctx)
+
+	// Setup route context for chi router
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "1")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	// Mock ebook service - return existing ebook
+	existingEbook := &models.Ebook{
+		Title:       "Old Title",
+		Description: "Old Description",
+		SalesPage:   "Old Sales Page",
+		Value:       19.90,
+		Status:      true, // Currently active
+		CreatorID:   1,
+	}
+	suite.mockEbookService.On("FindByID", uint(1)).Return(existingEbook, nil)
+	suite.mockEbookService.On("Update", mock.AnythingOfType("*models.Ebook")).Return(nil)
+
+	// Mock creator service
+	creator := &models.Creator{UserID: 1}
+	creator.ID = 1 // Set ID through gorm.Model
+	suite.mockCreatorService.On("FindCreatorByUserID", uint(1)).Return(creator, nil)
+
+	// Mock flash message
+	suite.mockFlashMessage.On("Success", "Dados do e-book foram atualizados!").Return()
+
+	w := httptest.NewRecorder()
+
+	// Act
+	suite.sut.UpdateSubmit(w, req)
+
+	// Assert
+	resp := w.Result()
+	assert.Equal(suite.T(), http.StatusSeeOther, resp.StatusCode)
+
+	// Verify that the ebook was updated with status = false
+	suite.mockEbookService.AssertExpectations(suite.T())
+
+	// Check that Update was called with the correct ebook data
+	updateCalls := suite.mockEbookService.Calls
+	assert.Greater(suite.T(), len(updateCalls), 0, "Update should have been called")
+
+	// Find the Update call and verify the ebook status
+	for _, call := range updateCalls {
+		if call.Method == "Update" {
+			ebook := call.Arguments.Get(0).(*models.Ebook)
+			assert.Equal(suite.T(), "Valid Title", ebook.Title)
+			assert.Equal(suite.T(), "Valid Description", ebook.Description)
+			assert.Equal(suite.T(), "Valid Sales Page", ebook.SalesPage)
+			assert.Equal(suite.T(), 29.90, ebook.Value)
+			assert.False(suite.T(), ebook.Status, "Ebook status should be false (deactivated)")
+			break
+		}
+	}
+}
+
 func findCookie(cookies []*http.Cookie, name string) *http.Cookie {
 	for _, cookie := range cookies {
 		if cookie.Name == name {

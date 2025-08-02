@@ -5,7 +5,7 @@ type EbookRequest struct {
 	Description string  `validate:"required,max=120" json:"description"`
 	SalesPage   string  `validate:"required" json:"sales_page"`
 	Value       float64 `validate:"required,gt=0" json:"value"`
-	Status      bool    `validate:"required" json:"status"`
+	Status      bool    `json:"status"`
 }
 
 type LoginForm struct {
