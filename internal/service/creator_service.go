@@ -166,10 +166,14 @@ func (cs *creatorServiceImpl) FindCreatorByEmail(email string) (*models.Creator,
 }
 
 func (cs *creatorServiceImpl) FindByID(id uint) (*models.Creator, error) {
-	// Buscar criador pelo ID do usuário
-	// Como não temos um método direto FindByID, vamos buscar pelo UserID
-	// Isso pode precisar de ajuste dependendo da estrutura do banco
-	return cs.creatorRepo.FindCreatorByUserID(id)
+	// Buscar criador pelo ID
+	creator, err := cs.creatorRepo.FindByID(id)
+	if err != nil {
+		log.Printf("Erro ao buscar creator por ID %d: %v", id, err)
+		return nil, errors.New("criador não encontrado")
+	}
+
+	return creator, nil
 }
 
 // validateReceita validates CPF with Receita Federal and returns the validated name

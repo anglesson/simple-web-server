@@ -18,6 +18,16 @@ func NewCreatorRepository(db *gorm.DB) *CreatorRepository {
 	return &CreatorRepository{db}
 }
 
+func (cr *CreatorRepository) FindByID(id uint) (*models.Creator, error) {
+	var creator models.Creator
+	err := database.DB.First(&creator, id).Error
+	if err != nil {
+		log.Printf("creator isn't recovery by ID %d. error: %s", id, err.Error())
+		return nil, errors.New("creator not found")
+	}
+	return &creator, nil
+}
+
 func (cr *CreatorRepository) FindCreatorByUserID(userID uint) (*models.Creator, error) {
 	var creator models.Creator
 	err := database.DB.

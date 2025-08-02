@@ -33,6 +33,14 @@ func (m *MockCreatorRepository) FindByCPF(cpf string) (*models.Creator, error) {
 	return args.Get(0).(*models.Creator), args.Error(1)
 }
 
+func (m *MockCreatorRepository) FindByID(id uint) (*models.Creator, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Creator), args.Error(1)
+}
+
 func (m *MockCreatorRepository) Create(creator *models.Creator) error {
 	args := m.Called(creator)
 	return args.Error(0)

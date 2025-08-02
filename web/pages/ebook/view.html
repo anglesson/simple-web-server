@@ -17,14 +17,34 @@
                 <i class="fa-solid fa-pen-to-square icon-xs me-2"></i>
                 Editar
               </a>
-              <a href="/ebook/sales-page/{{.Data.Ebook.ID}}" class="btn btn-outline-secondary" target="_blank">
+              <a href="/ebook/sales-page/{{.Data.Ebook.Slug}}" class="btn btn-outline-secondary" target="_blank">
                 <i class="fa-solid fa-external-link-alt icon-xs me-2"></i>
                 Página de Vendas
               </a>
-              <button id="buttonSend" type="button" disabled class="btn btn-primary">
-                <i class="fa-solid fa-paper-plane icon-xs me-2"></i>
-                Enviar
+              <button id="copyLinkButton" type="button" class="btn btn-primary" data-link="/ebook/sales-page/{{.Data.Ebook.Slug}}">
+                <i class="fa-solid fa-share icon-xs me-2"></i>
+                Copiar link
               </button>
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  var copyBtn = document.getElementById('copyLinkButton');
+                  if (copyBtn) {
+                    copyBtn.addEventListener('click', function() {
+                      var link = copyBtn.getAttribute('data-link');
+                      // Garante que o link seja absoluto
+                      if (!/^https?:\/\//i.test(link)) {
+                        link = window.location.origin + link;
+                      }
+                      navigator.clipboard.writeText(link).then(function() {
+                        copyBtn.innerHTML = '<i class="fa-solid fa-check icon-xs me-2"></i> Copiado!';
+                        setTimeout(function() {
+                          copyBtn.innerHTML = '<i class="fa-solid fa-share icon-xs me-2"></i> Copiar link';
+                        }, 2000);
+                      });
+                    });
+                  }
+                });
+              </script>
             </div>
           </div>
         </div>

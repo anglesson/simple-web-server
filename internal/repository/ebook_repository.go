@@ -40,6 +40,12 @@ func (r *GormEbookRepository) FindByID(id uint) (*models.Ebook, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Garantir que Files seja inicializado como slice vazio se for nil
+	if ebook.Files == nil {
+		ebook.Files = []*models.File{}
+	}
+
 	return &ebook, nil
 }
 
@@ -51,10 +57,22 @@ func (r *GormEbookRepository) FindByCreator(creatorID uint) ([]*models.Ebook, er
 
 func (r *GormEbookRepository) FindBySlug(slug string) (*models.Ebook, error) {
 	var ebook models.Ebook
-	err := r.db.Where("slug = ?", slug).Preload("Creator").Preload("Files").First(&ebook).Error
+
+	// Carregar o ebook com todos os relacionamentos necessários
+	err := r.db.Where("slug = ?", slug).
+		Preload("Creator").
+		Preload("Files").
+		First(&ebook).Error
+
 	if err != nil {
 		return nil, err
 	}
+
+	// Garantir que Files seja inicializado como slice vazio se for nil
+	if ebook.Files == nil {
+		ebook.Files = []*models.File{}
+	}
+
 	return &ebook, nil
 }
 
