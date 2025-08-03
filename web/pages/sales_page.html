@@ -231,7 +231,7 @@
     </style>
 </head>
 <body>
-    {{if .Data.IsPreview}}
+    {{if .IsPreview}}
     <!-- Preview Banner -->
     <div class="preview-banner">
         <i class="fas fa-eye me-2"></i>
@@ -248,8 +248,8 @@
                 <div class="product-card">
                     <!-- Imagem do Produto -->
                     <div class="product-image">
-                        {{if .Data.Ebook.Image}}
-                        <img src="{{.Data.Ebook.Image}}" alt="{{.Data.Ebook.Title}}" class="w-100 h-100" style="object-fit: cover;">
+                        {{if .Ebook.Image}}
+                        <img src="{{.Ebook.Image}}" alt="{{.Ebook.Title}}" class="w-100 h-100" style="object-fit: cover;">
                         {{else}}
                         <i class="fas fa-book fa-5x"></i>
                         {{end}}
@@ -257,8 +257,8 @@
                     
                     <!-- Informações do Produto -->
                     <div class="p-4">
-                        <h1 class="h2 mb-3 product-title">{{.Data.Ebook.Title}}</h1>
-                        <p class="lead mb-4 product-description">{{.Data.Ebook.Description}}</p>
+                        <h1 class="h2 mb-3 product-title">{{.Ebook.Title}}</h1>
+                        <p class="lead mb-4 product-description">{{.Ebook.Description}}</p>
                         
                         <!-- Autor -->
                         <div class="author-info mb-4">
@@ -270,7 +270,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">Por {{.Data.Ebook.Creator.Name}}</h6>
+                                    <h6 class="mb-0">Por {{.Ebook.Creator.Name}}</h6>
                                     <small>Autor do ebook</small>
                                 </div>
                             </div>
@@ -280,19 +280,19 @@
                         <div class="row mb-4">
                             <div class="col-4">
                                 <div class="stats-item border-end">
-                                    <h5>{{.Data.Ebook.Sales}}+</h5>
+                                    <h5>{{.Ebook.Sales}}+</h5>
                                     <small>Vendas</small>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-item border-end">
-                                    <h5>{{.Data.Ebook.Views}}+</h5>
+                                    <h5>{{.Ebook.Views}}+</h5>
                                     <small>Visualizações</small>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-item">
-                                    <h5>{{.Data.Ebook.GetFileCount}}</h5>
+                                    <h5>{{.Ebook.GetFileCount}}</h5>
                                     <small>Arquivos</small>
                                 </div>
                             </div>
@@ -304,8 +304,8 @@
                             O que está incluído:
                         </h5>
                         <ul class="feature-list">
-                            {{if and .Data.Ebook.Files (gt (len .Data.Ebook.Files) 0)}}
-                                {{range .Data.Ebook.Files}}
+                            {{if and .Ebook.Files (gt (len .Ebook.Files) 0)}}
+                                {{range .Ebook.Files}}
                                 <li>
                                     <i class="fas fa-file-alt"></i>
                                     {{.Name}} ({{.GetFileSizeFormatted}})
@@ -325,14 +325,14 @@
             <!-- Coluna do Checkout -->
             <div class="col-lg-4">
                 <div class="price-tag">
-                    <div class="original-price">De R$ {{printf "%.2f" .Data.OriginalPrice}}</div>
-                    <div class="current-price">R$ {{.Data.Ebook.GetValue}}</div>
+                    <div class="original-price">De R$ {{printf "%.2f" .OriginalPrice}}</div>
+                    <div class="current-price">R$ {{.Ebook.GetValue}}</div>
                     <div class="savings">
                         <i class="fas fa-tag me-1"></i>
-                        Economia de R$ {{printf "%.2f" .Data.Savings}}
+                        Economia de R$ {{printf "%.2f" .Savings}}
                     </div>
                     
-                    {{if .Data.IsPreview}}
+                    {{if .IsPreview}}
                     <button class="btn btn-light btn-lg w-100 mt-3" disabled>
                         <i class="fas fa-eye me-2"></i>
                         MODO PREVIEW

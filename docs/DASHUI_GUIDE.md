@@ -219,7 +219,7 @@ data := map[string]any{
 }
 
 // No template
-{{ range .Data.Clients }}
+{{ range .Clients }}
   {{ .Name }}
 {{ end }}
 ```

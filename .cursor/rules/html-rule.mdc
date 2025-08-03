@@ -156,7 +156,7 @@
 ## Responsabilidade
 - Os arquivos HTML não devem conter lógica de negócio, apenas marcação e placeholders para dados dinâmicos.
 - A lógica de renderização e injeção de dados deve ser feita nos handlers do backend.
-- Dados são acessados através de `.Data.Variavel` no template.
+- Dados são acessados diretamente através de `.Variavel` no template.
 
 ## Boas práticas DashUI
 

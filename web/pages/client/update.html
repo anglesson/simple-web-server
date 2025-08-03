@@ -37,9 +37,9 @@
           </div>
           <!-- card body  -->
           <div class="card-body">
-            <form id="client-form" action="/client/update/{{.Data.Client.ID}}" method="post" novalidate>
+            <form id="client-form" action="/client/update/{{.Client.ID}}" method="post" novalidate>
               <!-- Erros Gerais -->
-              {{with .Data.Errors.general}}
+              {{with .Errors.general}}
               <div class="alert alert-danger mb-4" role="alert">
                 <i class="fa-solid fa-circle-exclamation icon-sm me-2"></i>
                 {{.}}
@@ -54,25 +54,25 @@
                     <label for="name" class="form-label fw-semibold">
                       Nome <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control" id="name" name="name" value="{{ .Data.Client.Name }}" disabled readonly />
-                    {{with .Data.Errors.Name}}
+                    <input type="text" class="form-control" id="name" name="name" value="{{ .Client.Name }}" disabled readonly />
+                    {{with .Errors.Name}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                   <div class="col-md-6">
                     <label for="cpf" class="form-label fw-semibold">
                       CPF <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Client.CPF }}" placeholder="Digite o CPF" required disabled readonly />
+                    <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Client.CPF }}" placeholder="Digite o CPF" required disabled readonly />
                     <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
-                    {{with .Data.Errors.CPF}}
+                    {{with .Errors.CPF}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                   <div class="col-md-6">
                     <label for="data_nascimento" class="form-label fw-semibold">
                       Data de Nascimento <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control date" id="data_nascimento" name="data_nascimento" value="{{ .Data.Client.Birthdate }}" placeholder="DD/MM/AAAA" required disabled readonly />
-                    {{with .Data.Errors.Birthdate}}
+                    <input type="text" class="form-control date" id="data_nascimento" name="data_nascimento" value="{{ .Client.Birthdate }}" placeholder="DD/MM/AAAA" required disabled readonly />
+                    {{with .Errors.Birthdate}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                 </div>
@@ -86,18 +86,18 @@
                     <label for="email" class="form-label fw-semibold">
                       Email <span class="text-danger">*</span>
                     </label>
-                    <input type="email" class="form-control" id="email" name="email" value="{{ if .Data.Form.Email }}{{ .Data.Form.Email }}{{ else }}{{ .Data.Client.Email }}{{ end }}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
+                    <input type="email" class="form-control" id="email" name="email" value="{{ if .Form.Email }}{{ .Form.Email }}{{ else }}{{ .Client.Email }}{{ end }}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
                     <div class="invalid-feedback">Por favor, insira um email válido.</div>
-                    {{with .Data.Errors.Email}}
+                    {{with .Errors.Email}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                   <div class="col-12">
                     <label for="phone" class="form-label fw-semibold">
                       Telefone <span class="text-danger">*</span>
                     </label>
-                    <input type="tel" class="form-control phone_with_ddd" id="phone" name="phone" value="{{ if .Data.Form.Phone }}{{ .Data.Form.Phone }}{{ else }}{{ .Data.Client.Phone }}{{ end }}" placeholder="(XX) X XXXX-XXXX" required />
+                    <input type="tel" class="form-control phone_with_ddd" id="phone" name="phone" value="{{ if .Form.Phone }}{{ .Form.Phone }}{{ else }}{{ .Client.Phone }}{{ end }}" placeholder="(XX) X XXXX-XXXX" required />
                     <div class="invalid-feedback">Por favor, insira um telefone válido.</div>
-                    {{with .Data.Errors.Phone}}
+                    {{with .Errors.Phone}}
                     <div class="invalid-feedback d-block">{{.}}</div>{{end}}
                   </div>
                 </div>
@@ -132,12 +132,12 @@
             <div class="d-flex align-items-center mb-4">
               <div class="me-3">
                 <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                  <span class="text-white fw-bold fs-5">{{ .Data.Client.GetInitials }}</span>
+                  <span class="text-white fw-bold fs-5">{{ .Client.GetInitials }}</span>
                 </div>
               </div>
               <div>
-                <h6 class="mb-1 fw-semibold">{{ .Data.Client.Name }}</h6>
-                <p class="mb-0 text-muted small">{{ .Data.Client.Email }}</p>
+                <h6 class="mb-1 fw-semibold">{{ .Client.Name }}</h6>
+                <p class="mb-0 text-muted small">{{ .Client.Email }}</p>
               </div>
             </div>
             
@@ -148,7 +148,7 @@
                 </div>
                 <div>
                   <p class="mb-0 fw-semibold small">CPF</p>
-                  <p class="mb-0 text-muted small">{{ .Data.Client.CPF }}</p>
+                  <p class="mb-0 text-muted small">{{ .Client.CPF }}</p>
                 </div>
               </div>
               
@@ -158,7 +158,7 @@
                 </div>
                 <div>
                   <p class="mb-0 fw-semibold small">Data de Nascimento</p>
-                  <p class="mb-0 text-muted small">{{ .Data.Client.GetBirthdateBR }}</p>
+                  <p class="mb-0 text-muted small">{{ .Client.GetBirthdateBR }}</p>
                 </div>
               </div>
               
@@ -168,7 +168,7 @@
                 </div>
                 <div>
                   <p class="mb-0 fw-semibold small">Telefone</p>
-                  <p class="mb-0 text-muted small">{{ .Data.Client.Phone }}</p>
+                  <p class="mb-0 text-muted small">{{ .Client.Phone }}</p>
                 </div>
               </div>
               
@@ -178,7 +178,7 @@
                 </div>
                 <div>
                   <p class="mb-0 fw-semibold small">Data de Cadastro</p>
-                  <p class="mb-0 text-muted small">{{ .Data.Client.CreatedAt.Format "02/01/2006" }}</p>
+                  <p class="mb-0 text-muted small">{{ .Client.CreatedAt.Format "02/01/2006" }}</p>
                 </div>
               </div>
             </div>

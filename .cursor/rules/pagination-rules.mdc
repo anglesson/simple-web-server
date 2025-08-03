@@ -29,34 +29,34 @@
 <!-- Informações de Paginação -->
 <div class="d-flex justify-content-between align-items-center mt-3">
     <div class="text-muted small">
-        Página {{.Data.Pagination.Page}} de {{.Data.Pagination.TotalPages}} 
-        ({{.Data.Pagination.Limit}} por página)
+        Página {{.Pagination.Page}} de {{.Pagination.TotalPages}} 
+        ({{.Pagination.Limit}} por página)
     </div>
     <nav aria-label="Paginação">
         <ul class="pagination pagination-sm mb-0">
-            {{if .Data.Pagination.HasPrev}}
+            {{if .Pagination.HasPrev}}
             <li class="page-item">
-                <a class="page-link" href="?page={{.Data.Pagination.PrevPage}}&per_page={{.Data.Pagination.Limit}}">
+                <a class="page-link" href="?page={{.Pagination.PrevPage}}&per_page={{.Pagination.Limit}}">
                     <i class="mdi mdi-chevron-left"></i>
                 </a>
             </li>
             {{end}}
             
-            {{range .Data.Pagination.Pages}}
+            {{range .Pagination.Pages}}
             {{if eq . -1}}
             <li class="page-item disabled">
                 <span class="page-link">...</span>
             </li>
             {{else}}
-            <li class="page-item {{if eq . $.Data.Pagination.Page}}active{{end}}">
-                <a class="page-link" href="?page={{.}}&per_page={{$.Data.Pagination.Limit}}">{{.}}</a>
+            <li class="page-item {{if eq . $.Pagination.Page}}active{{end}}">
+                <a class="page-link" href="?page={{.}}&per_page={{$.Pagination.Limit}}">{{.}}</a>
             </li>
             {{end}}
             {{end}}
             
-            {{if .Data.Pagination.HasNext}}
+            {{if .Pagination.HasNext}}
             <li class="page-item">
-                <a class="page-link" href="?page={{.Data.Pagination.NextPage}}&per_page={{.Data.Pagination.Limit}}">
+                <a class="page-link" href="?page={{.Pagination.NextPage}}&per_page={{.Pagination.Limit}}">
                     <i class="mdi mdi-chevron-right"></i>
                 </a>
             </li>

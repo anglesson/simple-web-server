@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Limite de Downloads Atingido - {{.Data.Purchase.Ebook.Title}}</title>
+    <title>Limite de Downloads Atingido - {{.Purchase.Ebook.Title}}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -90,8 +90,8 @@
                     <div class="alert alert-warning bg-white text-dark">
                         <h4><i class="fas fa-info-circle me-2"></i>Informação Importante</h4>
                         <p class="mb-0">
-                            <strong>{{.Data.Purchase.Ebook.Title}}</strong><br>
-                            Por: {{.Data.Purchase.Ebook.Creator.Name}}
+                            <strong>{{.Purchase.Ebook.Title}}</strong><br>
+                            Por: {{.Purchase.Ebook.Creator.Name}}
                         </p>
                     </div>
                 </div>
@@ -115,11 +115,11 @@
                             <div class="stats-card">
                                 <div class="row text-center">
                                     <div class="col-md-4">
-                                        <h4 class="text-primary">{{.Data.Purchase.DownloadsUsed}}</h4>
+                                        <h4 class="text-primary">{{.Purchase.DownloadsUsed}}</h4>
                                         <p class="text-muted mb-0">Downloads Realizados</p>
                                     </div>
                                     <div class="col-md-4">
-                                        <h4 class="text-warning">{{.Data.Purchase.DownloadLimit}}</h4>
+                                        <h4 class="text-warning">{{.Purchase.DownloadLimit}}</h4>
                                         <p class="text-muted mb-0">Limite de Downloads</p>
                                     </div>
                                     <div class="col-md-4">
@@ -131,7 +131,7 @@
                                 <div class="mt-4">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span>Progresso dos Downloads</span>
-                                        <span>{{.Data.Purchase.DownloadsUsed}}/{{.Data.Purchase.DownloadLimit}}</span>
+                                        <span>{{.Purchase.DownloadsUsed}}/{{.Purchase.DownloadLimit}}</span>
                                     </div>
                                     <div class="progress-bar-custom">
                                         <div class="progress-fill" style="width: 100%;"></div>
@@ -169,7 +169,7 @@
                             <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
                             <h5>Entre em Contato</h5>
                             <p class="text-muted">Entre em contato com o autor do ebook para solicitar mais downloads ou esclarecer dúvidas.</p>
-                            <a href="mailto:{{.Data.Purchase.Ebook.Creator.Email}}" class="contact-btn">
+                            <a href="mailto:{{.Purchase.Ebook.Creator.Email}}" class="contact-btn">
                                 <i class="fas fa-envelope me-2"></i>
                                 Enviar Email
                             </a>
@@ -183,11 +183,11 @@
                             <i class="fas fa-sync-alt fa-3x text-warning mb-3"></i>
                             <h5>Verificar Período</h5>
                             <p class="text-muted">Verifique se o período de validade da sua compra ainda está ativo.</p>
-                            {{if .Data.Purchase.ExpiresAt}}
+                            {{if .Purchase.ExpiresAt}}
                             <div class="alert alert-warning">
                                 <small>
                                     <i class="fas fa-calendar me-1"></i>
-                                    Expira em: {{.Data.Purchase.ExpiresAt.Format "02/01/2006"}}
+                                    Expira em: {{.Purchase.ExpiresAt.Format "02/01/2006"}}
                                 </small>
                             </div>
                             {{else}}
@@ -233,15 +233,15 @@
                             
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>Ebook:</strong> {{.Data.Purchase.Ebook.Title}}</p>
-                                    <p><strong>Autor:</strong> {{.Data.Purchase.Ebook.Creator.Name}}</p>
-                                    <p><strong>Data da Compra:</strong> {{.Data.Purchase.CreatedAt.Format "02/01/2006"}}</p>
+                                    <p><strong>Ebook:</strong> {{.Purchase.Ebook.Title}}</p>
+                                    <p><strong>Autor:</strong> {{.Purchase.Ebook.Creator.Name}}</p>
+                                    <p><strong>Data da Compra:</strong> {{.Purchase.CreatedAt.Format "02/01/2006"}}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Cliente:</strong> {{.Data.Purchase.Client.Name}}</p>
-                                    <p><strong>Email:</strong> {{.Data.Purchase.Client.Email}}</p>
-                                    {{if .Data.Purchase.ExpiresAt}}
-                                    <p><strong>Validade:</strong> {{.Data.Purchase.ExpiresAt.Format "02/01/2006"}}</p>
+                                    <p><strong>Cliente:</strong> {{.Purchase.Client.Name}}</p>
+                                    <p><strong>Email:</strong> {{.Purchase.Client.Email}}</p>
+                                    {{if .Purchase.ExpiresAt}}
+                                    <p><strong>Validade:</strong> {{.Purchase.ExpiresAt.Format "02/01/2006"}}</p>
                                     {{else}}
                                     <p><strong>Validade:</strong> Ilimitada</p>
                                     {{end}}

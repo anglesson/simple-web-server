@@ -61,7 +61,7 @@
             </div>
           </div>
           <!-- table  -->
-          {{ if and .Data.Ebooks (gt (len .Data.Ebooks) 0) }}
+          {{ if and .Ebooks (gt (len .Ebooks) 0) }}
           <div class="table-responsive">
             <table class="table table-hover text-nowrap">
               <thead class="table-light">
@@ -76,7 +76,7 @@
                 </tr>
               </thead>
               <tbody>
-                {{ range .Data.Ebooks }}
+                {{ range .Ebooks }}
                 <tr>
                   <td class="align-middle">
                     <div class="d-flex align-items-center">
@@ -173,7 +173,7 @@
               </tbody>
             </table>
           </div>
-          {{ if .Data.Pagination }}
+          {{ if .Pagination }}
           {{ template "table-footer" . }}
           {{ end }}
           {{ else }}

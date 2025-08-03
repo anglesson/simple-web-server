@@ -10,7 +10,7 @@
           <div class="mb-4" href="/">{{ template "logo" .}}</div>
           
           <!-- Rate Limit Error -->
-          {{with .Data.rate_limit_error}}
+          {{with .rate_limit_error}}
           <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle me-2"></i>
             {{.}}
@@ -31,9 +31,9 @@
                 name="email"
                 placeholder="Digite seu e-mail"
                 required=""
-                value="{{.Data.Form.Email}}"
+                value="{{.Form.Email}}"
               />
-              {{with .Data.Errors.email}}
+              {{with .Errors.email}}
               <p class="text-danger">{{.}}</p>
               {{end}}
             </div>
@@ -48,7 +48,7 @@
                 placeholder="Digite sua senha"
                 required=""
               />
-              {{with .Data.Errors.password}}
+              {{with .Errors.password}}
               <p class="text-danger">{{.}}</p>
               {{end}}
             </div>

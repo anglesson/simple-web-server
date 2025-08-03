@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Expirado - {{.Data.Purchase.Ebook.Title}}</title>
+    <title>Download Expirado - {{.Purchase.Ebook.Title}}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -83,8 +83,8 @@
                     <div class="alert alert-warning bg-white text-dark">
                         <h4><i class="fas fa-info-circle me-2"></i>Informação Importante</h4>
                         <p class="mb-0">
-                            <strong>{{.Data.Purchase.Ebook.Title}}</strong><br>
-                            Por: {{.Data.Purchase.Ebook.Creator.Name}}
+                            <strong>{{.Purchase.Ebook.Title}}</strong><br>
+                            Por: {{.Purchase.Ebook.Creator.Name}}
                         </p>
                     </div>
                 </div>
@@ -108,11 +108,11 @@
                             <div class="time-card">
                                 <div class="row text-center">
                                     <div class="col-md-6">
-                                        <h4 class="text-primary">{{.Data.Purchase.CreatedAt.Format "02/01/2006"}}</h4>
+                                        <h4 class="text-primary">{{.Purchase.CreatedAt.Format "02/01/2006"}}</h4>
                                         <p class="text-muted mb-0">Data da Compra</p>
                                     </div>
                                     <div class="col-md-6">
-                                        <h4 class="text-danger">{{.Data.Purchase.ExpiresAt.Format "02/01/2006"}}</h4>
+                                        <h4 class="text-danger">{{.Purchase.ExpiresAt.Format "02/01/2006"}}</h4>
                                         <p class="text-muted mb-0">Data de Expiração</p>
                                     </div>
                                 </div>
@@ -120,7 +120,7 @@
                                 <div class="mt-4">
                                     <div class="countdown">
                                         <i class="fas fa-exclamation-triangle me-2"></i>
-                                        Expirado há {{.Data.DaysExpired}} dias
+                                        Expirado há {{.DaysExpired}} dias
                                     </div>
                                 </div>
                             </div>
@@ -155,7 +155,7 @@
                             <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
                             <h5>Renovar Acesso</h5>
                             <p class="text-muted">Entre em contato com o autor do ebook para solicitar uma renovação do período de acesso.</p>
-                            <a href="mailto:{{.Data.Purchase.Ebook.Creator.Email}}" class="contact-btn">
+                            <a href="mailto:{{.Purchase.Ebook.Creator.Email}}" class="contact-btn">
                                 <i class="fas fa-envelope me-2"></i>
                                 Solicitar Renovação
                             </a>
@@ -169,7 +169,7 @@
                             <i class="fas fa-shopping-cart fa-3x text-warning mb-3"></i>
                             <h5>Nova Compra</h5>
                             <p class="text-muted">Se necessário, você pode realizar uma nova compra do ebook para obter um novo período de acesso.</p>
-                            <a href="/sales/{{.Data.Purchase.Ebook.Slug}}" class="contact-btn">
+                            <a href="/sales/{{.Purchase.Ebook.Slug}}" class="contact-btn">
                                 <i class="fas fa-shopping-cart me-2"></i>
                                 Comprar Novamente
                             </a>
@@ -208,20 +208,20 @@
                             
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>Ebook:</strong> {{.Data.Purchase.Ebook.Title}}</p>
-                                    <p><strong>Autor:</strong> {{.Data.Purchase.Ebook.Creator.Name}}</p>
-                                    <p><strong>Data da Compra:</strong> {{.Data.Purchase.CreatedAt.Format "02/01/2006"}}</p>
+                                    <p><strong>Ebook:</strong> {{.Purchase.Ebook.Title}}</p>
+                                    <p><strong>Autor:</strong> {{.Purchase.Ebook.Creator.Name}}</p>
+                                    <p><strong>Data da Compra:</strong> {{.Purchase.CreatedAt.Format "02/01/2006"}}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Cliente:</strong> {{.Data.Purchase.Client.Name}}</p>
-                                    <p><strong>Email:</strong> {{.Data.Purchase.Client.Email}}</p>
-                                    <p><strong>Downloads Realizados:</strong> {{.Data.Purchase.DownloadsUsed}}</p>
+                                    <p><strong>Cliente:</strong> {{.Purchase.Client.Name}}</p>
+                                    <p><strong>Email:</strong> {{.Purchase.Client.Email}}</p>
+                                    <p><strong>Downloads Realizados:</strong> {{.Purchase.DownloadsUsed}}</p>
                                 </div>
                             </div>
                             
                             <div class="alert alert-warning mt-3">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Atenção:</strong> Esta compra expirou em {{.Data.Purchase.ExpiresAt.Format "02/01/2006 às 15:04"}}.
+                                <strong>Atenção:</strong> Esta compra expirou em {{.Purchase.ExpiresAt.Format "02/01/2006 às 15:04"}}.
                             </div>
                         </div>
                     </div>

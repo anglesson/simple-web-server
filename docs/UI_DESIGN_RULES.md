@@ -232,7 +232,7 @@ Este documento define as regras de design UI para garantir consistência visual 
 - **Classes**: kebab-case (ex: `btn-outline-primary`)
 
 ### 2. Variáveis de Template
-- **Dados**: `.Data.VariableName`
+- **Dados**: `.VariableName`
 - **Formulário**: `.Form.FieldName`
 - **Erros**: `.Errors.FieldName`
 

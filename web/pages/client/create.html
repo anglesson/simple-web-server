@@ -34,7 +34,7 @@
           <div class="card-body">
             <form action="/client" method="post" id="client-form" novalidate>
               <!-- Erros Gerais -->
-              {{with .Data.Errors.general}}
+              {{with .Errors.general}}
               <div class="alert alert-danger mb-4" role="alert">
                 <i class="fa-solid fa-circle-exclamation icon-sm me-2"></i>
                 {{.}}
@@ -53,13 +53,13 @@
                     <!-- Nome -->
                     <div class="mb-3">
                       <label for="name" class="form-label fw-semibold">Nome Completo <span class="text-danger">*</span></label>
-                      <input type="text" class="form-control" id="name" name="name" value="{{ .Data.Form.Name }}" required 
+                      <input type="text" class="form-control" id="name" name="name" value="{{ .Form.Name }}" required 
                              placeholder="Digite o nome completo">
                       <div class="form-text">
                         <i class="fa-solid fa-lightbulb icon-xs me-1"></i>
                         Digite o nome completo do cliente
                       </div>
-                      {{with .Data.Errors.Name}}
+                      {{with .Errors.Name}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -69,13 +69,13 @@
                     <!-- CPF -->
                     <div class="mb-3">
                       <label for="cpf" class="form-label fw-semibold">CPF <span class="text-danger">*</span></label>
-                      <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Data.Form.CPF }}" 
+                      <input type="text" class="form-control cpf" id="cpf" name="cpf" value="{{ .Form.CPF }}" 
                              placeholder="Digite o CPF" required>
                       <div class="form-text">
                         <i class="fa-solid fa-id-card icon-xs me-1"></i>
                         Digite apenas os números do CPF
                       </div>
-                      {{with .Data.Errors.CPF}}
+                      {{with .Errors.CPF}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -85,12 +85,12 @@
                     <!-- Data de Nascimento -->
                     <div class="mb-3">
                       <label for="data_nascimento" class="form-label fw-semibold">Data de Nascimento <span class="text-danger">*</span></label>
-                      <input type="text" class="form-control date" id="data_nascimento" name="birthdate" value="{{ .Data.Form.Birthdate }}" placeholder="DD/MM/AAAA" required>
+                      <input type="text" class="form-control date" id="data_nascimento" name="birthdate" value="{{ .Form.Birthdate }}" placeholder="DD/MM/AAAA" required>
                       <div class="form-text">
                         <i class="fa-solid fa-calendar icon-xs me-1"></i>
                         Digite a data no formato DD/MM/AAAA
                       </div>
-                      {{with .Data.Errors.Birthdate}}
+                      {{with .Errors.Birthdate}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -100,14 +100,14 @@
                     <!-- Email -->
                     <div class="mb-3">
                       <label for="email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
-                      <input type="email" class="form-control" id="email" name="email" value="{{ .Data.Form.Email }}" 
+                      <input type="email" class="form-control" id="email" name="email" value="{{ .Form.Email }}" 
                              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required 
                              placeholder="exemplo@email.com">
                       <div class="form-text">
                         <i class="fa-solid fa-envelope icon-xs me-1"></i>
                         Digite um email válido
                       </div>
-                      {{with .Data.Errors.Email}}
+                      {{with .Errors.Email}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -118,14 +118,14 @@
                     <div class="mb-3">
                       <label for="phone" class="form-label fw-semibold">Telefone <span class="text-danger">*</span></label>
                       <div class="input-group">
-                        <input type="tel" class="form-control phone_with_ddd" id="phone" name="phone" value="{{ .Data.Form.Phone }}" 
+                        <input type="tel" class="form-control phone_with_ddd" id="phone" name="phone" value="{{ .Form.Phone }}" 
                                placeholder="(XX) X XXXX-XXXX" required>
                       </div>
                       <div class="form-text">
                         <i class="fa-solid fa-phone icon-xs me-1"></i>
                         Digite o telefone com DDD
                       </div>
-                      {{with .Data.Errors.Phone}}
+                      {{with .Errors.Phone}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>

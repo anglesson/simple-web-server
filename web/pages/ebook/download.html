@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download do Ebook - {{.Data.Purchase.Ebook.Title}}</title>
+    <title>Download do Ebook - {{.Purchase.Ebook.Title}}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -76,8 +76,8 @@
                     <div class="success-banner">
                         <h4><i class="fas fa-check-circle me-2"></i>Compra Confirmada</h4>
                         <p class="mb-0">
-                            <strong>{{.Data.Purchase.Ebook.Title}}</strong><br>
-                            Por: {{.Data.Purchase.Ebook.Creator.Name}}
+                            <strong>{{.Purchase.Ebook.Title}}</strong><br>
+                            Por: {{.Purchase.Ebook.Creator.Name}}
                         </p>
                     </div>
                 </div>
@@ -95,9 +95,9 @@
                         Arquivos Disponíveis para Download
                     </h2>
                     
-                    {{if .Data.Files}}
+                    {{if .Files}}
                     <div class="row">
-                        {{range .Data.Files}}
+                        {{range .Files}}
                         <div class="col-md-6 col-lg-4">
                             <div class="card file-card h-100">
                                 <div class="card-body text-center">
@@ -126,7 +126,7 @@
                                         </small>
                                     </div>
                                     
-                                    <a href="/purchase/download/{{$.Data.Purchase.ID}}?file_id={{.ID}}" 
+                                    <a href="/purchase/download/{{$.Purchase.ID}}?file_id={{.ID}}" 
                                        class="download-btn">
                                         <i class="fas fa-download me-2"></i>
                                         Baixar Arquivo

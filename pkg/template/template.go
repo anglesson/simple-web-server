@@ -163,10 +163,12 @@ func (tr *TemplateRendererImpl) View(w http.ResponseWriter, r *http.Request, pag
 	}
 
 	// Execute the template
-	err = tmpl.ExecuteTemplate(w, layout, map[string]interface{}{
-		"Data":  data,
-		"Flash": flash,
-	})
+	templateContext := make(map[string]interface{})
+	for k, v := range data {
+		templateContext[k] = v
+	}
+	templateContext["Flash"] = flash
+	err = tmpl.ExecuteTemplate(w, layout, templateContext)
 	if err != nil {
 		log.Printf("Erro ao renderizar template: %v", err)
 		http.Error(w, "Erro ao renderizar página", http.StatusInternalServerError)

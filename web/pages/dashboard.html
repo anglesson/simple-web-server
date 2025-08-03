@@ -36,7 +36,7 @@
             </div>
             <!-- project number -->
             <div>
-              <h1 class="fw-bold">{{.Data.TotalEbooks}}</h1>
+              <h1 class="fw-bold">{{.TotalEbooks}}</h1>
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@
             </div>
             <!-- project number -->
             <div>
-              <h1 class="fw-bold">{{.Data.GetTotalClients}}</h1>
+              <h1 class="fw-bold">{{.GetTotalClients}}</h1>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@
             </div>
             <!-- project number -->
             <div>
-              <h1 class="fw-bold">{{.Data.GetTotalSendEbooks}}</h1>
+              <h1 class="fw-bold">{{.GetTotalSendEbooks}}</h1>
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@
         </div>
         <div class="card-body">
           <div class="d-flex flex-column gap-3">
-            {{ range .Data.TopClients }}
+            {{ range .TopClients }}
             <div class="d-flex align-items-center p-3 border rounded-3 bg-light">
               <div class="me-3">
                 <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
@@ -183,7 +183,7 @@
               </div>
             </div>
             {{ end }}
-            {{ if not .Data.TopClients }}
+            {{ if not .TopClients }}
             <div class="text-center py-4">
               <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3 mx-auto mb-3">
                 <i class="fa-solid fa-users fs-4"></i>
@@ -208,11 +208,11 @@
         <div class="card-header bg-white py-4">
           <h4 class="mb-0">Estatísticas dos envios</h4>
         </div>
-        {{ if .Data.EbookStats }}
+        {{ if .EbookStats }}
         <!-- ebook stats cards -->
         <div class="card-body">
           <div class="row">
-            {{ range .Data.EbookStats}}
+            {{ range .EbookStats}}
             <div class="col-xl-12 col-lg-12 col-md-12 col-12 mb-4">
               <div class="card border-0 bg-light">
                                 <div class="card-body p-4">
@@ -318,10 +318,10 @@ if (typeof ApexCharts === 'undefined') {
 
 function initializeCharts() {
 // Get JSON data from Go template variables
-const dailyPurchasesData = JSON.parse('{{.Data.DailyPurchasesJSON}}') || [];
-const dailyDownloadsData = JSON.parse('{{.Data.DailyDownloadsJSON}}') || [];
-const topEbooksData = JSON.parse('{{.Data.TopEbooksJSON}}') || [];
-const topDownloadedEbooksData = JSON.parse('{{.Data.TopDownloadedEbooksJSON}}') || [];
+const dailyPurchasesData = JSON.parse('{{.DailyPurchasesJSON}}') || [];
+const dailyDownloadsData = JSON.parse('{{.DailyDownloadsJSON}}') || [];
+const topEbooksData = JSON.parse('{{.TopEbooksJSON}}') || [];
+const topDownloadedEbooksData = JSON.parse('{{.TopDownloadedEbooksJSON}}') || [];
 
 
 console.log('Data loaded:', {

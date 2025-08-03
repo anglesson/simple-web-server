@@ -32,7 +32,7 @@
         <div class="card h-100">
           <!-- card body -->
           <div class="card-body">
-            <form action="/ebook/update/{{.Data.ebook.ID}}" method="POST" id="updateEbookForm" enctype="multipart/form-data">
+            <form action="/ebook/update/{{.ebook.ID}}" method="POST" id="updateEbookForm" enctype="multipart/form-data">
               <div class="row">
                 <div class="col-lg-8">
                   <div class="mb-4">
@@ -44,12 +44,12 @@
                       <label for="title" class="form-label fw-semibold">Título do Ebook <span class="text-danger">*</span></label>
                       <input type="text" class="form-control" id="title" name="title" required 
                              placeholder="Ex: Guia Completo de Marketing Digital"
-                             value="{{if .Form.Title}}{{.Form.Title}}{{else}}{{.Data.ebook.Title}}{{end}}">
+                             value="{{if .Form.Title}}{{.Form.Title}}{{else}}{{.ebook.Title}}{{end}}">
                       <div class="form-text">
                         <i class="fa-solid fa-lightbulb icon-xs me-1"></i>
                         Crie um título atrativo que desperte interesse
                       </div>
-                      {{with .Data.Errors.Title}}
+                      {{with .Errors.Title}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -59,12 +59,12 @@
                     <div class="mb-3">
                       <label for="description" class="form-label fw-semibold">Descrição Curta <span class="text-danger">*</span></label>
                       <textarea class="form-control" id="description" name="description" rows="3" required
-                                placeholder="Descreva brevemente o que o leitor encontrará neste ebook...">{{if .Form.Description}}{{.Form.Description}}{{else}}{{.Data.ebook.Description}}{{end}}</textarea>
+                                placeholder="Descreva brevemente o que o leitor encontrará neste ebook...">{{if .Form.Description}}{{.Form.Description}}{{else}}{{.ebook.Description}}{{end}}</textarea>
                       <div class="form-text">
                         <i class="fa-solid fa-circle-info icon-xs me-1"></i>
                         Máximo 120 caracteres
                       </div>
-                      {{with .Data.Errors.Description}}
+                      {{with .Errors.Description}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -79,13 +79,13 @@
                             <span class="input-group-text">R$</span>
                             <input type="number" class="form-control" id="value" name="value" step="0.01" min="0" required
                                    placeholder="29.90"
-                                   value="{{if .Form.Value}}{{.Form.Value}}{{else}}{{.Data.ebook.Value}}{{end}}">
+                                   value="{{if .Form.Value}}{{.Form.Value}}{{else}}{{.ebook.Value}}{{end}}">
                           </div>
                           <div class="form-text">
                             <i class="fa-solid fa-dollar-sign icon-xs me-1"></i>
                             Defina um preço competitivo
                           </div>
-                          {{with .Data.Errors.Value}}
+                          {{with .Errors.Value}}
                           <div class="text-danger small mt-1">
                             <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                           </div>
@@ -102,12 +102,12 @@
                           </div>
                           
                           <!-- Preview da capa atual -->
-                          {{if .Data.ebook.Image}}
+                          {{if .ebook.Image}}
                           <div class="mt-3">
                             <label class="form-label fw-semibold text-muted">Capa Atual:</label>
                             <div class="d-flex align-items-center">
                               <div class="me-3">
-                                <img src="/ebook/{{.Data.ebook.ID}}/image" alt="Capa atual do ebook" 
+                                <img src="/ebook/{{.ebook.ID}}/image" alt="Capa atual do ebook" 
                                      class="rounded shadow-sm" style="width: 80px; height: 80px; object-fit: cover;"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                               </div>
@@ -119,8 +119,8 @@
                                 <small class="text-muted d-block">
                                   <i class="fa-solid fa-link-slash icon-xs me-1"></i>
                                   URL: 
-                                  <a href="/ebook/{{.Data.ebook.ID}}/image" target="_blank" class="text-truncate d-inline-block" style="max-width: 220px; vertical-align: middle;" title="/ebook/{{.Data.ebook.ID}}/image">
-                                    /ebook/{{.Data.ebook.ID}}/image
+                                  <a href="/ebook/{{.ebook.ID}}/image" target="_blank" class="text-truncate d-inline-block" style="max-width: 220px; vertical-align: middle;" title="/ebook/{{.ebook.ID}}/image">
+                                    /ebook/{{.ebook.ID}}/image
                                   </a>
                                 </small>
                               </div>
@@ -152,7 +152,7 @@
                     <div class="mb-3">
                       <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="status" value="true" id="status" 
-                               {{if .Form.Status}}checked{{else}}{{if .Data.ebook.Status}}checked{{end}}{{end}}>
+                               {{if .Form.Status}}checked{{else}}{{if .ebook.Status}}checked{{end}}{{end}}>
                         <label class="form-check-label fw-semibold" for="status">
                           <i class="fa-solid fa-toggle-on icon-xs me-1"></i>
                           Ebook ativo (disponível para venda)
@@ -166,7 +166,7 @@
                       <i class="fa-solid fa-folder icon-sm me-2"></i>
                       Arquivos Atuais do Ebook
                     </h5>
-                    {{if .Data.ebook.Files}}
+                    {{if .ebook.Files}}
                     <div class="alert alert-info border-0">
                       <div class="d-flex align-items-center">
                         <i class="fa-solid fa-circle-info icon-sm me-2"></i>
@@ -177,7 +177,7 @@
                     </div>
                     
                     <div class="row" id="currentFilesContainer">
-                      {{range .Data.ebook.Files}}
+                      {{range .ebook.Files}}
                       <div class="col-md-6 mb-3">
                         <div class="card file-card h-100 border-success">
                           <div class="card-body">
@@ -236,7 +236,7 @@
                       <i class="fa-solid fa-plus-circle icon-sm me-2"></i>
                       Adicionar Novos Arquivos da Biblioteca
                     </h5>
-                    {{if .Data.AvailableFiles}}
+                    {{if .AvailableFiles}}
                     <div class="alert alert-info border-0">
                       <div class="d-flex align-items-center">
                         <i class="fa-solid fa-circle-info icon-sm me-2"></i>
@@ -285,7 +285,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                          {{range .Data.AvailableFiles}}
+                          {{range .AvailableFiles}}
                           <tr class="new-file-row" data-filename="{{.OriginalName}}" data-type="{{.FileType}}">
                             <td>
                               <input type="checkbox" class="form-check-input new-file-checkbox" 
@@ -361,7 +361,7 @@
                     <!-- Estatísticas -->
                     <div class="d-flex justify-content-between align-items-center mt-3">
                       <div class="text-muted small">
-                        Total: <span id="totalNewFiles">{{.Data.Pagination.Total}}</span> arquivos disponíveis
+                        Total: <span id="totalNewFiles">{{.Pagination.Total}}</span> arquivos disponíveis
                       </div>
                       <div class="text-muted small">
                         Tamanho total selecionado: <span id="totalNewSize">0 MB</span>
@@ -369,7 +369,7 @@
                     </div>
 
                     <!-- Paginação -->
-                    {{if .Data.Pagination}}
+                    {{if .Pagination}}
                     {{ template "table-footer" . }}
                     {{end}}
                     {{else}}
@@ -395,7 +395,7 @@
                     <div class="mb-3">
                       <label for="sales_page" class="form-label fw-semibold">Conteúdo da Página de Vendas <span class="text-danger">*</span></label>
                       <textarea class="form-control" id="sales_page" name="sales_page" rows="15" required
-                                placeholder="Escreva aqui o conteúdo da sua página de vendas...">{{if .Form.SalesPage}}{{.Form.SalesPage}}{{else}}{{.Data.ebook.SalesPage}}{{end}}</textarea>
+                                placeholder="Escreva aqui o conteúdo da sua página de vendas...">{{if .Form.SalesPage}}{{.Form.SalesPage}}{{else}}{{.ebook.SalesPage}}{{end}}</textarea>
                       <div class="form-text">
                         <strong>Dicas para uma página de vendas eficaz:</strong><br>
                         • Comece com um título impactante<br>
@@ -405,7 +405,7 @@
                         • Crie urgência e escassez<br>
                         • Termine com uma call-to-action clara
                       </div>
-                      {{with .Data.Errors.SalesPage}}
+                      {{with .Errors.SalesPage}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -448,13 +448,13 @@
                     <div class="row g-2">
                       <div class="col-6">
                         <div class="text-center p-3 rounded border bg-light">
-                          <h4 class="mb-1 text-primary fw-bold">{{.Data.ebook.GetFileCount}}</h4>
+                          <h4 class="mb-1 text-primary fw-bold">{{.ebook.GetFileCount}}</h4>
                           <small class="text-muted fw-medium">Arquivos</small>
                         </div>
                       </div>
                       <div class="col-6">
                         <div class="text-center p-3 rounded border bg-light">
-                          <h4 class="mb-1 text-info fw-bold">{{.Data.ebook.Views}}</h4>
+                          <h4 class="mb-1 text-info fw-bold">{{.ebook.Views}}</h4>
                           <small class="text-muted fw-medium">Visualizações</small>
                         </div>
                       </div>
@@ -462,13 +462,13 @@
                     <div class="row g-2 mt-1">
                       <div class="col-6">
                         <div class="text-center p-3 rounded border bg-light">
-                          <h4 class="mb-1 text-warning fw-bold">{{.Data.ebook.Sales}}</h4>
+                          <h4 class="mb-1 text-warning fw-bold">{{.ebook.Sales}}</h4>
                           <small class="text-muted fw-medium">Vendas</small>
                         </div>
                       </div>
                       <div class="col-6">
                         <div class="text-center p-3 rounded border bg-light">
-                          <h4 class="mb-1 text-success fw-bold">{{.Data.ebook.GetValue}}</h4>
+                          <h4 class="mb-1 text-success fw-bold">{{.ebook.GetValue}}</h4>
                           <small class="text-muted fw-medium">Preço</small>
                         </div>
                       </div>
@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Função para atualizar estatísticas dos novos arquivos
     function updateNewStats() {
-        const currentFiles = parseInt('{{.Data.ebook.GetFileCount}}') || 0;
+        const currentFiles = parseInt('{{.ebook.GetFileCount}}') || 0;
         const selectedNewFiles = document.querySelectorAll('.new-file-checkbox:checked');
         const selectedNewCount = selectedNewFiles.length;
         const totalFiles = currentFiles + selectedNewCount;

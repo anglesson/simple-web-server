@@ -41,7 +41,7 @@
             <div class="col-md-12">
               <select class="form-select form-select-lg" id="ebookSelect" name="ebook_id" required>
                 <option value="">Selecione um ebook</option>
-                {{ range .Data.Ebooks }}
+                {{ range .Ebooks }}
                 <option value="{{.ID}}" data-title="{{.Title}}" data-description="{{.Description}}"
                   data-value="{{.GetValue}}">{{.Title}}</option>
                 {{ end }}
@@ -91,8 +91,8 @@
                   <input id="term" name="term" type="search" class="form-control border-start-0"
                     placeholder="Buscar clientes por nome, email ou CPF..." />
                 </div>
-                {{ if .Data.EbookID }}
-                <input id="ebook_id_input" type="search" name="ebook_id" value="{{ .Data.EbookID }}" hidden />
+                {{ if .EbookID }}
+                <input id="ebook_id_input" type="search" name="ebook_id" value="{{ .EbookID }}" hidden />
                 {{ end }}
                 <button type="submit" class="btn btn-outline-primary mt-2" hidden></button>
               </form>
@@ -101,7 +101,7 @@
         </div>
         <!-- card body -->
         <div class="card-body">
-          {{ if not .Data.EbookID }}
+          {{ if not .EbookID }}
           <div class="text-center py-6">
             <div class="mb-4">
               <i class="fa-solid fa-book text-muted" style="font-size: 4rem;"></i>
@@ -113,7 +113,7 @@
             </p>
           </div>
           {{ else }}
-          {{ if .Data.Clients }}
+          {{ if .Clients }}
           <div class="table-responsive">
             <table class="table table-hover text-nowrap mb-0">
               <thead class="table-light">
@@ -133,7 +133,7 @@
                 </tr>
               </thead>
               <tbody>
-                {{ range .Data.Clients }}
+                {{ range .Clients }}
                 <tr>
                   <td class="align-middle">
                     <div class="form-check">

@@ -26,7 +26,7 @@ alwaysApply: true
 
 ## DashUI Integration
 - **Template Rendering**: Usar `template.View(w, r, "page", data, "admin")` para páginas administrativas
-- **Data Structure**: Dados devem ser passados como `map[string]any` e acessados via `.Data.Variavel` no template
+- **Data Structure**: Dados devem ser passados como `map[string]any` e acessados diretamente via `.Variavel` no template
 - **Flash Messages**: Implementar mensagens de feedback usando `web.FlashMessageFactory`
 - **Pagination**: Usar `models.Pagination` para listagens com paginação
 - **Search/Filter**: Implementar busca e filtros para melhorar UX

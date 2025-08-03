@@ -61,7 +61,7 @@
             </div>
           </div>
           <!-- table  -->
-          {{ if .Data.Items }}
+          {{ if .Items }}
           <div class="table-responsive">
             <table class="table table-hover text-nowrap">
               <thead class="table-light">
@@ -74,7 +74,7 @@
                 </tr>
               </thead>
               <tbody>
-                {{ range .Data.Items }}
+                {{ range .Items }}
                 <tr>
                   <td class="align-middle">
                     <div class="d-flex align-items-center">
@@ -129,32 +129,32 @@
           </div>
           
           <!-- Paginação -->
-          {{if .Data.Pagination}}
+          {{if .Pagination}}
           <div class="card-footer bg-white">
             <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 col-12">
                 <p class="mb-0 text-muted">
-                  Total de {{ .Data.Pagination.Total }} resultados
+                  Total de {{ .Pagination.Total }} resultados
                 </p>
               </div>
               <div class="col-lg-6 col-md-6 col-12">
                 <nav aria-label="Navegação de páginas">
                   <ul class="pagination pagination-sm justify-content-end mb-0">
-                    {{if .Data.Pagination.HasPrev}}
+                    {{if .Pagination.HasPrev}}
                     <li class="page-item">
-                      <a class="page-link" href="?page={{ .Data.Pagination.PrevPage }}">Anterior</a>
+                      <a class="page-link" href="?page={{ .Pagination.PrevPage }}">Anterior</a>
                     </li>
                     {{end}}
                     
-                    {{range .Data.Pagination.Pages}}
-                    <li class="page-item {{if eq . $.Data.Pagination.CurrentPage}}active{{end}}">
+                    {{range .Pagination.Pages}}
+                    <li class="page-item {{if eq . $.Pagination.CurrentPage}}active{{end}}">
                       <a class="page-link" href="?page={{ . }}">{{ . }}</a>
                     </li>
                     {{end}}
                     
-                    {{if .Data.Pagination.HasNext}}
+                    {{if .Pagination.HasNext}}
                     <li class="page-item">
-                      <a class="page-link" href="?page={{ .Data.Pagination.NextPage }}">Próximo</a>
+                      <a class="page-link" href="?page={{ .Pagination.NextPage }}">Próximo</a>
                     </li>
                     {{end}}
                   </ul>

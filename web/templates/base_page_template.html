@@ -55,7 +55,7 @@
                         <i class="fa-solid fa-lightbulb icon-xs me-1"></i>
                         Dica ou informação adicional
                       </div>
-                      {{with .Data.Errors.Field1}}
+                      {{with .Errors.Field1}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
@@ -71,7 +71,7 @@
                         <i class="fa-solid fa-circle-info icon-xs me-1"></i>
                         Máximo 500 caracteres
                       </div>
-                      {{with .Data.Errors.Field2}}
+                      {{with .Errors.Field2}}
                       <div class="text-danger small mt-1">
                         <i class="fa-solid fa-circle-exclamation icon-xs me-1"></i>{{.}}
                       </div>
