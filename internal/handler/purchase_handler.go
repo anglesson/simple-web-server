@@ -164,11 +164,9 @@ func (h *PurchaseHandler) showEbookFiles(w http.ResponseWriter, r *http.Request,
 	log.Printf("✅ Arquivos encontrados: %d", len(files))
 
 	data := map[string]interface{}{
-		"Data": map[string]interface{}{
-			"Purchase": purchase,
-			"Files":    files,
-		},
-		"Title": "Download do Ebook",
+		"Purchase": purchase,
+		"Files":    files,
+		"Title":    "Download do Ebook",
 	}
 
 	h.templateRenderer.ViewWithoutLayout(w, r, "ebook/download", data)
@@ -178,10 +176,8 @@ func (h *PurchaseHandler) showLimitExceededPage(w http.ResponseWriter, r *http.R
 	log.Printf("🔍 Mostrando página de limite excedido para purchase ID: %d", purchase.ID)
 
 	data := map[string]interface{}{
-		"Data": map[string]interface{}{
-			"Purchase": purchase,
-		},
-		"Title": "Limite de Downloads Atingido",
+		"Purchase": purchase,
+		"Title":    "Limite de Downloads Atingido",
 	}
 
 	h.templateRenderer.ViewWithoutLayout(w, r, "ebook/download-limit-exceeded", data)
@@ -194,11 +190,9 @@ func (h *PurchaseHandler) showExpiredDownloadPage(w http.ResponseWriter, r *http
 	daysExpired := int(time.Since(purchase.ExpiresAt).Hours() / 24)
 
 	data := map[string]interface{}{
-		"Data": map[string]interface{}{
-			"Purchase":    purchase,
-			"DaysExpired": daysExpired,
-		},
-		"Title": "Download Expirado",
+		"Purchase":    purchase,
+		"DaysExpired": daysExpired,
+		"Title":       "Download Expirado",
 	}
 
 	h.templateRenderer.ViewWithoutLayout(w, r, "ebook/download-expired", data)

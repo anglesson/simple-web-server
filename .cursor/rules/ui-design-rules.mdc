@@ -41,7 +41,7 @@
 
 ### Dicas e Ajuda
 - **Card**: `card bg-light mb-3` para fundo neutro
-- **Ícones**: Use MDI icons com `me-2` para espaçamento
+- **Ícones**: Use FontAwesome
 - **Lista**: `list-unstyled mb-0` com check icons verdes
 
 ### Diferenciação de Páginas

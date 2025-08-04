@@ -9,9 +9,9 @@
     <meta name="description" content="{{.Ebook.Description}}">
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/libs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/assets/libs/font-awesome/css/all.min.css">
     
     <style>
         body {
@@ -388,7 +388,7 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         // Buy Now Function
@@ -401,7 +401,7 @@
             }
             
             // Redirecionar para checkout
-            window.location.href = '/purchase/ebook/{{.Ebook.ID}}';
+            window.location.href = '/checkout/{{.Ebook.ID}}';
         }
     </script>
 </body>

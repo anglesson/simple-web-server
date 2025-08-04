@@ -2,23 +2,45 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/anglesson/simple-web-server/internal/config"
+	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
-	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 	"github.com/anglesson/simple-web-server/internal/service"
-	"github.com/anglesson/simple-web-server/pkg/database"
-	"github.com/anglesson/simple-web-server/pkg/gov"
+	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/checkout/session"
 	"github.com/stripe/stripe-go/v76/webhook"
 )
 
-func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
+type StripeHandler struct {
+	userRepository      repository.UserRepository
+	subscriptionService service.SubscriptionService
+	purchaseRepository  *repository.PurchaseRepository
+	emailService        *mail.EmailService
+}
+
+func NewStripeHandler(
+	userRepository repository.UserRepository,
+	subscriptionService service.SubscriptionService,
+	purchaseRepository *repository.PurchaseRepository,
+	emailService *mail.EmailService,
+) *StripeHandler {
+	return &StripeHandler{
+		userRepository:      userRepository,
+		subscriptionService: subscriptionService,
+		purchaseRepository:  purchaseRepository,
+		emailService:        emailService,
+	}
+}
+
+func (h *StripeHandler) CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Initialize Stripe with API key
@@ -38,8 +60,7 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Session token found for user")
 
 	// Find user by session token
-	userRepository := repository.NewGormUserRepository(database.DB)
-	user := userRepository.FindBySessionToken(sessionCookie.Value)
+	user := h.userRepository.FindBySessionToken(sessionCookie.Value)
 	if user == nil {
 		log.Printf("User not found for session token")
 		w.WriteHeader(http.StatusUnauthorized)
@@ -75,9 +96,7 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user's subscription
-	subscriptionRepository := gorm.NewSubscriptionGormRepository()
-	subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
-	subscription, err := subscriptionService.FindByUserID(user.ID)
+	subscription, err := h.subscriptionService.FindByUserID(user.ID)
 	if err != nil {
 		log.Printf("Erro ao buscar subscription do usuário: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -160,7 +179,7 @@ func CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
+func (h *StripeHandler) HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 	payload, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
@@ -191,27 +210,23 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Find subscription by Stripe customer ID
-		subscriptionRepository := gorm.NewSubscriptionGormRepository()
-		subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
-		subscription, err := subscriptionService.FindByStripeCustomerID(session.Customer.ID)
-		if err != nil {
-			log.Printf("Error finding subscription: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if subscription == nil {
-			log.Printf("Subscription not found for Stripe customer ID: %s", session.Customer.ID)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		// Update subscription status
-		err = subscriptionService.ActivateSubscription(subscription, session.Customer.ID, session.Subscription.ID)
-		if err != nil {
-			log.Printf("Error updating subscription: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		// Verificar se é um pagamento de ebook ou assinatura
+		if session.Mode == stripe.CheckoutSessionModePayment {
+			// É um pagamento de ebook
+			err = h.handleEbookPayment(session)
+			if err != nil {
+				log.Printf("Error handling ebook payment: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		} else if session.Mode == stripe.CheckoutSessionModeSubscription {
+			// É uma assinatura
+			err = h.handleSubscriptionPayment(session)
+			if err != nil {
+				log.Printf("Error handling subscription payment: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 		}
 
 	case "customer.subscription.updated":
@@ -224,9 +239,7 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Find subscription by Stripe customer ID
-		subscriptionRepository := gorm.NewSubscriptionGormRepository()
-		subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
-		subscription, err := subscriptionService.FindByStripeCustomerID(stripeSubscription.Customer.ID)
+		subscription, err := h.subscriptionService.FindByStripeCustomerID(stripeSubscription.Customer.ID)
 		if err != nil {
 			log.Printf("Error finding subscription: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -244,7 +257,7 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 			endDate = &time.Time{}
 			*endDate = time.Unix(stripeSubscription.CurrentPeriodEnd, 0)
 		}
-		err = subscriptionService.UpdateSubscriptionStatus(subscription, string(stripeSubscription.Status), endDate)
+		err = h.subscriptionService.UpdateSubscriptionStatus(subscription, string(stripeSubscription.Status), endDate)
 		if err != nil {
 			log.Printf("Error updating subscription: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -261,9 +274,7 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Find subscription by Stripe customer ID
-		subscriptionRepository := gorm.NewSubscriptionGormRepository()
-		subscriptionService := service.NewSubscriptionService(subscriptionRepository, gov.NewHubDevService())
-		subscription, err := subscriptionService.FindByStripeCustomerID(stripeSubscription.Customer.ID)
+		subscription, err := h.subscriptionService.FindByStripeCustomerID(stripeSubscription.Customer.ID)
 		if err != nil {
 			log.Printf("Error finding subscription: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -281,7 +292,7 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 			endDate = &time.Time{}
 			*endDate = time.Unix(stripeSubscription.CurrentPeriodEnd, 0)
 		}
-		err = subscriptionService.UpdateSubscriptionStatus(subscription, "canceled", endDate)
+		err = h.subscriptionService.UpdateSubscriptionStatus(subscription, "canceled", endDate)
 		if err != nil {
 			log.Printf("Error updating subscription: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -290,4 +301,106 @@ func HandleStripeWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// handleEbookPayment processa pagamento de ebook
+func (h *StripeHandler) handleEbookPayment(session stripe.CheckoutSession) error {
+	// Extrair dados da sessão
+	ebookIDStr := session.Metadata["ebook_id"]
+	clientIDStr := session.Metadata["client_id"]
+
+	if ebookIDStr == "" || clientIDStr == "" {
+		return fmt.Errorf("dados da compra inválidos")
+	}
+
+	// Converter IDs
+	ebookID, err := strconv.ParseUint(ebookIDStr, 10, 32)
+	if err != nil {
+		return fmt.Errorf("ebook ID inválido: %v", err)
+	}
+
+	clientID, err := strconv.ParseUint(clientIDStr, 10, 32)
+	if err != nil {
+		return fmt.Errorf("client ID inválido: %v", err)
+	}
+
+	// Criar registro de compra
+	purchase := models.NewPurchase(uint(ebookID), uint(clientID))
+	purchase.ExpiresAt = time.Now().AddDate(0, 0, 30) // 30 dias de acesso
+
+	err = h.purchaseRepository.CreateManyPurchases([]*models.Purchase{purchase})
+	if err != nil {
+		return fmt.Errorf("erro ao criar compra: %v", err)
+	}
+
+	// Enviar email com link de download
+	if purchase.ID > 0 {
+		log.Printf("Purchase criado com sucesso: ID=%d, EbookID=%d, ClientID=%d", purchase.ID, purchase.EbookID, purchase.ClientID)
+
+		// Buscar purchase com relacionamentos do banco
+		log.Printf("🔍 Buscando purchase com ID=%d para carregar relacionamentos", purchase.ID)
+		log.Printf("🔍 Usando purchaseRepository: %+v", h.purchaseRepository)
+
+		// Verificar se purchaseRepository não é nil
+		if h.purchaseRepository == nil {
+			log.Printf("❌ ERRO: purchaseRepository é nil!")
+			return fmt.Errorf("purchaseRepository não inicializado")
+		}
+
+		purchaseWithRelations, err := h.purchaseRepository.FindByID(purchase.ID)
+		if err != nil {
+			log.Printf("❌ Erro ao buscar purchase com relacionamentos: %v", err)
+			return fmt.Errorf("erro ao buscar dados da compra: %v", err)
+		}
+
+		if purchaseWithRelations == nil {
+			log.Printf("❌ Purchase não encontrado após criação")
+			return fmt.Errorf("purchase não encontrado após criação")
+		}
+
+		log.Printf("✅ Purchase carregado: ID=%d, ClientID=%d",
+			purchaseWithRelations.ID, purchaseWithRelations.ClientID)
+
+		// Verificar se o cliente foi carregado
+		if purchaseWithRelations.Client.ID == 0 {
+			log.Printf("❌ Cliente não foi carregado! Client.ID=0")
+		} else {
+			log.Printf("✅ Cliente carregado: ID=%d, Name='%s', Email='%s'",
+				purchaseWithRelations.Client.ID,
+				purchaseWithRelations.Client.Name,
+				purchaseWithRelations.Client.Email)
+		}
+
+		// Verificar se o cliente tem email
+		if purchaseWithRelations.Client.Email == "" {
+			log.Printf("Cliente sem email: ClientID=%d", purchaseWithRelations.ClientID)
+			return fmt.Errorf("cliente sem email válido")
+		}
+
+		log.Printf("Enviando email para: %s", purchaseWithRelations.Client.Email)
+
+		go h.emailService.SendLinkToDownload([]*models.Purchase{purchaseWithRelations})
+	}
+
+	return nil
+}
+
+// handleSubscriptionPayment processa pagamento de assinatura
+func (h *StripeHandler) handleSubscriptionPayment(session stripe.CheckoutSession) error {
+	// Find subscription by Stripe customer ID
+	subscription, err := h.subscriptionService.FindByStripeCustomerID(session.Customer.ID)
+	if err != nil {
+		return fmt.Errorf("error finding subscription: %v", err)
+	}
+	if subscription == nil {
+		return fmt.Errorf("subscription not found for Stripe customer ID: %s", session.Customer.ID)
+	}
+
+	// Update subscription status
+	err = h.subscriptionService.ActivateSubscription(subscription, session.Customer.ID, session.Subscription.ID)
+	if err != nil {
+		return fmt.Errorf("error updating subscription: %v", err)
+	}
+
+	return nil
 }
