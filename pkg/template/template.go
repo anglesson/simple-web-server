@@ -2,6 +2,7 @@ package template
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -43,6 +44,26 @@ func DefaultTemplateRenderer() TemplateRenderer {
 
 type PageData struct {
 	ErrorMessage string
+}
+
+// maskEmail masks sensitive parts of email for logging
+func maskEmail(email string) string {
+	if email == "" {
+		return "[EMPTY]"
+	}
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return "[INVALID_EMAIL]"
+	}
+	username := parts[0]
+	domain := parts[1]
+	
+	if len(username) <= 2 {
+		return fmt.Sprintf("%s***@%s", username, domain)
+	}
+	
+	maskedUsername := username[:2] + "***"
+	return fmt.Sprintf("%s@%s", maskedUsername, domain)
 }
 
 // TemplateFunctions returns a map of functions available to templates
@@ -112,20 +133,20 @@ func (tr *TemplateRendererImpl) View(w http.ResponseWriter, r *http.Request, pag
 		http.SetCookie(w, &http.Cookie{Name: "flash", MaxAge: -1})
 	}
 
-	// Get CSRF token from context
-	if csrfToken := middleware.GetCSRFToken(r); csrfToken != "" {
-		log.Printf("CSRF token encontrado no contexto: %s", csrfToken)
-		data["csrf_token"] = csrfToken
-	} else {
-		log.Printf("CSRF token não encontrado no contexto")
-	}
+			// Get CSRF token from context
+		if csrfToken := middleware.GetCSRFToken(r); csrfToken != "" {
+			log.Printf("CSRF token encontrado no contexto: [REDACTED]")
+			data["csrf_token"] = csrfToken
+		} else {
+			log.Printf("CSRF token não encontrado no contexto")
+		}
 
 	// Get user from context
 	if user := middleware.Auth(r); user != nil {
-		log.Printf("Usuário encontrado no contexto: %s", user.Email)
+		log.Printf("Usuário encontrado no contexto: %s", maskEmail(user.Email))
 		data["user"] = user
 		if user.CSRFToken != "" {
-			log.Printf("Usando CSRF token do usuário: %s", user.CSRFToken)
+			log.Printf("Usando CSRF token do usuário: [REDACTED]")
 			data["csrf_token"] = user.CSRFToken
 		}
 	} else {

@@ -1,8 +1,10 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/anglesson/simple-web-server/internal/config"
@@ -32,6 +34,26 @@ type SessionServiceImpl struct {
 	encrypter    utils.Encrypter
 }
 
+// maskEmail masks sensitive parts of email for logging
+func maskEmail(email string) string {
+	if email == "" {
+		return "[EMPTY]"
+	}
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return "[INVALID_EMAIL]"
+	}
+	username := parts[0]
+	domain := parts[1]
+	
+	if len(username) <= 2 {
+		return fmt.Sprintf("%s***@%s", username, domain)
+	}
+	
+	maskedUsername := username[:2] + "***"
+	return fmt.Sprintf("%s@%s", maskedUsername, domain)
+}
+
 func NewSessionService() SessionService {
 	return &SessionServiceImpl{
 		SessionToken: "",
@@ -54,10 +76,11 @@ func (s *SessionServiceImpl) SetSessionToken(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    s.SessionToken,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(8 * time.Hour), // Reduzido de 24h para 8h por segurança
 		HttpOnly: true,
 		Secure:   config.AppConfig.IsProduction(),
 		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
 	})
 }
 
@@ -65,14 +88,14 @@ func (s *SessionServiceImpl) SetCSRFToken(w http.ResponseWriter) {
 	cookie := &http.Cookie{
 		Name:     "csrf_token",
 		Value:    s.CSRFToken,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(8 * time.Hour), // Reduzido de 24h para 8h por segurança
 		HttpOnly: true,
 		Secure:   config.AppConfig.IsProduction(),
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 	}
 	http.SetCookie(w, cookie)
-	log.Printf("CSRF token definido no cookie")
+	log.Printf("CSRF token definido no cookie: [REDACTED]")
 }
 
 func (s *SessionServiceImpl) ClearSessionToken(w http.ResponseWriter) {
@@ -134,9 +157,9 @@ func (s *SessionServiceImpl) InitSession(w http.ResponseWriter, email string) {
 		return
 	}
 
-	log.Printf("Atualizando tokens para o usuário: %s", email)
-	log.Printf("Session token generated")
-	log.Printf("CSRF token generated")
+	log.Printf("Atualizando tokens para o usuário: %s", maskEmail(email))
+	log.Printf("Session token generated: [REDACTED]")
+	log.Printf("CSRF token generated: [REDACTED]")
 
 	user.SessionToken = s.SessionToken
 	user.CSRFToken = s.CSRFToken
@@ -150,5 +173,5 @@ func (s *SessionServiceImpl) InitSession(w http.ResponseWriter, email string) {
 	s.SetSessionToken(w)
 	s.SetCSRFToken(w)
 
-	log.Printf("Sessão inicializada com sucesso para o usuário: %s", email)
+	log.Printf("Sessão inicializada com sucesso para o usuário: %s", maskEmail(email))
 }

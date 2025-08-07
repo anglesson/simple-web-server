@@ -5,13 +5,15 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/anglesson/simple-web-server/internal/config"
 )
 
 // SecurityHeaders middleware adds security headers to all responses
 func SecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Content Security Policy
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' data: https://cdnjs.cloudflare.com; connect-src 'self';")
+		// Content Security Policy - mais restritivo
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';")
 
 		// Prevent MIME type sniffing
 		w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -26,13 +28,18 @@ func SecurityHeaders(next http.Handler) http.Handler {
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 
 		// HSTS (only in production)
-		// if config.AppConfig.IsProduction() {
-		// 	w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
-		// }
+		if config.AppConfig.IsProduction() {
+			w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+		}
 
 		// Remove server information
 		w.Header().Del("Server")
 		w.Header().Del("X-Powered-By")
+		
+		// Additional security headers
+		w.Header().Set("X-Download-Options", "noopen")
+		w.Header().Set("X-Permitted-Cross-Domain-Policies", "none")
+		w.Header().Set("X-DNS-Prefetch-Control", "off")
 
 		next.ServeHTTP(w, r)
 	})
@@ -123,24 +130,65 @@ func (rl *RateLimiter) isAllowed(clientIP string) bool {
 
 // getClientIP extracts the real client IP from the request
 func getClientIP(r *http.Request) string {
-	// Check for forwarded headers
-	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {
-		// X-Forwarded-For can contain multiple IPs, take the first one
-		if commaIndex := strings.Index(ip, ","); commaIndex != -1 {
-			ip = strings.TrimSpace(ip[:commaIndex])
+	// Check for forwarded headers (in order of preference)
+	headers := []string{"X-Forwarded-For", "X-Real-IP", "X-Client-IP", "CF-Connecting-IP"}
+	
+	for _, header := range headers {
+		if ip := r.Header.Get(header); ip != "" {
+			// X-Forwarded-For can contain multiple IPs, take the first one
+			if header == "X-Forwarded-For" {
+				if commaIndex := strings.Index(ip, ","); commaIndex != -1 {
+					ip = strings.TrimSpace(ip[:commaIndex])
+				}
+			}
+			
+			// Validate IP format
+			if isValidIP(ip) {
+				return ip
+			}
 		}
-		return ip
-	}
-	if ip := r.Header.Get("X-Real-IP"); ip != "" {
-		return ip
 	}
 
 	// Fallback to remote address
 	// Remove port if present
 	if colonIndex := strings.LastIndex(r.RemoteAddr, ":"); colonIndex != -1 {
-		return r.RemoteAddr[:colonIndex]
+		ip := r.RemoteAddr[:colonIndex]
+		if isValidIP(ip) {
+			return ip
+		}
 	}
-	return r.RemoteAddr
+	
+	// Default fallback
+	return "unknown"
+}
+
+// isValidIP validates if the string is a valid IP address
+func isValidIP(ip string) bool {
+	// Basic validation - check if it's not empty and contains dots or colons
+	if ip == "" || ip == "unknown" {
+		return false
+	}
+	
+	// Check for IPv4 format (contains dots)
+	if strings.Contains(ip, ".") {
+		parts := strings.Split(ip, ".")
+		if len(parts) != 4 {
+			return false
+		}
+		for _, part := range parts {
+			if part == "" {
+				return false
+			}
+		}
+		return true
+	}
+	
+	// Check for IPv6 format (contains colons)
+	if strings.Contains(ip, ":") {
+		return true
+	}
+	
+	return false
 }
 
 // CleanupRateLimiter periodically cleans up old rate limiting data

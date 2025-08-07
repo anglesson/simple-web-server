@@ -88,11 +88,11 @@ func main() {
 
 	stripeHandler := handler.NewStripeHandler(userRepository, subscriptionService, purchaseRepository, stripeEmailService)
 
-	// Initialize rate limiters
-	authRateLimiter := middleware.NewRateLimiter(10, time.Minute)         // 10 requests per minute for auth (increased from 5)
-	resetPasswordRateLimiter := middleware.NewRateLimiter(5, time.Minute) // 5 requests per minute for password reset (more restrictive for security)
-	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)         // 100 requests per minute for API
-	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute)       // 10 uploads per minute
+	// Initialize rate limiters - mais restritivos por segurança
+	authRateLimiter := middleware.NewRateLimiter(5, time.Minute)          // 5 requests per minute for auth (reduzido)
+	resetPasswordRateLimiter := middleware.NewRateLimiter(3, time.Minute) // 3 requests per minute for password reset (mais restritivo)
+	apiRateLimiter := middleware.NewRateLimiter(60, time.Minute)          // 60 requests per minute for API (reduzido)
+	uploadRateLimiter := middleware.NewRateLimiter(5, time.Minute)        // 5 uploads per minute (reduzido)
 
 	// Start cleanup goroutines
 	authRateLimiter.CleanupRateLimiter()

@@ -110,8 +110,8 @@ func (h *FileHandler) FileUploadSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse multipart form (máximo 50MB)
-	err := r.ParseMultipartForm(50 << 20)
+	// Parse multipart form (máximo 10MB - reduzido por segurança)
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, "Erro ao processar formulário", http.StatusBadRequest)
 		return

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -156,10 +157,15 @@ func (s *fileService) GetFileType(ext string) string {
 }
 
 func (s *fileService) validateFile(file *multipart.FileHeader) error {
-	// Verificar tamanho (máximo 50MB)
-	const maxSize = 50 * 1024 * 1024 // 50MB
+	// Verificar tamanho (máximo 10MB - reduzido por segurança)
+	const maxSize = 10 * 1024 * 1024 // 10MB
 	if file.Size > maxSize {
-		return fmt.Errorf("arquivo muito grande. Tamanho máximo: 50MB")
+		return fmt.Errorf("arquivo muito grande. Tamanho máximo: 10MB")
+	}
+
+	// Verificar se o arquivo não está vazio
+	if file.Size == 0 {
+		return fmt.Errorf("arquivo vazio não é permitido")
 	}
 
 	// Verificar extensão
@@ -180,6 +186,11 @@ func (s *fileService) validateFile(file *multipart.FileHeader) error {
 
 	// Verificar MIME type
 	if err := s.validateMimeType(file); err != nil {
+		return err
+	}
+
+	// Verificar conteúdo do arquivo para detectar arquivos maliciosos
+	if err := s.validateFileContent(file); err != nil {
 		return err
 	}
 
@@ -236,6 +247,66 @@ func (s *fileService) getFileType(ext string) string {
 	default:
 		return "other"
 	}
+}
+
+// validateFileContent checks for malicious content in files
+func (s *fileService) validateFileContent(file *multipart.FileHeader) error {
+	src, err := file.Open()
+	if err != nil {
+		return fmt.Errorf("erro ao abrir arquivo para validação: %w", err)
+	}
+	defer src.Close()
+
+	// Read first 1024 bytes to check for malicious signatures
+	buffer := make([]byte, 1024)
+	bytesRead, err := src.Read(buffer)
+	if err != nil && err.Error() != "EOF" {
+		return fmt.Errorf("erro ao ler arquivo para validação: %w", err)
+	}
+
+	if bytesRead == 0 {
+		return fmt.Errorf("arquivo vazio")
+	}
+
+	// Check for common malicious file signatures
+	maliciousSignatures := [][]byte{
+		{0x4D, 0x5A}, // MZ header (executables)
+		{0x7F, 0x45, 0x4C, 0x46}, // ELF header
+		{0xFE, 0xED, 0xFA, 0xCE}, // Mach-O header
+		{0x50, 0x4B, 0x03, 0x04}, // ZIP with potential executable content
+		{0x1F, 0x8B, 0x08}, // GZIP
+		{0x25, 0x50, 0x44, 0x46}, // PDF (but check for embedded scripts)
+	}
+
+	for _, signature := range maliciousSignatures {
+		if bytesRead >= len(signature) && bytes.Equal(buffer[:len(signature)], signature) {
+			// For PDFs, we need additional checks
+			if bytes.Equal(signature, []byte{0x25, 0x50, 0x44, 0x46}) {
+				// Check if PDF contains JavaScript
+				if bytes.Contains(buffer, []byte("/JS")) || bytes.Contains(buffer, []byte("/JavaScript")) {
+					return fmt.Errorf("PDF contém JavaScript que pode ser malicioso")
+				}
+			} else {
+				return fmt.Errorf("tipo de arquivo potencialmente perigoso detectado")
+			}
+		}
+	}
+
+	// Check for script content in text files
+	textContent := strings.ToLower(string(buffer))
+	scriptKeywords := []string{
+		"<script", "javascript:", "vbscript:", "onload=", "onerror=",
+		"eval(", "document.cookie", "window.location", "alert(",
+		"<?php", "<?=", "<%", "%>", "<?", "?>",
+	}
+
+	for _, keyword := range scriptKeywords {
+		if strings.Contains(textContent, keyword) {
+			return fmt.Errorf("arquivo contém conteúdo de script potencialmente perigoso")
+		}
+	}
+
+	return nil
 }
 
 func (s *fileService) generateUniqueID() string {

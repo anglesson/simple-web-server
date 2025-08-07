@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -23,6 +24,26 @@ const CSRFTokenKey contextKey = "csrf_token"
 const User contextKey = "user"
 
 var ErrUnauthorized = errors.New("Unauthorized")
+
+// maskEmail masks sensitive parts of email for logging
+func maskEmail(email string) string {
+	if email == "" {
+		return "[EMPTY]"
+	}
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return "[INVALID_EMAIL]"
+	}
+	username := parts[0]
+	domain := parts[1]
+	
+	if len(username) <= 2 {
+		return fmt.Sprintf("%s***@%s", username, domain)
+	}
+	
+	maskedUsername := username[:2] + "***"
+	return fmt.Sprintf("%s@%s", maskedUsername, domain)
+}
 
 func authorizer(r *http.Request) (string, error) {
 	// Get session token from the cookie
@@ -51,12 +72,12 @@ func authorizer(r *http.Request) (string, error) {
 	}
 
 	if csrfToken == "" {
-		log.Printf("CSRF token is empty for user: %s", user.Email)
+		log.Printf("CSRF token is empty for user: %s", maskEmail(user.Email))
 		return "", ErrUnauthorized
 	}
 
 	if csrfToken != user.CSRFToken {
-		log.Printf("CSRF token mismatch for user: %s", user.Email)
+		log.Printf("CSRF token mismatch for user: %s", maskEmail(user.Email))
 		return "", ErrUnauthorized
 	}
 
