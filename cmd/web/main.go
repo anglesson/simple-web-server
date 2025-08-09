@@ -3,9 +3,11 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/anglesson/simple-web-server/internal/repository"
+	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/storage"
 	"github.com/anglesson/simple-web-server/pkg/utils"
 
@@ -42,6 +44,7 @@ func main() {
 	clientRepository := gorm.NewClientGormRepository()
 	userRepository := repository.NewGormUserRepository(database.DB)
 	fileRepository := repository.NewGormFileRepository(database.DB)
+	purchaseRepository := repository.NewPurchaseRepository()
 
 	// Services
 	commonRFService := gov.NewHubDevService()
@@ -73,7 +76,17 @@ func main() {
 	resetPasswordHandler := handler.NewResetPasswordHandler(templateRenderer, userService)
 	sendHandler := handler.NewSendHandler(templateRenderer)
 	purchaseHandler := handler.NewPurchaseHandler(templateRenderer)
+	// Criar emailService para o StripeHandler
+	mailPort, _ := strconv.Atoi(config.AppConfig.MailPort)
+	stripeEmailService := mail.NewEmailService(mail.NewGoMailer(
+		config.AppConfig.MailHost,
+		mailPort,
+		config.AppConfig.MailUsername,
+		config.AppConfig.MailPassword))
+	checkoutHandler := handler.NewCheckoutHandler(templateRenderer, ebookService, clientService, creatorService, commonRFService, stripeEmailService)
 	versionHandler := handler.NewVersionHandler()
+
+	stripeHandler := handler.NewStripeHandler(userRepository, subscriptionService, purchaseRepository, stripeEmailService)
 
 	// Initialize rate limiters
 	authRateLimiter := middleware.NewRateLimiter(10, time.Minute)         // 10 requests per minute for auth (increased from 5)
@@ -123,6 +136,8 @@ func main() {
 
 	// Completely public routes (no middleware)
 	r.Get("/purchase/download/{id}", purchaseHandler.PurchaseDownloadHandler)
+	r.Get("/checkout/{id}", checkoutHandler.CheckoutView)
+	r.Get("/purchase/success", checkoutHandler.PurchaseSuccessView)
 
 	// Version routes
 	r.Get("/version", versionHandler.VersionText)
@@ -131,9 +146,11 @@ func main() {
 	// Stripe routes with rate limiting
 	r.Group(func(r chi.Router) {
 		r.Use(apiRateLimiter.RateLimitMiddleware)
-		r.Post("/api/create-checkout-session", handler.CreateCheckoutSession)
-		r.Post("/api/webhook", handler.HandleStripeWebhook)
+		r.Post("/api/create-checkout-session", stripeHandler.CreateCheckoutSession)
+		r.Post("/api/webhook", stripeHandler.HandleStripeWebhook)
 		r.Post("/api/watermark", handler.WatermarkHandler)
+		r.Post("/api/validate-customer", checkoutHandler.ValidateCustomer)
+		r.Post("/api/create-ebook-checkout", checkoutHandler.CreateEbookCheckout)
 	})
 
 	// Private routes

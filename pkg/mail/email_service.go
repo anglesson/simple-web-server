@@ -2,6 +2,7 @@ package mail
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
@@ -48,7 +49,27 @@ func (s *EmailService) SendAccountConfirmation(name, email, token string) {
 }
 
 func (s *EmailService) SendLinkToDownload(purchases []*models.Purchase) {
-	for _, purchase := range purchases {
+	log.Printf("📧 SendLinkToDownload chamado com %d purchase(s)", len(purchases))
+
+	for i, purchase := range purchases {
+		log.Printf("📧 Processando purchase %d/%d", i+1, len(purchases))
+		log.Printf("📧 Purchase ID=%d, ClientID=%d", purchase.ID, purchase.ClientID)
+		log.Printf("📧 Client struct: %+v", purchase.Client)
+		log.Printf("📧 Client ID=%d, Name='%s', Email='%s'",
+			purchase.Client.ID, purchase.Client.Name, purchase.Client.Email)
+
+		// Verificar se o cliente foi carregado
+		if purchase.Client.ID == 0 {
+			log.Printf("❌ ERRO: Cliente não foi carregado! Client.ID=0")
+			continue
+		}
+
+		// Verificar se o email está vazio
+		if purchase.Client.Email == "" {
+			log.Printf("❌ ERRO: Email do cliente está vazio! ClientID=%d", purchase.ClientID)
+			continue
+		}
+
 		data := map[string]interface{}{
 			"Name":              purchase.Client.Name,
 			"Title":             "Seu e-book chegou!",
@@ -60,6 +81,7 @@ func (s *EmailService) SendLinkToDownload(purchases []*models.Purchase) {
 			"FileCount":         len(purchase.Ebook.Files),
 		}
 
+		log.Printf("Configurando email para: %s", purchase.Client.Email)
 		s.mailer.From(config.AppConfig.MailFromAddress)
 		s.mailer.To(purchase.Client.Email)
 		s.mailer.Subject("Seu e-book chegou!")

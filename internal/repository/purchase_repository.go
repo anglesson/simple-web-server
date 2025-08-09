@@ -28,14 +28,41 @@ func (pr *PurchaseRepository) CreateManyPurchases(purchases []*models.Purchase) 
 		ids[i] = p.ID
 	}
 
+	// Carrega as purchases com relacionamentos usando uma nova query
+	var loadedPurchases []*models.Purchase
+	log.Printf("[PURCHASE-REPOSITORY] Buscando purchases com IDs: %v", ids)
+
 	err = database.DB.
 		Preload("Client").
 		Preload("Ebook").
-		Find(&purchases, "id IN ?", ids).Error
+		Preload("Ebook.Creator").
+		Where("id IN ?", ids).
+		Find(&loadedPurchases).Error
 	if err != nil {
 		log.Printf("[PURCHASE-REPOSITORY] LOAD ERROR: %s", err)
 		return errors.New("falha ao carregar dados relacionados")
 	}
+
+	log.Printf("[PURCHASE-REPOSITORY] Encontradas %d purchases carregadas", len(loadedPurchases))
+	if len(loadedPurchases) > 0 {
+		log.Printf("[PURCHASE-REPOSITORY] Primeira purchase - EbookID: %d, ClientID: %d",
+			loadedPurchases[0].EbookID, loadedPurchases[0].ClientID)
+		if loadedPurchases[0].Ebook.ID > 0 {
+			log.Printf("[PURCHASE-REPOSITORY] Ebook carregado: %s", loadedPurchases[0].Ebook.Title)
+		}
+		if loadedPurchases[0].Client.ID > 0 {
+			log.Printf("[PURCHASE-REPOSITORY] Client carregado: %s", loadedPurchases[0].Client.Name)
+		}
+	}
+
+	// Atualiza o slice original com os dados carregados
+	for i, loadedPurchase := range loadedPurchases {
+		if i < len(purchases) {
+			*purchases[i] = *loadedPurchase
+		}
+	}
+
+	log.Printf("[PURCHASE-REPOSITORY] Carregadas %d purchases com relacionamentos", len(loadedPurchases))
 
 	return nil
 }
