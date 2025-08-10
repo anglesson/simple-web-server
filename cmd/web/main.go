@@ -17,6 +17,7 @@ import (
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/gov"
 
+	"github.com/anglesson/simple-web-server/internal"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/pkg/database"
@@ -36,12 +37,14 @@ func main() {
 	// Template renderer
 	templateRenderer := template.DefaultTemplateRenderer()
 
+	// Criar appModule com todos os módulos
+	appModule := internal.NewApp(templateRenderer, flashServiceFactory)
+
 	// Utils
 	encrypter := utils.NewEncrypter()
 
 	// Repositories
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
-	clientRepository := gorm.NewClientGormRepository()
 	userRepository := repository.NewGormUserRepository(database.DB)
 	fileRepository := repository.NewGormFileRepository(database.DB)
 	purchaseRepository := repository.NewPurchaseRepository()
@@ -55,7 +58,6 @@ func main() {
 	stripeService := service.NewStripeService()
 	paymentGateway := service.NewStripePaymentGateway(stripeService)
 	creatorService := service.NewCreatorService(creatorRepository, commonRFService, userService, subscriptionService, paymentGateway)
-	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
 	s3Storage := storage.NewS3Storage()
 	fileService := service.NewFileService(fileRepository, s3Storage)
 	ebookService := service.NewEbookService(s3Storage)
@@ -63,7 +65,8 @@ func main() {
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(userService, sessionService, templateRenderer)
-	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory, templateRenderer)
+	// Usar o handler do módulo client através do appModule
+	clientHandler := appModule.GetClientHandler()
 	creatorHandler := handler.NewCreatorHandler(creatorService, sessionService, templateRenderer)
 	settingsHandler := handler.NewSettingsHandler(sessionService, templateRenderer)
 	fileHandler := handler.NewFileHandler(fileService, sessionService, templateRenderer, flashServiceFactory)
@@ -83,7 +86,7 @@ func main() {
 		mailPort,
 		config.AppConfig.MailUsername,
 		config.AppConfig.MailPassword))
-	checkoutHandler := handler.NewCheckoutHandler(templateRenderer, ebookService, clientService, creatorService, commonRFService, stripeEmailService)
+	checkoutHandler := handler.NewCheckoutHandler(templateRenderer, ebookService, appModule.GetClientService(), creatorService, commonRFService, stripeEmailService)
 	versionHandler := handler.NewVersionHandler()
 
 	stripeHandler := handler.NewStripeHandler(userRepository, subscriptionService, purchaseRepository, stripeEmailService)

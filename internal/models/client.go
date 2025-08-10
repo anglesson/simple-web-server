@@ -61,22 +61,38 @@ func (c *Client) TotalDownloadsByEbook(ebookID uint) int {
 }
 
 func (c *Client) GetBirthdateBR() string {
+	if c.Birthdate == "" {
+		return "N/A"
+	}
+
 	partsDate := strings.Split(c.Birthdate, "-")
+	if len(partsDate) != 3 {
+		return "Data inválida"
+	}
+
 	return fmt.Sprintf("%s/%s/%s", partsDate[2], partsDate[1], partsDate[0])
 }
 
 func (c *Client) GetInitials() string {
+	if c.Name == "" {
+		return "?"
+	}
+
 	names := strings.Fields(c.Name)
 	if len(names) == 0 {
 		return "?"
 	}
 
 	initials := ""
-	if len(names) >= 1 {
+	if len(names) >= 1 && len(names[0]) > 0 {
 		initials += string(names[0][0])
 	}
-	if len(names) >= 2 {
+	if len(names) >= 2 && len(names[len(names)-1]) > 0 {
 		initials += string(names[len(names)-1][0])
+	}
+
+	if initials == "" {
+		return "?"
 	}
 
 	return strings.ToUpper(initials)
