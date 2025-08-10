@@ -3,13 +3,37 @@
 # Project Structure
 The main server setup and entry point is defined in cmd/web/main.go
 
-## SSR Handlers
+## Modular Architecture (NEW)
+The application is being refactored to use a modular architecture where each feature is self-contained within its own module.
+
+### Module Structure
+Each module should be located in `internal/<module_name>/` and contain:
+- `handler.go` - HTTP handlers for the module
+- `service.go` - Business logic services for the module  
+- `repository.go` - Data access interfaces for the module
+- `models.go` - Module-specific models and Module struct
+- `routes.go` - Route registration for the module
+
+### Module Example (Client Module)
+```
+internal/client/
+├── handler.go      # ClientHandler struct with HTTP methods
+├── service.go      # ClientService interface and implementation
+├── repository.go   # ClientRepository interface
+├── models.go       # Module struct and module-specific types
+└── routes.go       # Route registration with middleware
+```
+
+## Legacy Structure (DEPRECATED - Being Refactored)
+The following structure is being phased out in favor of the modular approach:
+
+### SSR Handlers
 - All SSR handlers are defined in internal/handler/
 
-## Services
+### Services
 - All services are defined in internal/service/
 
-## Repositories
+### Repositories
 - All repositories are defined in internal/repository/
 
 ## UI - DashUI Template
@@ -20,7 +44,7 @@ The main server setup and entry point is defined in cmd/web/main.go
 - **Template**: DashUI - Bootstrap 5 Admin Dashboard Template
 - **CSS**: theme.min.css (DashUI custom styles)
 - **JS**: theme.min.js (DashUI custom scripts)
-- **Icons**: Feather Icons (data-feather attribute)
+- **Icons**: FontAwesome Icons (preferred over Feather Icons)
 - **Components**: Cards, Tables, Forms, Modals, Dropdowns
 
 ## External Services
@@ -31,7 +55,7 @@ The main server setup and entry point is defined in cmd/web/main.go
 - SQLite: When running local
 - Postgres: When running in production
 - **Frontend**: DashUI (Bootstrap 5 + Custom Components)
-- **Icons**: Feather Icons
+- **Icons**: FontAwesome Icons
 - **JavaScript**: Vanilla JS + Bootstrap 5 JS
 
 ## Tests
@@ -50,7 +74,167 @@ The main server setup and entry point is defined in cmd/web/main.go
 
 # Architecture Rules
 
-## Handler Construction Rule
+## Module Construction Rule (NEW - PREFERRED)
+
+### Localização
+- Todos os módulos devem ser definidos no diretório `internal/<module_name>/`.
+- Cada módulo deve ser um package Go separado e independente.
+
+### Estrutura do Módulo
+Cada módulo deve conter os seguintes arquivos:
+
+#### `handler.go`
+- Implementar struct `<Feature>Handler` com injeção de dependências
+- Construtor `New<Feature>Handler` recebendo todas as dependências necessárias
+- Métodos HTTP públicos seguindo padrão REST
+
+#### `service.go`
+- Interface `<Feature>Service` definindo operações de negócio
+- Implementação `featureServiceImpl` com injeção de dependências
+- Construtor `New<Feature>Service` recebendo repositories e outros serviços
+
+#### `repository.go`
+- Interface `<Feature>Repository` para operações de dados
+- Implementação concreta em `internal/repository/gorm/` ou similar
+- Métodos para CRUD e consultas específicas do domínio
+
+#### `models.go`
+- Struct `Module` centralizando todas as dependências do módulo
+- Tipos específicos do módulo (ex: `ClientFilter`)
+- Exemplo:
+```go
+type Module struct {
+    Handler    *ClientHandler
+    Service    service.ClientService
+    Repository repository.ClientRepository
+}
+```
+
+#### `routes.go`
+- Função `RegisterRoutes` para registrar rotas do módulo
+- Aplicar middlewares necessários (auth, trial, subscription)
+- Agrupar rotas relacionadas ao domínio
+
+### Responsabilidade
+- **Handler**: Receber requisições HTTP, validar, chamar serviços, renderizar templates
+- **Service**: Lógica de negócio, validações, orquestração de repositories
+- **Repository**: Acesso a dados, queries otimizadas, mapeamento de entidades
+- **Module**: Centralizar e gerenciar dependências do módulo
+
+### DashUI Integration
+- **Template Rendering**: Usar `templateRenderer.View()` para renderização
+- **Flash Messages**: Implementar usando `web.FlashMessageFactory`
+- **Data Structure**: Dados como `map[string]interface{}` para templates
+- **Pagination**: Suporte a `models.Pagination` para listagens
+
+### Exemplo de Módulo Completo
+```go
+// internal/client/models.go
+type Module struct {
+    Handler    *ClientHandler
+    Service    service.ClientService
+    Repository repository.ClientRepository
+}
+
+// internal/client/handler.go
+type ClientHandler struct {
+    clientService       service.ClientService
+    creatorService      service.CreatorService
+    flashMessageFactory web.FlashMessageFactory
+    templateRenderer    template.TemplateRenderer
+}
+
+// internal/client/routes.go
+func RegisterRoutes(r chi.Router, handler *ClientHandler, authMiddleware, trialMiddleware, subscriptionMiddleware func(next http.Handler) http.Handler) {
+    r.Group(func(r chi.Router) {
+        r.Use(authMiddleware)
+        r.Use(trialMiddleware)
+        r.Use(subscriptionMiddleware)
+        
+        r.Get("/client", handler.ClientIndexView)
+        r.Post("/client", handler.ClientCreateSubmit)
+        // ... outras rotas
+    })
+}
+```
+
+## Registro do Módulo no App Principal
+
+### Estrutura do App
+O módulo deve ser registrado no `internal/app.go` para centralizar todas as dependências da aplicação:
+
+```go
+// internal/app.go
+type App struct {
+    ClientModule *client.Module
+    // Outros módulos serão adicionados aqui
+    // EbookModule  *ebook.Module
+    // FileModule   *file.Module
+    // etc...
+}
+
+// NewApp cria uma nova instância da aplicação com todos os módulos
+func NewApp(templateRenderer template.TemplateRenderer, flashMessageFactory web.FlashMessageFactory) *App {
+    // Inicializar repositórios
+    clientRepository := gorm.NewClientGormRepository()
+    creatorRepository := gorm.NewCreatorRepository(database.DB)
+    
+    // Inicializar serviços externos
+    commonRFService := gov.NewHubDevService()
+    
+    // Inicializar módulo client
+    clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
+    creatorService := service.NewCreatorService(creatorRepository, commonRFService, nil, nil, nil)
+    clientHandler := client.NewClientHandler(clientService, creatorService, flashMessageFactory, templateRenderer)
+    
+    clientModule := &client.Module{
+        Handler:    clientHandler,
+        Service:    clientService,
+        Repository: clientRepository,
+    }
+    
+    return &App{
+        ClientModule: clientModule,
+    }
+}
+
+// Métodos de acesso aos módulos
+func (app *App) GetClientHandler() *client.ClientHandler {
+    return app.ClientModule.Handler
+}
+
+func (app *App) GetClientService() service.ClientService {
+    return app.ClientModule.Service.(service.ClientService)
+}
+```
+
+### Uso no Main
+No `cmd/web/main.go`, o módulo é acessado através do App:
+
+```go
+func main() {
+    // Criar appModule com todos os módulos
+    appModule := internal.NewApp(templateRenderer, flashServiceFactory)
+    
+    // Usar o handler do módulo client através do appModule
+    clientHandler := appModule.GetClientHandler()
+    
+    // Registrar rotas do módulo
+    client.RegisterRoutes(r, clientHandler, 
+        middleware.AuthMiddleware, 
+        middleware.TrialMiddleware, 
+        middleware.SubscriptionMiddleware(subscriptionService))
+}
+```
+
+### Benefícios do Registro Centralizado
+- **Dependency Injection**: Todas as dependências são injetadas no App
+- **Lifecycle Management**: Controle centralizado do ciclo de vida dos módulos
+- **Testing**: Facilita a criação de mocks e testes de integração
+- **Configuration**: Configuração centralizada de todos os módulos
+- **Scalability**: Fácil adição de novos módulos sem modificar o main
+
+## Handler Construction Rule (LEGACY - Being Refactored)
 
 ### Localização
 - Todos os handlers devem ser definidos no diretório `internal/handler/`.
@@ -103,7 +287,7 @@ func (h *ClientHandler) CreateClient(c echo.Context) error {
 }
 ```
 
-## Repository Construction Rule
+## Repository Construction Rule (LEGACY - Being Refactored)
 
 ### Localização
 - Todos os repositories devem ser definidos no diretório `internal/repository/`.
@@ -166,7 +350,7 @@ func (r *clientRepositoryImpl) Create(client *models.Client) error {
 }
 ```
 
-## Service Construction Rule
+## Service Construction Rule (LEGACY - Being Refactored)
 
 ### Localização
 - Todos os services devem ser definidos no diretório `internal/service/`.
@@ -227,6 +411,27 @@ func (s *clientServiceImpl) CreateClient(input CreateClientInput) (Client, error
 }
 ```
 
+## Migration Strategy (NEW)
+
+### Prioridade de Migração
+1. **Novos módulos**: Sempre usar a arquitetura modular
+2. **Módulos existentes**: Migrar quando houver modificações
+3. **Módulos legados**: Manter funcionando até migração completa
+
+### Processo de Migração
+1. **Criar estrutura modular** em `internal/<module_name>/`
+2. **Implementar funcionalidades** seguindo padrões modulares
+3. **Migrar rotas** para o novo sistema
+4. **Atualizar main.go** para usar novos módulos
+5. **Remover código legado** após validação completa
+
+### Benefícios da Modularização
+- **Coesão**: Cada módulo é responsável por seu domínio
+- **Manutenibilidade**: Código organizado e fácil de entender
+- **Testabilidade**: Testes isolados por módulo
+- **Escalabilidade**: Fácil adicionar novos módulos
+- **Dependências**: Gerenciamento claro de dependências
+
 ## Refactoring Rule
 
 ### Obrigatoriedade de Refatoração
@@ -252,8 +457,9 @@ func (s *clientServiceImpl) CreateClient(input CreateClientInput) (Client, error
 - **Extensibilidade**: Facilita a adição de novas funcionalidades
 - **Consistência**: Mantém a arquitetura uniforme em todo o projeto
 
+## General Rules
 - Always use the good practices of dependency injection
 - Never use emoji in code
-
-- Always use the good practices of dependency injection
-- Never use emoji in code
+- Prefer FontAwesome icons over Feather icons
+- Ensure all tests pass before delivering code
+- Use `rm -rf ./cmd/web/web` to remove the built web server binary
