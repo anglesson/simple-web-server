@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/template"
 	"github.com/go-chi/chi/v5"
@@ -89,8 +89,8 @@ func (h *SalesPageHandler) SalesPageView(w http.ResponseWriter, r *http.Request)
 // SalesPagePreviewView exibe a página de vendas em modo preview para o criador
 func (h *SalesPageHandler) SalesPagePreviewView(w http.ResponseWriter, r *http.Request) {
 	// Verificar se o usuário está logado
-	loggedUser := middleware.Auth(r)
-	if loggedUser.ID == 0 {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -116,7 +116,7 @@ func (h *SalesPageHandler) SalesPagePreviewView(w http.ResponseWriter, r *http.R
 	}
 
 	// Verificar se o usuário logado é o criador do ebook
-	creator, err := h.creatorService.FindCreatorByUserID(loggedUser.ID)
+	creator, err := h.creatorService.FindCreatorByUserID(userID)
 	if err != nil || creator.ID != ebook.CreatorID {
 		http.Error(w, "Não autorizado", http.StatusUnauthorized)
 		return

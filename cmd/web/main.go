@@ -6,10 +6,13 @@ import (
 	"strconv"
 	"time"
 
+	middleware2 "github.com/anglesson/simple-web-server/internal/authentication/middleware"
+	authPresentation "github.com/anglesson/simple-web-server/internal/authentication/presentation"
+	"github.com/anglesson/simple-web-server/internal/authentication/session"
+	"github.com/anglesson/simple-web-server/internal/payment/presentation"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/mail"
 	"github.com/anglesson/simple-web-server/pkg/storage"
-	"github.com/anglesson/simple-web-server/pkg/utils"
 
 	handler "github.com/anglesson/simple-web-server/internal/handler"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
@@ -36,44 +39,52 @@ func main() {
 	// Template renderer
 	templateRenderer := template.DefaultTemplateRenderer()
 
+	// ========== Google OAuth Only Setup ==========
+	// Inicializar APENAS o sistema de autenticação Google
+	sessionStore := session.NewSessionStore()
+	//googleAuthService := authBusiness.NewAuthService(googleAuthRepo, sessionStore)
+
+	// Middleware que usa apenas Google OAuth
+	googleSessionMiddleware := middleware2.NewGoogleSessionMiddleware(sessionStore)
+
 	// Utils
-	encrypter := utils.NewEncrypter()
+	//encrypter := utils.NewEncrypter()
 
 	// Repositories
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
 	clientRepository := gorm.NewClientGormRepository()
-	userRepository := repository.NewGormUserRepository(database.DB)
+	//userRepository := repository.NewGormUserRepository(database.DB)
 	fileRepository := repository.NewGormFileRepository(database.DB)
 	purchaseRepository := repository.NewPurchaseRepository()
 
 	// Services
 	commonRFService := gov.NewHubDevService()
-	userService := service.NewUserService(userRepository, encrypter)
-	sessionService := service.NewSessionService()
+	//userService := service.NewUserService(userRepository, encrypter)
+	//sessionService := service.NewSessionService()
 	subscriptionRepository := gorm.NewSubscriptionGormRepository()
 	subscriptionService := service.NewSubscriptionService(subscriptionRepository, commonRFService)
 	stripeService := service.NewStripeService()
 	paymentGateway := service.NewStripePaymentGateway(stripeService)
-	creatorService := service.NewCreatorService(creatorRepository, commonRFService, userService, subscriptionService, paymentGateway)
+	creatorService := service.NewCreatorService(creatorRepository, commonRFService, subscriptionService, paymentGateway)
 	clientService := service.NewClientService(clientRepository, creatorRepository, commonRFService)
 	s3Storage := storage.NewS3Storage()
 	fileService := service.NewFileService(fileRepository, s3Storage)
 	ebookService := service.NewEbookService(s3Storage)
-	emailService := service.NewEmailService()
+	//emailService := service.NewEmailService()
 
 	// Handlers
-	authHandler := handler.NewAuthHandler(userService, sessionService, templateRenderer)
+	authGoogleHandler := authPresentation.NewGoogleAuthHandlers(sessionStore)
 	clientHandler := handler.NewClientHandler(clientService, creatorService, flashServiceFactory, templateRenderer)
-	creatorHandler := handler.NewCreatorHandler(creatorService, sessionService, templateRenderer)
-	settingsHandler := handler.NewSettingsHandler(sessionService, templateRenderer)
-	fileHandler := handler.NewFileHandler(fileService, sessionService, templateRenderer, flashServiceFactory)
+	//creatorHandler := handler.NewCreatorHandler(creatorService, googleAuthService, templateRenderer)
+	settingsHandler := handler.NewSettingsHandler(templateRenderer)
+	fileHandler := handler.NewFileHandler(fileService, templateRenderer, flashServiceFactory)
 	ebookHandler := handler.NewEbookHandler(ebookService, creatorService, fileService, s3Storage, flashServiceFactory, templateRenderer)
 	salesPageHandler := handler.NewSalesPageHandler(ebookService, creatorService, templateRenderer)
 	dashboardHandler := handler.NewDashboardHandler(templateRenderer)
 	errorHandler := handler.NewErrorHandler(templateRenderer)
 	homeHandler := handler.NewHomeHandler(templateRenderer, errorHandler)
-	forgetPasswordHandler := handler.NewForgetPasswordHandler(templateRenderer, userService, emailService)
-	resetPasswordHandler := handler.NewResetPasswordHandler(templateRenderer, userService)
+	//forgetPasswordHandler := handler.NewForgetPasswordHandler(templateRenderer, userService, emailService)
+	//resetPasswordHandler := handler.NewResetPasswordHandler(templateRenderer, userService)
 	sendHandler := handler.NewSendHandler(templateRenderer)
 	purchaseHandler := handler.NewPurchaseHandler(templateRenderer)
 	// Criar emailService para o StripeHandler
@@ -86,17 +97,18 @@ func main() {
 	checkoutHandler := handler.NewCheckoutHandler(templateRenderer, ebookService, clientService, creatorService, commonRFService, stripeEmailService)
 	versionHandler := handler.NewVersionHandler()
 
-	stripeHandler := handler.NewStripeHandler(userRepository, subscriptionService, purchaseRepository, stripeEmailService)
+	stripeHandler := handler.NewStripeHandler(nil, subscriptionService, purchaseRepository, stripeEmailService)
+	paymentHandler := presentation.NewPaymentHandler()
 
 	// Initialize rate limiters
-	authRateLimiter := middleware.NewRateLimiter(10, time.Minute)         // 10 requests per minute for auth (increased from 5)
-	resetPasswordRateLimiter := middleware.NewRateLimiter(5, time.Minute) // 5 requests per minute for password reset (more restrictive for security)
-	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)         // 100 requests per minute for API
-	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute)       // 10 uploads per minute
+	authRateLimiter := middleware.NewRateLimiter(10, time.Minute) // 10 requests per minute for auth (increased from 5)
+	//resetPasswordRateLimiter := middleware.NewRateLimiter(5, time.Minute) // 5 requests per minute for password reset (more restrictive for security)
+	apiRateLimiter := middleware.NewRateLimiter(100, time.Minute)   // 100 requests per minute for API
+	uploadRateLimiter := middleware.NewRateLimiter(10, time.Minute) // 10 uploads per minute
 
 	// Start cleanup goroutines
 	authRateLimiter.CleanupRateLimiter()
-	resetPasswordRateLimiter.CleanupRateLimiter()
+	//resetPasswordRateLimiter.CleanupRateLimiter()
 	apiRateLimiter.CleanupRateLimiter()
 	uploadRateLimiter.CleanupRateLimiter()
 
@@ -110,34 +122,15 @@ func main() {
 		http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 	})
 
-	// Password reset routes with specific rate limiting (separate from auth)
-	r.Group(func(r chi.Router) {
-		r.Use(middleware.AuthGuard)
-		r.Use(resetPasswordRateLimiter.RateLimitMiddleware) // Separate rate limiting for password reset
-		r.Get("/forget-password", forgetPasswordHandler.ForgetPasswordView)
-		r.Post("/forget-password", forgetPasswordHandler.ForgetPasswordSubmit)
-		r.Get("/reset-password", resetPasswordHandler.ResetPasswordView)
-		r.Post("/reset-password", resetPasswordHandler.ResetPasswordSubmit)
-		r.Get("/password-reset-success", func(w http.ResponseWriter, r *http.Request) {
-			templateRenderer.View(w, r, "password-reset-success", nil, "guest")
-		})
-	})
-
-	// Public routes with auth rate limiting (separate from password reset)
-	r.Group(func(r chi.Router) {
-		r.Use(middleware.AuthGuard)
-		r.Use(authRateLimiter.RateLimitMiddleware) // Rate limiting for auth endpoints only
-		r.Get("/login", authHandler.LoginView)
-		r.Post("/login", authHandler.LoginSubmit)
-		r.Get("/register", creatorHandler.RegisterView)
-		r.Post("/register", creatorHandler.RegisterCreatorSSR)
-		r.Get("/sales/{slug}", salesPageHandler.SalesPageView) // Página de vendas pública
-	})
+	// Google OAuth routes (public)
+	r.Get("/auth/google", authGoogleHandler.HandleGoogleLogin)
+	r.Get("/auth/google/callback", authGoogleHandler.HandleGoogleCallback)
 
 	// Completely public routes (no middleware)
 	r.Get("/purchase/download/{id}", purchaseHandler.PurchaseDownloadHandler)
 	r.Get("/checkout/{id}", checkoutHandler.CheckoutView)
 	r.Get("/purchase/success", checkoutHandler.PurchaseSuccessView)
+	r.Get("/sales/{slug}", salesPageHandler.SalesPageView) // Página de vendas pública
 
 	// Version routes
 	r.Get("/version", versionHandler.VersionText)
@@ -155,11 +148,12 @@ func main() {
 
 	// Private routes
 	r.Group(func(r chi.Router) {
-		r.Use(middleware.AuthMiddleware)
-		r.Use(middleware.TrialMiddleware)
-		r.Use(middleware.SubscriptionMiddleware(subscriptionService))
+		r.Use(googleSessionMiddleware.AuthMiddleware)
+		//r.Use(middleware.AuthMiddleware)
+		//r.Use(middleware.TrialMiddleware)
+		//r.Use(middleware.SubscriptionMiddleware(subscriptionService))
 
-		r.Post("/logout", authHandler.LogoutSubmit)
+		r.Post("/logout", authGoogleHandler.HandleLogout)
 		r.Get("/dashboard", dashboardHandler.DashboardView)
 		r.Get("/settings", settingsHandler.SettingsView)
 
@@ -195,11 +189,15 @@ func main() {
 		// Purchase routes
 		r.Post("/purchase/ebook/{id}", purchaseHandler.PurchaseCreateHandler)
 		r.Get("/send", sendHandler.SendViewHandler)
+
+		// Payment routes
+		r.Post("/payment/account", paymentHandler.CreateAccountForSeller)
 	})
 
 	r.Get("/", homeHandler.HomeView) // Home page deve ser a ultima rota
 
 	// Start server
 	log.Printf("Server starting on %s:%s", config.AppConfig.Host, config.AppConfig.Port)
+
 	log.Fatal(http.ListenAndServe(":"+config.AppConfig.Port, r))
 }

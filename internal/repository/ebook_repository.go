@@ -19,7 +19,7 @@ type EbookRepository interface {
 	Delete(id uint) error
 	FindAll() ([]*models.Ebook, error)
 	FindActive() ([]*models.Ebook, error)
-	ListEbooksForUser(userID uint, query EbookQuery) (*[]models.Ebook, error)
+	ListEbooksForUser(userID string, query EbookQuery) (*[]models.Ebook, error)
 }
 
 type GormEbookRepository struct {
@@ -96,7 +96,7 @@ func (r *GormEbookRepository) FindActive() ([]*models.Ebook, error) {
 	return ebooks, err
 }
 
-func (r *GormEbookRepository) ListEbooksForUser(userID uint, query EbookQuery) (*[]models.Ebook, error) {
+func (r *GormEbookRepository) ListEbooksForUser(userID string, query EbookQuery) (*[]models.Ebook, error) {
 	var ebooks []models.Ebook
 
 	db := r.db.Preload("Creator").Preload("Files")

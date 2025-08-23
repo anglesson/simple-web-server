@@ -124,7 +124,7 @@
                         <li class="dropdown ms-2">
                             <a class="rounded-circle" href="#" role="button" id="dropdownUser" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <div class="rounded-circle bg-light p-2 position-relative">
-                                    {{user.GetInitials}}
+                                    {{getInitials .user.Name}}
                                     {{ if eq .SubscriptionStatus "active" }}
                                         <i class="fa-solid fa-crown text-warning position-absolute" style="top: -5px; right: -5px; font-size: 12px;"></i>
                                     {{ end }}
@@ -136,8 +136,8 @@
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                                 <div class="px-4 pb-0 pt-2">
                                     <div class="lh-1 ">
-                                        <h5 class="mb-1"> {{user.Username}}</h5>
-                                        <span class="text-secondary fs-6">{{user.Email}}</span>
+                                        <h5 class="mb-1"> {{.user.Name}}</h5>
+                                        <span class="text-secondary fs-6">{{.user.Email}}</span>
                                     </div>
                                     <div class=" dropdown-divider mt-3 mb-2"></div>
                                 </div>

@@ -13,13 +13,12 @@ type Creator struct {
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	BirthDate time.Time `json:"birth_date"`
-	UserID    uint      `json:"user_id"`
-	User      User      `gorm:"foreignKey:UserID"`
+	UserID    string    `json:"user_id"`
 	Ebooks    []Ebook
 	Clients   []*Client `gorm:"many2many:client_creators"`
 }
 
-func NewCreator(name, email, phone, cpf string, birthDate time.Time, userID uint) *Creator {
+func NewCreator(name, email, phone, cpf string, birthDate time.Time, userID string) *Creator {
 	return &Creator{
 		Name:      name,
 		Email:     email,

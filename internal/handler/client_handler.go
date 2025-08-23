@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/service"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
@@ -37,8 +37,8 @@ func NewClientHandler(clientService service.ClientService, creatorService servic
 }
 
 func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middleware.Auth(r)
-	if loggedUser.ID == 0 {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
 	}
@@ -47,15 +47,15 @@ func (ch *ClientHandler) CreateView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middleware.Auth(r)
-	if loggedUser.ID == 0 {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
 	}
 
 	clientID := chi.URLParam(r, "id")
 	id, _ := strconv.ParseUint(clientID, 10, 32)
-	client, err := ch.clientService.FindCreatorsClientByID(uint(id), loggedUser.Email)
+	client, err := ch.clientService.FindCreatorsClientByID(uint(id), middleware.GetCurrentUserEmail(r))
 	if err != nil {
 		http.Redirect(w, r, r.Referer(), http.StatusNotFound)
 	}
@@ -64,8 +64,8 @@ func (ch *ClientHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middleware.Auth(r)
-	if loggedUser.ID == 0 {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
 	}
@@ -76,9 +76,9 @@ func (ch *ClientHandler) ClientIndexView(w http.ResponseWriter, r *http.Request)
 
 	pagination := models.NewPagination(page, perPage)
 
-	log.Printf("User Logado: %v", loggedUser.Email)
+	log.Printf("UserKey Logado: %v", middleware.GetCurrentUserEmail(r))
 
-	creator, err := ch.creatorService.FindCreatorByUserID(loggedUser.ID)
+	creator, err := ch.creatorService.FindCreatorByUserID(userID)
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
 	}
@@ -139,8 +139,8 @@ func (ch *ClientHandler) redirectWithFormData(w http.ResponseWriter, r *http.Req
 func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	flashMessage := ch.flashMessageFactory(w, r)
 
-	user_email, ok := r.Context().Value(middleware.UserEmailKey).(string)
-	if !ok {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		flashMessage.Error("Unauthorized. Invalid user email")
 		http.Error(w, "Invalid user email", http.StatusUnauthorized)
 		return
@@ -154,7 +154,7 @@ func (ch *ClientHandler) ClientCreateSubmit(w http.ResponseWriter, r *http.Reque
 		Phone:     r.FormValue("phone"),
 	}
 
-	input.EmailCreator = user_email
+	input.UserID = userID
 
 	// TODO: Validar se o cliente existe
 	_, err := ch.clientService.CreateClient(input)
@@ -220,13 +220,13 @@ func (ch *ClientHandler) ClientUpdateSubmit(w http.ResponseWriter, r *http.Reque
 
 func (ch *ClientHandler) ClientImportSubmit(w http.ResponseWriter, r *http.Request) {
 	log.Println("Iniciando processamento de CSV")
-	user_email, ok := r.Context().Value(middleware.UserEmailKey).(string)
-	if !ok {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Invalid user email", http.StatusInternalServerError)
 		return
 	}
 
-	creator, err := ch.creatorService.FindCreatorByEmail(user_email)
+	creator, err := ch.creatorService.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Println("Nao autorizado")
 		http.Redirect(w, r, r.Referer(), http.StatusUnauthorized)

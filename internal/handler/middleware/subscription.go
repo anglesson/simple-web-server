@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	middleware2 "github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/service"
 )
 
@@ -23,15 +24,15 @@ func SubscriptionMiddleware(subscriptionService service.SubscriptionService) fun
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Get user from context
-			user := Auth(r)
-			if user == nil || user.ID == 0 {
+			userID := middleware2.GetCurrentUserID(r)
+			if userID == "" {
 				// If no user, continue without subscription data
 				next.ServeHTTP(w, r)
 				return
 			}
 
 			// Get subscription status
-			status, daysLeft, err := subscriptionService.GetUserSubscriptionStatus(user.ID)
+			status, daysLeft, err := subscriptionService.GetUserSubscriptionStatus(userID)
 			if err != nil {
 				// If error, use default values
 				status = "inactive"

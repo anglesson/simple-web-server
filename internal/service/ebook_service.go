@@ -10,7 +10,7 @@ import (
 )
 
 type EbookService interface {
-	ListEbooksForUser(UserID uint, query repository.EbookQuery) (*[]models.Ebook, error)
+	ListEbooksForUser(UserID string, query repository.EbookQuery) (*[]models.Ebook, error)
 	FindByID(id uint) (*models.Ebook, error)
 	FindBySlug(slug string) (*models.Ebook, error)
 	Update(ebook *models.Ebook) error
@@ -30,7 +30,7 @@ func NewEbookService(s3Storage storage.S3Storage) EbookService {
 	}
 }
 
-func (s *EbookServiceImpl) ListEbooksForUser(UserID uint, query repository.EbookQuery) (*[]models.Ebook, error) {
+func (s *EbookServiceImpl) ListEbooksForUser(UserID string, query repository.EbookQuery) (*[]models.Ebook, error) {
 	ebooks, err := s.ebookRepository.ListEbooksForUser(UserID, query)
 	if err != nil {
 		return nil, err

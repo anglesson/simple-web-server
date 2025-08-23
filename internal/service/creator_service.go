@@ -14,7 +14,7 @@ import (
 type CreatorService interface {
 	CreateCreator(input InputCreateCreator) (*models.Creator, error)
 	FindCreatorByEmail(email string) (*models.Creator, error)
-	FindCreatorByUserID(userID uint) (*models.Creator, error)
+	FindCreatorByUserID(userID string) (*models.Creator, error)
 	FindByID(id uint) (*models.Creator, error)
 }
 
@@ -27,6 +27,7 @@ type InputCreateCreator struct {
 	Password             string `json:"password"`
 	PasswordConfirmation string `json:"passwordConfirmation"`
 	TermsAccepted        string `json:"termsAccepted"`
+	UserID               string `json:"userID"`
 }
 
 type creatorServiceImpl struct {
@@ -40,14 +41,12 @@ type creatorServiceImpl struct {
 func NewCreatorService(
 	creatorRepo repository.CreatorRepository,
 	receitaFederalService gov.ReceitaFederalService,
-	userService UserService,
 	subscriptionService SubscriptionService,
 	paymentGateway PaymentGateway,
 ) CreatorService {
 	return &creatorServiceImpl{
 		creatorRepo:         creatorRepo,
 		rfService:           receitaFederalService,
-		userService:         userService,
 		subscriptionService: subscriptionService,
 		paymentGateway:      paymentGateway,
 	}
@@ -89,19 +88,6 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.C
 		return nil, err
 	}
 
-	// Create user
-	inputCreateUser := InputCreateUser{
-		Username:             validatedName,
-		Email:                input.Email,
-		Password:             input.Password,
-		PasswordConfirmation: input.PasswordConfirmation,
-	}
-
-	user, err := cs.userService.CreateUser(inputCreateUser)
-	if err != nil {
-		return nil, err
-	}
-
 	// Create creator
 	creator := models.NewCreator(
 		validatedName,
@@ -109,7 +95,7 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.C
 		cleanPhone(input.PhoneNumber),
 		cleanCPF,
 		birthDate,
-		user.ID,
+		input.UserID,
 	)
 
 	// Save creator
@@ -126,7 +112,7 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.C
 		// The customer can be created later
 	} else {
 		// Create subscription for the creator
-		subscription, err := cs.subscriptionService.CreateSubscription(user.ID, "default_plan")
+		subscription, err := cs.subscriptionService.CreateSubscription(input.UserID, "default_plan")
 		if err != nil {
 			log.Printf("Error creating subscription: %v", err)
 		} else {
@@ -141,7 +127,7 @@ func (cs *creatorServiceImpl) CreateCreator(input InputCreateCreator) (*models.C
 	return creator, nil
 }
 
-func (cs *creatorServiceImpl) FindCreatorByUserID(userID uint) (*models.Creator, error) {
+func (cs *creatorServiceImpl) FindCreatorByUserID(userID string) (*models.Creator, error) {
 	creator, err := cs.creatorRepo.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Printf("Erro ao buscar creator: %s", err)
@@ -153,8 +139,8 @@ func (cs *creatorServiceImpl) FindCreatorByUserID(userID uint) (*models.Creator,
 	return creator, nil
 }
 
-func (cs *creatorServiceImpl) FindCreatorByEmail(email string) (*models.Creator, error) {
-	creator, err := cs.creatorRepo.FindCreatorByUserEmail(email)
+func (cs *creatorServiceImpl) FindCreatorByEmail(userID string) (*models.Creator, error) {
+	creator, err := cs.creatorRepo.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Printf("Erro ao buscar creator: %s", err)
 		return nil, errors.New("criador não encontrado")

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
@@ -61,8 +61,8 @@ func (h *EbookHandler) IndexView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loggedUser := h.getSessionUser(r)
-	if loggedUser == nil {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
 		return
 	}
@@ -73,7 +73,7 @@ func (h *EbookHandler) IndexView(w http.ResponseWriter, r *http.Request) {
 
 	pagination := models.NewPagination(page, perPage)
 
-	ebooks, err := h.ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
+	ebooks, err := h.ebookService.ListEbooksForUser(userID, repository.EbookQuery{
 		Title:      title,
 		Pagination: pagination,
 	})
@@ -98,19 +98,13 @@ func (h *EbookHandler) IndexView(w http.ResponseWriter, r *http.Request) {
 
 // CreateView renders the ebook creation page
 func (h *EbookHandler) CreateView(w http.ResponseWriter, r *http.Request) {
-	userEmail, ok := r.Context().Value(middleware.UserEmailKey).(string)
-	if !ok || userEmail == "" {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
 		return
 	}
 
-	loggedUser := h.getSessionUser(r)
-	if loggedUser == nil {
-		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
-		return
-	}
-
-	creator, err := h.creatorService.FindCreatorByUserID(loggedUser.ID)
+	creator, err := h.creatorService.FindCreatorByUserID(userID)
 	if err != nil {
 		http.Error(w, "Erro ao buscar criador", http.StatusInternalServerError)
 		return
@@ -148,8 +142,8 @@ func (h *EbookHandler) CreateView(w http.ResponseWriter, r *http.Request) {
 
 // CreateSubmit handles ebook creation
 func (h *EbookHandler) CreateSubmit(w http.ResponseWriter, r *http.Request) {
-	userEmail, ok := r.Context().Value(middleware.UserEmailKey).(string)
-	if !ok || userEmail == "" {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
 		return
 	}
@@ -210,10 +204,10 @@ func (h *EbookHandler) CreateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Criando e-book para: %v", loggedUser)
+	fmt.Printf("Criando e-book para: %v", userID)
 
 	// Busca o criador
-	creator, err := h.creatorService.FindCreatorByUserID(loggedUser.ID)
+	creator, err := h.creatorService.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Printf("Falha ao cadastrar e-book: %s", err)
 		web.RedirectBackWithErrors(w, r, "Falha ao cadastrar e-book")
@@ -260,14 +254,8 @@ func (h *EbookHandler) CreateSubmit(w http.ResponseWriter, r *http.Request) {
 
 // UpdateView renders the ebook update page
 func (h *EbookHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
-	userEmail, ok := r.Context().Value(middleware.UserEmailKey).(string)
-	if !ok || userEmail == "" {
-		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
-		return
-	}
-
-	loggedUser := h.getSessionUser(r)
-	if loggedUser == nil {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
 		return
 	}
@@ -278,13 +266,13 @@ func (h *EbookHandler) UpdateView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if loggedUser.ID != ebook.Creator.UserID {
+	if userID != ebook.Creator.UserID {
 		http.Redirect(w, r, "/", http.StatusUnauthorized)
 		return
 	}
 
 	// Buscar arquivos disponíveis da biblioteca para adicionar ao ebook
-	creator, err := h.creatorService.FindCreatorByUserID(loggedUser.ID)
+	creator, err := h.creatorService.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Printf("Erro ao buscar criador: %v", err)
 		http.Error(w, "Erro ao buscar criador", http.StatusInternalServerError)
@@ -376,14 +364,14 @@ func (h *EbookHandler) UpdateSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := h.getSessionUser(r)
-	if user == nil {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Usuário não encontrado", http.StatusInternalServerError)
 		return
 	}
 
 	// Verificar se o usuário é um criador
-	_, err = h.creatorService.FindCreatorByUserID(user.ID)
+	_, err = h.creatorService.FindCreatorByUserID(userID)
 	if err != nil {
 		log.Printf("Falha ao buscar criador: %s", err)
 		http.Error(w, "Entre em contato", http.StatusInternalServerError)
@@ -437,14 +425,8 @@ func (h *EbookHandler) UpdateSubmit(w http.ResponseWriter, r *http.Request) {
 
 // ShowView renders the ebook details page
 func (h *EbookHandler) ShowView(w http.ResponseWriter, r *http.Request) {
-	userEmail, ok := r.Context().Value(middleware.UserEmailKey).(string)
-	if !ok || userEmail == "" {
-		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
-		return
-	}
-
-	loggedUser := h.getSessionUser(r)
-	if loggedUser == nil {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusUnauthorized)
 		return
 	}
@@ -455,7 +437,7 @@ func (h *EbookHandler) ShowView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if loggedUser.ID != ebook.Creator.UserID {
+	if userID != ebook.Creator.UserID {
 		http.Redirect(w, r, "/", http.StatusUnauthorized)
 		return
 	}
@@ -465,9 +447,9 @@ func (h *EbookHandler) ShowView(w http.ResponseWriter, r *http.Request) {
 	term := r.URL.Query().Get("term")
 	pagination := models.NewPagination(page, perPage)
 
-	log.Printf("User Logado: %v", loggedUser.Email)
+	log.Printf("UserKey Logado: %v", userID)
 
-	creator, err := h.creatorService.FindCreatorByUserID(loggedUser.ID)
+	creator, err := h.creatorService.FindCreatorByUserID(userID)
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
 		return
@@ -493,8 +475,8 @@ func (h *EbookHandler) ShowView(w http.ResponseWriter, r *http.Request) {
 
 // ServeEbookImage serve a imagem de capa do ebook de forma segura
 func (h *EbookHandler) ServeEbookImage(w http.ResponseWriter, r *http.Request) {
-	user := h.getSessionUser(r)
-	if user == nil {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -517,7 +499,7 @@ func (h *EbookHandler) ServeEbookImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Permitir apenas o criador acessar a imagem
-	creator, err := h.creatorService.FindCreatorByUserID(user.ID)
+	creator, err := h.creatorService.FindCreatorByUserID(userID)
 	if err != nil || creator.ID != ebook.CreatorID {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return

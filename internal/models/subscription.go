@@ -9,8 +9,7 @@ import (
 
 type Subscription struct {
 	gorm.Model
-	UserID               uint       `json:"user_id" gorm:"not null"`
-	User                 User       `json:"user" gorm:"foreignKey:UserID"`
+	UserID               string     `json:"user_id" gorm:"not null"`
 	PlanID               string     `json:"plan_id"`
 	TrialStartDate       time.Time  `json:"trial_start_date"`
 	TrialEndDate         time.Time  `json:"trial_end_date"`
@@ -22,7 +21,7 @@ type Subscription struct {
 	Origin               string     `json:"origin" gorm:"default:'web'"`
 }
 
-func NewSubscription(userID uint, planID string) *Subscription {
+func NewSubscription(userID string, planID string) *Subscription {
 	now := time.Now()
 	trialEndDate := now.AddDate(0, 0, 7) // 7 days trial
 

@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/repository/gorm"
 
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/internal/service"
@@ -33,14 +33,14 @@ func (h *SendHandler) SendViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loggedUser := middleware.Auth(r)
-	if loggedUser.ID == 0 {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		http.Error(w, "Não foi possível prosseguir com a sua solicitação", http.StatusInternalServerError)
 		return
 	}
 
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
-	creator, err := creatorRepository.FindCreatorByUserID(loggedUser.ID)
+	creator, err := creatorRepository.FindCreatorByUserID(userID)
 	if err != nil {
 		web.RedirectBackWithErrors(w, r, err.Error())
 	}
@@ -58,7 +58,7 @@ func (h *SendHandler) SendViewHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: This should be injected as dependency
 	s3Storage := storage.NewS3Storage()
 	ebookService := service.NewEbookService(s3Storage)
-	ebooks, err := ebookService.ListEbooksForUser(loggedUser.ID, repository.EbookQuery{
+	ebooks, err := ebookService.ListEbooksForUser(userID, repository.EbookQuery{
 		Pagination: pagination,
 	})
 	if err != nil {

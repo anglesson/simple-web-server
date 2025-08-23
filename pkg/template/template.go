@@ -8,9 +8,9 @@ import (
 	"net/url"
 	"strings"
 
+	middleware2 "github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/handler/middleware"
-	"github.com/anglesson/simple-web-server/internal/models"
 	cookies "github.com/anglesson/simple-web-server/pkg/cookie"
 )
 
@@ -51,8 +51,8 @@ func TemplateFunctions(r *http.Request) template.FuncMap {
 		"appName": func() string {
 			return config.AppConfig.AppName
 		},
-		"user": func() *models.User {
-			return middleware.Auth(r)
+		"user": func() string {
+			return middleware2.GetCurrentUserEmail(r)
 		},
 		"json": func(data any) (template.JS, error) {
 			jsonData, err := json.Marshal(data)
@@ -66,6 +66,22 @@ func TemplateFunctions(r *http.Request) template.FuncMap {
 		},
 		"trim": func(s string) string {
 			return strings.TrimSpace(s)
+		},
+		"getInitials": func(s string) string {
+			names := strings.Fields(s)
+			if len(names) == 0 {
+				return "?"
+			}
+
+			initials := ""
+			if len(names) >= 1 {
+				initials += string(names[0][0])
+			}
+			if len(names) >= 2 {
+				initials += string(names[len(names)-1][0])
+			}
+
+			return strings.ToUpper(initials)
 		},
 	}
 }
@@ -113,7 +129,7 @@ func (tr *TemplateRendererImpl) View(w http.ResponseWriter, r *http.Request, pag
 	}
 
 	// Get CSRF token from context
-	if csrfToken := middleware.GetCSRFToken(r); csrfToken != "" {
+	if csrfToken := middleware2.GetCSRFToken(r); csrfToken != "" {
 		log.Printf("CSRF token encontrado no contexto: %s", csrfToken)
 		data["csrf_token"] = csrfToken
 	} else {
@@ -121,13 +137,9 @@ func (tr *TemplateRendererImpl) View(w http.ResponseWriter, r *http.Request, pag
 	}
 
 	// Get user from context
-	if user := middleware.Auth(r); user != nil {
+	if user := middleware2.Auth(r); user != nil {
 		log.Printf("Usuário encontrado no contexto: %s", user.Email)
 		data["user"] = user
-		if user.CSRFToken != "" {
-			log.Printf("Usando CSRF token do usuário: %s", user.CSRFToken)
-			data["csrf_token"] = user.CSRFToken
-		}
 	} else {
 		log.Printf("Usuário não encontrado no contexto")
 	}

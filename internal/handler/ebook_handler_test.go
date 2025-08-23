@@ -13,8 +13,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	handler "github.com/anglesson/simple-web-server/internal/handler"
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"

@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/anglesson/simple-web-server/internal/authentication/business"
 	"github.com/anglesson/simple-web-server/internal/service"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
 type CreatorHandler struct {
 	creatorService   service.CreatorService
-	sessionService   service.SessionService
+	sessionService   business.AuthService
 	templateRenderer template.TemplateRenderer
 }
 
-func NewCreatorHandler(creatorService service.CreatorService, sessionService service.SessionService, templateRenderer template.TemplateRenderer) *CreatorHandler {
+func NewCreatorHandler(creatorService service.CreatorService, sessionService business.AuthService, templateRenderer template.TemplateRenderer) *CreatorHandler {
 	return &CreatorHandler{
 		creatorService:   creatorService,
 		sessionService:   sessionService,
@@ -43,7 +44,7 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		TermsAccepted:        r.FormValue("terms_accepted"),
 	}
 
-	creator, err := ch.creatorService.CreateCreator(input)
+	_, err := ch.creatorService.CreateCreator(input)
 	if err != nil {
 		fmt.Printf("[ERROR]: %s\n", err.Error())
 		ch.templateRenderer.View(w, r, "creator/register", map[string]interface{}{
@@ -53,7 +54,7 @@ func (ch *CreatorHandler) RegisterCreatorSSR(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	ch.sessionService.InitSession(w, creator.Email)
+	// TODO: Fazer login com o Google
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }

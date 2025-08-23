@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/handler/web"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
@@ -18,15 +18,13 @@ import (
 
 type FileHandler struct {
 	fileService         service.FileService
-	sessionService      service.SessionService
 	templateRenderer    template.TemplateRenderer
 	flashMessageFactory web.FlashMessageFactory
 }
 
-func NewFileHandler(fileService service.FileService, sessionService service.SessionService, templateRenderer template.TemplateRenderer, flashMessageFactory web.FlashMessageFactory) *FileHandler {
+func NewFileHandler(fileService service.FileService, templateRenderer template.TemplateRenderer, flashMessageFactory web.FlashMessageFactory) *FileHandler {
 	return &FileHandler{
 		fileService:         fileService,
-		sessionService:      sessionService,
 		templateRenderer:    templateRenderer,
 		flashMessageFactory: flashMessageFactory,
 	}
@@ -224,19 +222,19 @@ func (h *FileHandler) FileUpdateSubmit(w http.ResponseWriter, r *http.Request) {
 // getCreatorIDFromSession extrai o ID do criador da sessão usando o SessionService injetado
 func (h *FileHandler) getCreatorIDFromSession(r *http.Request) uint {
 	// Obter usuário da sessão usando o middleware Auth
-	user := middleware.Auth(r)
-	if user == nil || user.ID == 0 {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		log.Printf("Usuário não encontrado na sessão")
 		return 0
 	}
 
-	log.Printf("Usuário encontrado: ID=%d, Email=%s", user.ID, user.Email)
+	log.Printf("Usuário encontrado: ID=%d", userID)
 
 	// Buscar o creator associado ao usuário
 	creatorRepository := gorm.NewCreatorRepository(database.DB)
-	creator, err := creatorRepository.FindCreatorByUserID(user.ID)
+	creator, err := creatorRepository.FindCreatorByUserID(userID)
 	if err != nil || creator == nil {
-		log.Printf("Erro ao buscar creator para usuário %d: %v", user.ID, err)
+		log.Printf("Erro ao buscar creator para usuário %d: %v", userID, err)
 		return 0
 	}
 

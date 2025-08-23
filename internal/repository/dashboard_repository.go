@@ -8,10 +8,10 @@ import (
 )
 
 type DashboardRepository struct {
-	UserID uint
+	UserID string
 }
 
-func NewDashboardRepository(userID uint) *DashboardRepository {
+func NewDashboardRepository(userID string) *DashboardRepository {
 	return &DashboardRepository{
 		UserID: userID,
 	}

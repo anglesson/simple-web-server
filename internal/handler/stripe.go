@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
 	"github.com/anglesson/simple-web-server/internal/repository"
@@ -60,8 +61,8 @@ func (h *StripeHandler) CreateCheckoutSession(w http.ResponseWriter, r *http.Req
 	log.Printf("Session token found for user")
 
 	// Find user by session token
-	user := h.userRepository.FindBySessionToken(sessionCookie.Value)
-	if user == nil {
+	userID := middleware.GetCurrentUserID(r)
+	if userID == "" {
 		log.Printf("User not found for session token")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -70,7 +71,7 @@ func (h *StripeHandler) CreateCheckoutSession(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	log.Printf("User found: %s", user.Email)
+	log.Printf("User found: %s", userID)
 
 	// Validate CSRF token
 	csrfToken := r.Header.Get("X-CSRF-Token")
@@ -86,17 +87,8 @@ func (h *StripeHandler) CreateCheckoutSession(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if csrfToken != user.CSRFToken {
-		log.Printf("CSRF token mismatch for user: %s", user.Email)
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Token CSRF inválido",
-		})
-		return
-	}
-
 	// Get user's subscription
-	subscription, err := h.subscriptionService.FindByUserID(user.ID)
+	subscription, err := h.subscriptionService.FindByUserID(userID)
 	if err != nil {
 		log.Printf("Erro ao buscar subscription do usuário: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -107,7 +99,7 @@ func (h *StripeHandler) CreateCheckoutSession(w http.ResponseWriter, r *http.Req
 	}
 
 	if subscription == nil || subscription.StripeCustomerID == "" {
-		log.Printf("Usuário %s não possui subscription ou ID do Stripe", user.Email)
+		log.Printf("Usuário %s não possui subscription ou ID do Stripe", userID)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Erro ao processar pagamento: Cliente não encontrado",

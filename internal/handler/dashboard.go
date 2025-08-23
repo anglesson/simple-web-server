@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/internal/repository"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
@@ -42,8 +42,8 @@ func NewDashboardHandler(templateRenderer template.TemplateRenderer) *DashboardH
 }
 
 func (h *DashboardHandler) DashboardView(w http.ResponseWriter, r *http.Request) {
-	loggedUser := middleware.Auth(r)
-	dashRepository := repository.NewDashboardRepository(loggedUser.ID)
+	userEmail := middleware.GetCurrentUserID(r)
+	dashRepository := repository.NewDashboardRepository(userEmail)
 
 	totalEbooks := dashRepository.GetTotalEbooks()
 	totalSendEbooks := dashRepository.GetTotalSendEbooks()

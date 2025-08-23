@@ -4,39 +4,35 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anglesson/simple-web-server/internal/handler/middleware"
-	"github.com/anglesson/simple-web-server/internal/service"
+	"github.com/anglesson/simple-web-server/internal/authentication/middleware"
 	"github.com/anglesson/simple-web-server/pkg/template"
 )
 
 type SettingsHandler struct {
-	sessionService   service.SessionService
 	templateRenderer template.TemplateRenderer
 }
 
-func NewSettingsHandler(sessionService service.SessionService, templateRenderer template.TemplateRenderer) *SettingsHandler {
+func NewSettingsHandler(templateRenderer template.TemplateRenderer) *SettingsHandler {
 	return &SettingsHandler{
-		sessionService:   sessionService,
 		templateRenderer: templateRenderer,
 	}
 }
 
 func (h *SettingsHandler) SettingsView(w http.ResponseWriter, r *http.Request) {
-	user := middleware.Auth(r)
+	user := r.Context().Value(middleware.UserKey)
 	if user == nil {
-		log.Printf("Usuário não autenticado ao acessar configurações")
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		r.Header.Set("Location", "/login")
 		return
 	}
 
-	// Gerar novo token CSRF se necessário
-	if user.CSRFToken == "" {
-		user.CSRFToken = h.sessionService.GenerateCSRFToken()
-		h.sessionService.SetCSRFToken(w)
+	csrfToken := r.Context().Value(middleware.CSRFTokenKey).(string)
+	if csrfToken == "" {
+		r.Header.Set("Location", "/login")
+		return
 	}
 
-	log.Printf("Renderizando página de configurações para o usuário: %s", user.Email)
-	log.Printf("Token CSRF: %s", user.CSRFToken)
+	log.Printf("Renderizando página de configurações para o usuário: %s", user)
+	log.Printf("Token CSRF: %s", csrfToken)
 
 	// Passar apenas o objeto user para o template
 	h.templateRenderer.View(w, r, "settings", map[string]interface{}{

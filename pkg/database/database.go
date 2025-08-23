@@ -2,9 +2,11 @@ package database
 
 import (
 	"log"
+	"log/slog"
 
 	"github.com/anglesson/simple-web-server/internal/config"
 	"github.com/anglesson/simple-web-server/internal/models"
+	payment_models "github.com/anglesson/simple-web-server/internal/payment/data"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -38,15 +40,22 @@ func connectGormAndMigrate(dialector gorm.Dialector) {
 }
 
 func migrate() {
-	DB.AutoMigrate(&models.User{})
-	DB.AutoMigrate(&models.Subscription{})
-	DB.AutoMigrate(&models.ClientCreator{})
-	DB.AutoMigrate(&models.Client{})
-	DB.AutoMigrate(&models.Contact{})
-	DB.AutoMigrate(&models.Creator{})
-	DB.AutoMigrate(&models.Ebook{})
-	DB.AutoMigrate(&models.Purchase{})
-	DB.AutoMigrate(&models.DownloadLog{})
+	err := DB.AutoMigrate(
+		&models.User{},
+		&models.Subscription{},
+		&models.ClientCreator{},
+		&models.Client{},
+		&models.Contact{},
+		&models.Creator{},
+		&models.Ebook{},
+		&models.Purchase{},
+		&models.DownloadLog{},
+		&payment_models.AccountModel{})
+
+	if err != nil {
+		slog.Error("Erro na geração das migrates")
+		panic(err.Error())
+	}
 }
 
 func Close() {

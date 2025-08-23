@@ -19,12 +19,12 @@ type ClientService interface {
 }
 
 type CreateClientInput struct {
-	Name         string
-	CPF          string
-	Phone        string
-	BirthDate    string
-	Email        string
-	EmailCreator string
+	Name      string
+	CPF       string
+	Phone     string
+	BirthDate string
+	Email     string
+	UserID    string
 }
 
 type CreateClientOutput struct {
@@ -69,7 +69,7 @@ func (cs *clientServiceImpl) CreateClient(input CreateClientInput) (*CreateClien
 		return nil, err
 	}
 
-	creator, err := cs.creatorRepository.FindCreatorByUserEmail(input.EmailCreator)
+	creator, err := cs.creatorRepository.FindCreatorByUserID(input.UserID)
 	if err != nil {
 		return nil, err
 	}

@@ -10,15 +10,15 @@ import (
 )
 
 type SubscriptionService interface {
-	CreateSubscription(userID uint, planID string) (*models.Subscription, error)
-	FindByUserID(userID uint) (*models.Subscription, error)
+	CreateSubscription(userID string, planID string) (*models.Subscription, error)
+	FindByUserID(userID string) (*models.Subscription, error)
 	FindByStripeCustomerID(customerID string) (*models.Subscription, error)
 	FindByStripeSubscriptionID(subscriptionID string) (*models.Subscription, error)
 	ActivateSubscription(subscription *models.Subscription, stripeCustomerID, stripeSubscriptionID string) error
 	UpdateSubscriptionStatus(subscription *models.Subscription, status string, endDate *time.Time) error
 	CancelSubscription(subscription *models.Subscription) error
 	EndTrial(subscription *models.Subscription) error
-	GetUserSubscriptionStatus(userID uint) (string, int, error)
+	GetUserSubscriptionStatus(userID string) (string, int, error)
 }
 
 type subscriptionServiceImpl struct {
@@ -36,8 +36,8 @@ func NewSubscriptionService(
 	}
 }
 
-func (ss *subscriptionServiceImpl) CreateSubscription(userID uint, planID string) (*models.Subscription, error) {
-	if userID == 0 {
+func (ss *subscriptionServiceImpl) CreateSubscription(userID string, planID string) (*models.Subscription, error) {
+	if userID == "" {
 		return nil, errors.New("ID do usuário é obrigatório")
 	}
 	if planID == "" {
@@ -54,8 +54,8 @@ func (ss *subscriptionServiceImpl) CreateSubscription(userID uint, planID string
 	return subscription, nil
 }
 
-func (ss *subscriptionServiceImpl) FindByUserID(userID uint) (*models.Subscription, error) {
-	if userID == 0 {
+func (ss *subscriptionServiceImpl) FindByUserID(userID string) (*models.Subscription, error) {
+	if userID == "" {
 		return nil, errors.New("ID do usuário é obrigatório")
 	}
 
@@ -127,8 +127,8 @@ func (ss *subscriptionServiceImpl) EndTrial(subscription *models.Subscription) e
 	return ss.subscriptionRepository.Save(subscription)
 }
 
-func (ss *subscriptionServiceImpl) GetUserSubscriptionStatus(userID uint) (string, int, error) {
-	if userID == 0 {
+func (ss *subscriptionServiceImpl) GetUserSubscriptionStatus(userID string) (string, int, error) {
+	if userID == "" {
 		return "inactive", 0, errors.New("ID do usuário é obrigatório")
 	}
 
